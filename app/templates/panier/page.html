@@ -4,8 +4,8 @@
 <h1>Ma liste de courses</h1>
 <p class="note">
   Autour de {{ code_postal }} ·
-  <a href="/magasins?code_postal={{ code_postal }}">voir les magasins</a> ·
-  <a href="/">changer de code postal</a>
+  <a href="/magasins?code_postal={{ code_postal|urlencode }}&rayon_km={{ request.session.get('rayon_km') or '' }}">voir les magasins</a> ·
+  <a href="/">changer de lieu</a>
 </p>
 
 <section class="carte">

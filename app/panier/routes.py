@@ -95,7 +95,9 @@ async def tableau_resultats(request: Request, reglages: ReglagesDep):
         contexte["message"] = "Ajoutez au moins un article à votre liste."
     else:
         try:
-            contexte["magasins"] = (await magasins_proches(code_postal, reglages)).magasins
+            contexte["magasins"] = (
+                await magasins_proches(code_postal, reglages, request.session.get("rayon_km"))
+            ).magasins
         except (CodePostalInvalide, CodePostalInconnu):
             contexte["message"] = "Choisissez d'abord votre code postal."
         if not contexte["magasins"] and not contexte["message"]:
@@ -110,7 +112,9 @@ async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[Se
     lignes = service.lister(reglages, service.proprietaire(request, creer=False))
     try:
         magasins = (
-            await magasins_proches(request.session.get("code_postal", ""), reglages)
+            await magasins_proches(
+                request.session.get("code_postal", ""), reglages, request.session.get("rayon_km")
+            )
         ).magasins
     except (CodePostalInvalide, CodePostalInconnu):
         magasins = []

@@ -31,6 +31,10 @@ class Reglages(BaseSettings):
     # Magasins interrogés autour du code postal.
     rayon_km: float = 10.0
     max_magasins_par_enseigne: int = 2
+    # Vrais magasins tirés d'OpenStreetMap (data/magasins/osm.json) ; sinon, ceux des sources (fictifs).
+    magasins_osm: bool = True
+    # Rayon choisi par l'utilisateur : tous les magasins dans le rayon, au plus ce nombre par enseigne.
+    max_magasins_par_enseigne_rayon: int = 5
 
     # Collecte : limites par enseigne et cache.
     timeout_enseigne_s: float = 6.0

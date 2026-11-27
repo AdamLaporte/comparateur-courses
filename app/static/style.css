@@ -66,7 +66,8 @@ h2 { font-size: 1.2rem; margin: 0 0 0.6rem; }
 .erreur { color: var(--alerte); font-weight: 600; }
 .masque { position: absolute; left: -9999px; }
 
-input, button { font: inherit; }
+input, button, select { font: inherit; }
+select { padding: 0.5rem; border: 1px solid var(--bord); border-radius: 8px; background: var(--carte); }
 input[type="search"], input[name="code_postal"] {
   width: 100%;
   max-width: 28rem;
@@ -91,7 +92,8 @@ button.principal, .bouton.principal { background: var(--accent); border-color: v
 button.lien { border: none; background: none; color: var(--alerte); padding: 0 0.3rem; }
 
 .formulaire-ligne { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
-.formulaire-ligne input { max-width: 10rem; }
+.formulaire-ligne input { max-width: 16rem; }
+#form-lieu .formulaire-ligne { margin-bottom: 0.4rem; }
 
 .badge {
   display: inline-block;

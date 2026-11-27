@@ -25,6 +25,7 @@ def reglages(tmp_path) -> Reglages:
         source_coursesu="fictive",
         source_leclerc="fictive",
         intermarche_api_key="",
+        magasins_osm=False,  # magasins fictifs : pas de fichier OSM à charger dans les tests
         source_produits="fictive",  # pas d'appel à Open Food Facts
         open_prices_actif=False,  # pas d'appel à Open Prices
     )

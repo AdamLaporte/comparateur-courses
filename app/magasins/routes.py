@@ -1,4 +1,4 @@
-"""Routes : accueil (saisie du code postal) et magasins proches (page HTML et JSON)."""
+"""Routes : accueil (ville, code postal ou position, et rayon) et magasins proches (page HTML et JSON)."""
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -11,34 +11,58 @@ from app.magasins.service import magasins_proches
 
 router = APIRouter(tags=["magasins"])
 
-MESSAGE_INVALIDE = "Saisissez un code postal à 5 chiffres, par exemple 35170."
-MESSAGE_INCONNU = "Ce code postal est introuvable pour l'instant. Vérifiez-le ou réessayez."
+MESSAGE_INVALIDE = "Saisissez une ville ou un code postal à 5 chiffres, par exemple Bruz ou 35170."
+MESSAGE_INCONNU = "Ce lieu est introuvable pour l'instant. Vérifiez-le ou réessayez."
+RAYONS_KM = (2, 5, 10, 20, 30)
+
+
+def lire_rayon(texte: str | float | None) -> float | None:
+    """Rayon choisi en km, ou None pour « les plus proches » (valeur vide ou hors limites)."""
+    try:
+        rayon = float(texte)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
+    return rayon if 0 < rayon <= 50 else None
 
 
 @router.get("/", response_class=HTMLResponse)
 async def accueil(request: Request):
     return templates.TemplateResponse(
-        request, "magasins/accueil.html", {"code_postal": request.session.get("code_postal", "")}
+        request,
+        "magasins/accueil.html",
+        {
+            "code_postal": request.session.get("code_postal", ""),
+            "rayon_km": request.session.get("rayon_km"),
+            "rayons": RAYONS_KM,
+        },
     )
 
 
 @router.get("/magasins", response_class=HTMLResponse)
-async def page_magasins(request: Request, reglages: ReglagesDep, code_postal: str = ""):
+async def page_magasins(
+    request: Request, reglages: ReglagesDep, code_postal: str = "", rayon_km: str = ""
+):
+    rayon = lire_rayon(rayon_km)
     try:
-        reponse = await magasins_proches(code_postal, reglages)
+        reponse = await magasins_proches(code_postal, reglages, rayon)
     except (CodePostalInvalide, CodePostalInconnu) as erreur:
         message = MESSAGE_INVALIDE if isinstance(erreur, CodePostalInvalide) else MESSAGE_INCONNU
-        return templates.TemplateResponse(
-            request, "magasins/accueil.html", {"code_postal": code_postal, "erreur": message}
-        )
+        contexte = {
+            "code_postal": code_postal,
+            "rayon_km": rayon,
+            "rayons": RAYONS_KM,
+            "erreur": message,
+        }
+        return templates.TemplateResponse(request, "magasins/accueil.html", contexte)
     request.session["code_postal"] = reponse.code_postal
+    request.session["rayon_km"] = rayon
     return templates.TemplateResponse(request, "magasins/liste.html", {"reponse": reponse})
 
 
 @router.get("/api/magasins", response_model=MagasinsReponse)
-async def api_magasins(code_postal: str, reglages: ReglagesDep):
+async def api_magasins(code_postal: str, reglages: ReglagesDep, rayon_km: float | None = None):
     try:
-        return await magasins_proches(code_postal, reglages)
+        return await magasins_proches(code_postal, reglages, lire_rayon(rayon_km))
     except CodePostalInvalide as erreur:
         raise HTTPException(422, MESSAGE_INVALIDE) from erreur
     except CodePostalInconnu as erreur:

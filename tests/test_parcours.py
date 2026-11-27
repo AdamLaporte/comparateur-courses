@@ -21,8 +21,8 @@ def test_magasins_proches_json(client):
 
 
 def test_code_postal_invalide_sans_erreur_brute(client):
-    assert client.get("/api/magasins", params={"code_postal": "abc"}).status_code == 422
-    page = client.get("/magasins", params={"code_postal": "abc"})
+    assert client.get("/api/magasins", params={"code_postal": "123"}).status_code == 422
+    page = client.get("/magasins", params={"code_postal": "123"})
     assert page.status_code == 200
     assert "5 chiffres" in page.text
     assert "Traceback" not in page.text

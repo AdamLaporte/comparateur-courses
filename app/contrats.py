@@ -165,6 +165,7 @@ class MagasinsReponse(BaseModel):
     position: Position
     magasins: list[Magasin]
     enseignes_sans_magasin: list[Enseigne] = []
+    rayon_km: float | None = None  # None : les plus proches de chaque enseigne
 
 
 class DemandeTotaux(BaseModel):

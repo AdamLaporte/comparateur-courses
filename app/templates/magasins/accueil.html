@@ -3,15 +3,50 @@
 <section class="carte">
   <h1>Où faites-vous vos courses ?</h1>
   <p>
-    Saisissez votre code postal : on cherche les magasins Carrefour, Intermarché, Courses U et
-    E.Leclerc Drive autour de vous, puis on compare le prix de votre liste de courses.
+    Saisissez votre ville ou votre code postal, ou laissez le navigateur vous localiser : on cherche les
+    magasins Carrefour, Intermarché, Courses U et E.Leclerc autour de vous, puis on compare le prix de
+    votre liste de courses.
   </p>
-  <form action="/magasins" method="get" class="formulaire-ligne">
-    <label for="code_postal" class="masque">Code postal</label>
-    <input id="code_postal" name="code_postal" value="{{ code_postal }}" inputmode="numeric"
-           pattern="[0-9]{5}" maxlength="5" placeholder="35170" required autofocus>
-    <button type="submit" class="principal">Trouver les magasins</button>
+  <form action="/magasins" method="get" id="form-lieu">
+    <div class="formulaire-ligne">
+      <label for="code_postal" class="masque">Ville ou code postal</label>
+      <input id="code_postal" name="code_postal" value="{{ code_postal }}" maxlength="80"
+             placeholder="Bruz ou 35170" required autofocus autocomplete="address-level2">
+      <button type="button" id="me-localiser">📍 Me localiser</button>
+    </div>
+    <div class="formulaire-ligne">
+      <label for="rayon_km">Magasins :</label>
+      <select id="rayon_km" name="rayon_km">
+        <option value="">les plus proches de chaque enseigne</option>
+        {% for r in rayons %}
+        <option value="{{ r }}" {% if rayon_km == r %}selected{% endif %}>dans un rayon de {{ r }} km</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="principal">Trouver les magasins</button>
+    </div>
   </form>
-  {% if erreur %}<p class="erreur">{{ erreur }}</p>{% endif %}
+  <p class="erreur" id="erreur-lieu" {% if not erreur %}hidden{% endif %}>{{ erreur or "" }}</p>
 </section>
+<script>
+  document.getElementById("me-localiser").addEventListener("click", () => {
+    const erreur = document.getElementById("erreur-lieu");
+    if (!navigator.geolocation) {
+      erreur.textContent = "Votre navigateur ne permet pas la localisation : saisissez votre ville.";
+      erreur.hidden = false;
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        document.getElementById("code_postal").value =
+          p.coords.latitude.toFixed(5) + "," + p.coords.longitude.toFixed(5);
+        document.getElementById("form-lieu").submit();
+      },
+      () => {
+        erreur.textContent = "Localisation refusée ou impossible : saisissez votre ville ou votre code postal.";
+        erreur.hidden = false;
+      },
+      { timeout: 10000 }
+    );
+  });
+</script>
 {% endblock %}

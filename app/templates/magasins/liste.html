@@ -1,19 +1,23 @@
 {% extends "base.html" %}
-{% block titre %}Magasins autour de {{ reponse.code_postal }} · Comparateur de courses{% endblock %}
+{% block titre %}Magasins autour de {{ reponse.ville or reponse.code_postal }} · Comparateur de courses{% endblock %}
 {% block contenu %}
-<h1>Magasins autour de {{ reponse.code_postal }} {{ reponse.ville }}</h1>
+<h1>Magasins autour de {{ reponse.ville or reponse.code_postal }}</h1>
+<p class="note">
+  {% if reponse.rayon_km %}Tous les magasins à moins de {{ reponse.rayon_km|int }} km.
+  {% else %}Les plus proches de chaque enseigne.{% endif %}
+</p>
 {% if reponse.magasins %}
 <ul class="magasins">
   {% for m in reponse.magasins %}
   <li>
     <span class="badge {{ m.enseigne.value }}">{{ m.enseigne.nom }}</span>
     <strong>{{ m.nom }}</strong>
-    <span class="note">{{ m.adresse }} · {{ ('%.1f' % m.distance_km).replace('.', ',') }} km</span>
+    <span class="note">{% if m.adresse %}{{ m.adresse }} · {% endif %}{{ ('%.1f' % m.distance_km).replace('.', ',') }} km</span>
   </li>
   {% endfor %}
 </ul>
 {% else %}
-<p class="note">Aucun magasin trouvé autour de ce code postal.</p>
+<p class="note">Aucun magasin trouvé : essayez un rayon plus grand.</p>
 {% endif %}
 {% if reponse.enseignes_sans_magasin %}
 <p class="note">
@@ -23,6 +27,9 @@
 {% endif %}
 <p>
   <a class="bouton principal" href="/panier">Composer ma liste</a>
-  <a class="bouton" href="/">Changer de code postal</a>
+  <a class="bouton" href="/">Changer de lieu ou de rayon</a>
 </p>
+{% if reponse.magasins and not reponse.magasins[0].est_fictif %}
+<p class="note">Magasins : © contributeurs <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> (ODbL).</p>
+{% endif %}
 {% endblock %}

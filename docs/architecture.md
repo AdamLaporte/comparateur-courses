@@ -71,7 +71,7 @@ aux mêmes fichiers. L'arborescence exacte et les commandes sont dans [`AGENTS.m
 | `app/gabarits.py` | Moteur Jinja2 commun, filtres `euros` et `releve`, `rendre()` pour les fragments SSE | partagé, ajout concerté |
 | `app/sources/` | `base.py` (interface `SourcePrix`), `registre.py`, puis un fichier par source : `fictive.py`, `intermarche.py`, `carrefour.py`, `leclerc.py`, `coursesu.py`, `open_prices.py` | un fichier = un lot ou sous-lot |
 | `app/collecte/` | `orchestrateur.py` (parallélisme, limites), `repli.py`, `cache.py`, `prechauffer.py` (commande) | lot données et fiabilité |
-| `app/magasins/` | Code postal → position → magasins proches triés par distance | lot Intermarché et magasins |
+| `app/magasins/` | Ville, code postal ou position GPS → magasins proches (OpenStreetMap, `data/magasins/osm.json`) triés par distance, dans un rayon choisi ou les plus proches | lot Intermarché et magasins |
 | `app/produits/` | Recherche d'un article pour composer la liste (Open Food Facts) | lot données et fiabilité |
 | `app/panier/` | Liste de courses, flux SSE des prix, `calcul.py` (totaux, fonctions pures) | lot interface + cœur |
 | `app/comptes/` | Inscription, connexion, articles et adresses favoris | lot Intermarché et magasins |
@@ -237,7 +237,7 @@ Routes prévues :
 
 | Méthode et chemin | Rôle | Réponse |
 |---|---|---|
-| `GET /` | Accueil, saisie du code postal | page |
+| `GET /` | Accueil : ville, code postal ou « Me localiser », et rayon | page |
 | `GET /magasins?code_postal=` | Magasins proches | page |
 | `GET /api/magasins?code_postal=` | Magasins proches | `MagasinsReponse` |
 | `GET /produits/recherche?q=` | Suggestions d'articles | fragment |

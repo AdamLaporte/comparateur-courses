@@ -66,13 +66,14 @@ Détails et diagrammes : [`docs/architecture.md`](docs/architecture.md). Décisi
 │   │   ├── carrefour.py, leclerc.py, coursesu.py   # collecte en direct
 │   │   └── open_prices.py     # source de secours
 │   ├── collecte/              # orchestrateur.py, repli.py, cache.py, prechauffer.py, schema.sql
-│   ├── magasins/              # routes.py, service.py (distances), geocodage.py
+│   ├── magasins/              # routes.py, service.py (distances), geocodage.py, import_osm.py
 │   ├── produits/              # routes.py, service.py (recherche d'articles)
 │   ├── panier/                # routes.py (liste, flux SSE, API), service.py, calcul.py, schema.sql
 │   ├── comptes/               # routes.py, service.py, schema.sql (inscription, connexion, favoris)
 │   ├── templates/             # base.html, erreur.html + un dossier par fonctionnalité
 │   └── static/style.css
 ├── data/demo/recherches.txt   # recherches pour préchauffer le cache avant la démo
+├── data/magasins/osm.json     # magasins des 4 enseignes en France (OpenStreetMap, ODbL)
 ├── tests/                     # conftest.py, test_parcours.py, test_calcul.py, test_orchestrateur.py
 └── docs/
     ├── architecture.md        # architecture et diagrammes (à jour)
