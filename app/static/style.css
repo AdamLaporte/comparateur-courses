@@ -165,8 +165,8 @@ p { margin: 0 0 0.8rem; }
 
 .entete { background: var(--blanc); border-bottom: 1px solid var(--trait); }
 .entete-dedans {
-  max-width: 1200px; margin: 0 auto; padding: 15px 20px;
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  max-width: 1200px; margin: 0 auto; padding: 12px 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
 }
 
 .marque { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
@@ -175,20 +175,26 @@ p { margin: 0 0 0.8rem; }
 .marque:is([data-morsures="2"], [data-morsures="3"]) .morsure-2,
 .marque[data-morsures="3"] .morsure-3 { display: inline; }
 .marque-nom {
-  font-size: 1.7rem; font-weight: 850; font-stretch: 72%; letter-spacing: 0.01em;
+  font-size: clamp(1.5rem, 2.2vw, 2rem); font-weight: 850; font-stretch: 72%; letter-spacing: 0.01em;
   line-height: 1; text-decoration: none; color: var(--encre);
 }
 
-.menu { display: flex; gap: 6px; }
+.menu {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px;
+  width: clamp(23rem, 38vw, 32rem);
+  background: var(--papier); border: 1px solid var(--trait-doux); border-radius: 14px;
+}
 .menu a {
-  display: inline-flex; align-items: center; gap: 8px;
-  min-height: 52px; padding: 0 12px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 0 8px;
   color: var(--encre-2); text-decoration: none; font-weight: 600; font-size: 1.05rem;
-  border-radius: var(--rayon);
+  border-radius: 10px;
   transition: background var(--duree), color var(--duree);
 }
-.menu a:hover { background: var(--papier); color: var(--encre); }
-.menu a[aria-current="page"] { color: var(--encre); box-shadow: inset 0 -3px 0 var(--principal); border-radius: var(--rayon) var(--rayon) 0 0; }
+.menu a:hover { background: var(--blanc); color: var(--encre); }
+.menu a[aria-current="page"] { color: var(--encre); background: var(--principal-pale); }
+.menu a[aria-current="page"] .icone { color: var(--economie); }
+.menu .icone { flex: none; }
 
 .bandeau-fictif {
   display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -863,14 +869,14 @@ span.favori { font-size: 0.85rem; font-weight: 600; color: var(--corail-texte); 
   .ticket { max-width: 100%; }
 }
 
-@media (max-width: 760px) {
-  .entete-dedans { flex-wrap: wrap; padding: 10px 12px; gap: 6px; }
-  .marque { gap: 8px; }
+@media (max-width: 640px) {
+  .entete-dedans { flex-direction: column; align-items: stretch; padding: 8px 12px 10px; gap: 8px; }
+  .marque { align-self: center; gap: 8px; }
   .marque-tag { width: 46px; height: 46px; }
   .marque-nom { font-size: 1.5rem; }
-  .menu { width: 100%; justify-content: space-between; gap: 2px; }
-  .menu a { flex: 1; flex-direction: column; gap: 4px; min-height: 50px; padding: 4px; font-size: .83rem; justify-content: center; text-align: center; }
-  .menu .icone { width: 21px; height: 21px; }
+  .menu { width: 100%; gap: 3px; }
+  .menu a { flex-direction: column; justify-content: center; gap: 3px; min-height: 49px; padding: 4px; font-size: .86rem; line-height: 1.15; text-align: center; }
+  .menu .icone { width: 18px; height: 18px; }
 }
 
 @media (min-width: 640px) {
