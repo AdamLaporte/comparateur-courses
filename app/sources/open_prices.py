@@ -7,7 +7,7 @@ Utilisée par app/collecte/repli.py quand la source d'une enseigne échoue.
   autour de la position (`/prices?lat=&lon=&radius_km=`). L'enseigne se lit dans `osm_brand` ou, à
   défaut, dans `osm_name` (ex. « E.Leclerc Cleunay » n'a pas de `osm_brand`).
 - Prix : les relevés du lieu (`/prices?location_id=`), le plus récent par EAN, de moins de
-  AGE_MAX_JOURS jours. Recherche texte : tous les mots dans le nom ou la marque du produit.
+  AGE_MAX_JOURS jours. Recherche texte : chaque mot commence un mot du nom ou de la marque.
 - Les réponses sont gardées DUREE_REPONSE_MIN minutes dans le cache SQLite. Si Open Prices ne répond
   pas, ou si OPEN_PRICES_ACTIF=false, on se sert de la dernière réponse enregistrée, quel que soit son
   âge (c'est ce que remplit le préchauffage avant la démo).
@@ -42,7 +42,7 @@ from app.sources.base import SourceIndisponible, SourceNonConfiguree, SourcePrix
 logger = logging.getLogger(__name__)
 
 RAYON_LIEU_KM = 2.0  # au-delà, le lieu Open Prices n'est pas considéré comme le même magasin
-AGE_MAX_JOURS = 365  # relevés plus anciens ignorés
+AGE_MAX_JOURS = 2 * 365  # relevés plus anciens ignorés (données éparses : l'année est affichée)
 DUREE_REPONSE_MIN = 24 * 60  # les relevés de la communauté changent lentement
 TAILLE_PAGE = 100
 PAGES_MAX = 10  # 1 000 relevés par lieu au plus
@@ -344,17 +344,18 @@ class SourceOpenPrices(SourcePrix):
     async def chercher_produits(
         self, magasin: Magasin, recherche: str, limite: int = 20
     ) -> list[Prix]:
-        mots = [m for m in normaliser(recherche).split() if len(m) >= 2]
+        # Mots utiles, au singulier approximatif (« pâtes » trouve « Pâte »).
+        mots = [
+            m[:-1] if len(m) > 3 and m[-1] in "sx" else m for m in normaliser(recherche).split()
+        ]
+        mots = [m for m in mots if len(m) >= 2]
         if not mots:
             return []
-        trouves = [
-            prix
-            for prix in await self._prix_du_magasin(magasin)
-            if all(
-                mot in normaliser(f"{prix.produit.libelle} {prix.produit.marque or ''}")
-                for mot in mots
-            )
-        ]
+        trouves = []
+        for prix in await self._prix_du_magasin(magasin):
+            mots_produit = normaliser(f"{prix.produit.libelle} {prix.produit.marque or ''}").split()
+            if all(any(m.startswith(mot) for m in mots_produit) for mot in mots):
+                trouves.append(prix)
         return sorted(trouves, key=lambda p: p.prix_centimes)[:limite]
 
     async def obtenir_prix(self, magasin: Magasin, ean: str) -> Prix | None:

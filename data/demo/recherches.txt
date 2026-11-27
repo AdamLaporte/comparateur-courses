@@ -1,5 +1,6 @@
 # Recherches pour préchauffer le cache avant la démo (une par ligne, # = commentaire).
 # Usage : uv run python -m app.collecte.prechauffer data/demo/recherches.txt --code-postal 35170
+# Une ligne = une recherche texte (mode « équivalent ») ou un EAN de 8 à 14 chiffres (mode « produit »).
 nutella
 pâte à tartiner
 lait demi-écrémé
