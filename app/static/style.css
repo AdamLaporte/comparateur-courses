@@ -1,4 +1,4 @@
-/* Comparateur de courses : étiquettes de rayon et ticket de caisse.
+/* GrignotePrix : étiquettes de rayon et ticket de caisse.
    Archivo (étroit et gras pour les prix), IBM Plex Mono pour les relevés, jaune « promo » pour l'action.
    Mobile d'abord ; repères à 640, 960 et 1200 px. */
 
@@ -179,9 +179,8 @@ p { margin: 0 0 0.8rem; }
 .marque-tag .icone { width: 20px; height: 20px; }
 .marque-nom {
   font-size: 1.15rem; font-weight: 850; font-stretch: 72%; letter-spacing: 0.01em;
-  text-transform: uppercase; line-height: 1;
+  line-height: 1;
 }
-.marque-nom span { font-weight: 500; }
 
 .menu { display: flex; gap: 4px; }
 .menu a {
@@ -792,7 +791,6 @@ span.favori { font-size: 0.85rem; font-weight: 600; color: #8a5a00; }
   .entete-dedans { padding: 8px 12px; gap: 8px; }
   .marque { gap: 8px; }
   .marque-nom { font-size: 0.95rem; }
-  .marque-nom span { display: none; }
   .menu { gap: 0; }
   .menu a { flex-direction: column; gap: 2px; min-height: 48px; padding: 4px 7px; font-size: 0.72rem; justify-content: center; white-space: nowrap; }
   .menu .icone { width: 20px; height: 20px; }

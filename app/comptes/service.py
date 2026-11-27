@@ -214,7 +214,7 @@ async def envoyer_lien(reglages: Reglages, email: str, lien: str) -> None:
         return
     try:
         await asyncio.to_thread(
-            _envoyer_smtp, reglages, email, "Comparateur de courses : mot de passe", texte
+            _envoyer_smtp, reglages, email, "GrignotePrix : mot de passe", texte
         )
     except (OSError, smtplib.SMTPException):
         logger.exception("Envoi de l'e-mail de réinitialisation impossible")

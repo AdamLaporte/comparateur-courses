@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "_icones.html" import icone %}
-{% block titre %}Ma liste · Comparateur de courses{% endblock %}
+{% block titre %}Ma liste · GrignotePrix{% endblock %}
 {% block contenu %}
 {# Un lieu « 48.02516,-1.74836 » vient du bouton « Me localiser » : on ne montre pas les coordonnées. #}
 {% set est_position = code_postal.replace(",", "").replace(".", "").replace("-", "").replace(" ", "").isdigit() and "," in code_postal %}
