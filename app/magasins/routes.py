@@ -73,6 +73,7 @@ async def accueil(request: Request, reglages: ReglagesDep):
         "magasins/accueil.html",
         {
             "code_postal": request.session.get("code_postal", ""),
+            "ville_recherche": request.session.get("ville_recherche", ""),
             "rayon_km": request.session.get("rayon_km"),
             "rayons": RAYONS_KM,
             "nb_articles": nb_articles(request, reglages),
@@ -129,6 +130,7 @@ async def page_magasins(
         )
         return templates.TemplateResponse(request, "magasins/accueil.html", contexte)
     request.session["code_postal"] = reponse.code_postal
+    request.session["ville_recherche"] = reponse.ville if not favori else ""
     request.session["rayon_km"] = rayon
     if favori:
         reponse.ville = favori["nom"]

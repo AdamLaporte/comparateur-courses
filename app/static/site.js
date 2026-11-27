@@ -190,6 +190,17 @@
   const boutonLocaliser = document.getElementById("me-localiser");
   if (boutonLocaliser) {
     const champ = document.getElementById("code_postal");
+    const ticketVille = document.getElementById("ticket-ville");
+    const saisieInitiale = champ.value;
+    const villeInitiale = ticketVille?.textContent;
+    champ.addEventListener("input", () => {
+      if (!ticketVille) return;
+      const ville = champ.value.trim();
+      const estVille = /^\p{L}[\p{L}\p{M}\s'’.-]*$/u.test(ville);
+      ticketVille.textContent = champ.value === saisieInitiale
+        ? villeInitiale
+        : estVille ? ville[0].toLocaleUpperCase("fr") + ville.slice(1) : "…";
+    });
     const erreur = document.getElementById("erreur-lieu");
     const libelle = boutonLocaliser.querySelector("span");
     const texteInitial = libelle ? libelle.textContent : "";

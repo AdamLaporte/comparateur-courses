@@ -3,6 +3,8 @@
 {% block titre %}GrignotePrix · Remplis ton panier, grignote l'addition.{% endblock %}
 {% block classe_contenu %}contenu-accueil{% endblock %}
 {% block contenu %}
+{% set ville = ville_recherche or (code_postal if code_postal and not code_postal[0].isdigit() and ',' not in code_postal else '') %}
+{% set ville = ville[:1]|upper ~ ville[1:] %}
 <div class="accueil">
   <section aria-labelledby="titre-accueil">
     <p class="surtitre">Carrefour · Intermarché · Courses U · E.Leclerc</p>
@@ -15,20 +17,6 @@
       autour de toi, promos comprises, et on te montre le ticket le moins cher.
     </p>
 
-    {% if code_postal and nb_articles %}
-    {% set est_position = code_postal.replace(",", "").replace(".", "").replace("-", "").replace(" ", "").isdigit() and "," in code_postal %}
-    <a class="reprendre" href="/panier?comparer=1">
-      <span class="reprendre-icone">{{ icone("liste") }}</span>
-      <span class="reprendre-texte">
-        <strong>Reprendre ma liste</strong>
-        <span>{{ nb_articles }} article{{ "s" if nb_articles > 1 }} · autour de {{ "ta position" if est_position else code_postal }}</span>
-      </span>
-      <span class="reprendre-action">Comparer {{ icone("fleche") }}</span>
-    </a>
-    {% endif %}
-  </section>
-
-  <div class="accueil-actions">
     <form action="/magasins" method="get" id="form-lieu" class="recherche-lieu">
       <label for="code_postal">Ville ou code postal</label>
       <div class="champ-lieu">
@@ -60,6 +48,19 @@
       </p>
       <button type="submit" class="principal">Voir les magasins {{ icone("fleche") }}</button>
     </form>
+  </section>
+  <div class="accueil-ticket">
+    {% if code_postal and nb_articles %}
+    {% set est_position = code_postal.replace(",", "").replace(".", "").replace("-", "").replace(" ", "").isdigit() and "," in code_postal %}
+    <a class="reprendre" href="/panier?comparer=1">
+      <span class="reprendre-icone">{{ icone("liste") }}</span>
+      <span class="reprendre-texte">
+        <strong>Reprendre ma liste</strong>
+        <span>{{ nb_articles }} article{{ "s" if nb_articles > 1 }} · autour de {{ ville or ("ta position" if est_position else code_postal) }}</span>
+      </span>
+      <span class="reprendre-action">Comparer {{ icone("fleche") }}</span>
+    </a>
+    {% endif %}
     <aside class="ticket" aria-label="Comment ça marche">
       <div class="ticket-entete">
         <strong>GrignotePrix</strong>
@@ -67,7 +68,7 @@
       </div>
       <hr>
       <ol>
-        <li class="ligne-ticket"><span>1 · Ta ville</span><span class="points"></span><span class="valeur">Bruz</span></li>
+        <li class="ligne-ticket"><span>1 · Ta ville</span><span class="points"></span><span class="valeur" id="ticket-ville">{{ ville or "Bruz" }}</span></li>
         <li class="ligne-ticket"><span>2 · Ta liste</span><span class="points"></span><span class="valeur">pâtes, lait…</span></li>
         <li class="ligne-ticket"><span>3 · Les prix</span><span class="points"></span><span class="valeur">relevés en direct</span></li>
       </ol>
