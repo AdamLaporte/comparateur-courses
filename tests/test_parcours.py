@@ -58,6 +58,25 @@ def test_totaux_par_magasin_json(client):
             assert resultat.prix.releve_le is not None
 
 
+def test_ajouter_des_articles_avant_de_choisir_sa_ville(client):
+    page = client.get("/panier", follow_redirects=False)
+    assert page.status_code == 200
+    assert "Choisir ma ville pour comparer" in page.text
+    assert 'id="q"' in page.text
+
+    suggestions = client.get("/produits/recherche", params={"q": "nutella"})
+    assert NUTELLA in suggestions.text
+    ajout = client.post(
+        "/panier/lignes",
+        data={"mode": "produit", "ean": NUTELLA, "recherche": "nutella", "quantite": "2"},
+    )
+    assert ajout.status_code == 200
+    client.get("/magasins", params={"code_postal": "35170"})
+    panier = client.get("/panier")
+    assert "nutella" in panier.text.lower()
+    assert "Comparer les prix" in panier.text
+
+
 def test_parcours_html_et_flux_sse(client):
     accueil = client.get("/")
     assert accueil.status_code == 200

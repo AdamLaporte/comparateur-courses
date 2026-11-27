@@ -6,14 +6,15 @@
 {% set est_position = code_postal.replace(",", "").replace(".", "").replace("-", "").replace(" ", "").isdigit() and "," in code_postal %}
 {% set rayon = request.session.get("rayon_km") %}
 <div class="titre-page">
+  {% if code_postal %}
   <p class="surtitre">
     Étape 3 sur 3 · autour de
     <a href="/magasins?code_postal={{ code_postal|urlencode }}&rayon_km={{ rayon or '' }}">{{ "votre position" if est_position else code_postal }}</a>
   </p>
+  {% endif %}
   <h1>Ma liste de courses</h1>
   <p class="chapo">
-    Ajoutez vos articles puis lancez la comparaison : tous les magasins sont interrogés en même temps et
-    les prix s'affichent dès qu'ils arrivent.
+    Ajoutez vos articles, puis comparez le prix de votre liste dans les magasins autour de vous.
   </p>
 </div>
 
@@ -41,10 +42,16 @@
       {% if request.session.get("utilisateur_id") %}<a class="lien-discret" href="/comptes/favoris">★ Mes favoris</a>{% endif %}
     </div>
     {% include "panier/_liste.html" %}
-    <button class="principal large" hx-get="/panier/resultats" hx-target="#resultats"
+    {% if code_postal %}
+    <button type="button" class="principal large" hx-get="/panier/resultats" hx-target="#resultats"
             hx-swap="innerHTML show:#resultats:top">
       {{ icone("ticket") }}<span>Comparer les prix</span>
     </button>
+    {% else %}
+    <a class="bouton principal large" href="/#form-lieu">
+      {{ icone("repere") }}<span>Choisir ma ville pour comparer</span>
+    </a>
+    {% endif %}
   </section>
 </div>
 

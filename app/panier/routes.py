@@ -5,7 +5,7 @@ from collections.abc import AsyncIterable, AsyncIterator
 from typing import Annotated
 
 from fastapi import APIRouter, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import ValidationError
 
@@ -47,9 +47,7 @@ def _liste_maj(request: Request, reglages: Reglages, erreur: str | None = None) 
 
 @router.get("/panier", response_class=HTMLResponse)
 async def page_panier(request: Request, reglages: ReglagesDep):
-    code_postal = request.session.get("code_postal")
-    if not code_postal:
-        return RedirectResponse("/", status_code=303)
+    code_postal = request.session.get("code_postal", "")
     lignes = service.lister(reglages, service.proprietaire(request))
     return templates.TemplateResponse(
         request, "panier/page.html", {"code_postal": code_postal, "lignes": lignes}
