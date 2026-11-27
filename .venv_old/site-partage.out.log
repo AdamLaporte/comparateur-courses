@@ -1,0 +1,30 @@
+INFO:     100.119.108.61:0 - "GET /api/magasins?code_postal=35700&rayon_km=20 HTTP/1.1" 200 OK
+INFO:     100.119.108.61:0 - "GET /api/magasins?code_postal=47.972061%2C-1.793759&rayon_km=20 HTTP/1.1" 200 OK
+INFO:     100.119.108.61:0 - "POST /api/drives/enseignes/coursesu/connexion HTTP/1.1" 401 Unauthorized
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 401 Unauthorized
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     100.119.108.61:0 - "GET /static/vendor/polices/archivo-latin-wdth-normal.woff2 HTTP/1.1" 200 OK
+INFO:     100.119.108.61:0 - "GET /static/style.css?v=1795816591 HTTP/1.1" 200 OK
+INFO:     100.119.108.61:0 - "GET /static/vendor/htmx-2.0.4.min.js HTTP/1.1" 200 OK
+INFO:     100.119.108.61:0 - "GET /static/site.js?v=1795816591 HTTP/1.1" 200 OK
+INFO:     100.119.108.61:0 - "GET /static/vendor/htmx-ext-sse-2.2.2.js HTTP/1.1" 200 OK
+INFO:     100.119.108.61:0 - "GET /static/logo-grignoteprix-entier.svg?v=1795815906 HTTP/1.1" 200 OK
+INFO:     100.119.108.61:0 - "GET /static/logo-grignoteprix.svg?v=1795815906 HTTP/1.1" 200 OK
+INFO:     100.119.108.61:0 - "GET /static/vendor/polices/ibm-plex-mono-latin-500-normal.woff2 HTTP/1.1" 200 OK
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     100.119.108.61:0 - "GET /panier HTTP/1.1" 200 OK
+INFO:     100.119.108.61:0 - "GET /static/vendor/polices/archivo-latin-ext-wdth-normal.woff2 HTTP/1.1" 200 OK
+INFO:     100.119.108.61:0 - "GET /static/vendor/polices/ibm-plex-mono-latin-400-normal.woff2 HTTP/1.1" 200 OK
+INFO:     100.119.108.61:0 - "GET / HTTP/1.1" 500 Internal Server Error

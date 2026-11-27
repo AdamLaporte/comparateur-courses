@@ -1,0 +1,64 @@
+INFO:     127.0.0.1:60823 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52785 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61687 - "GET /panier HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61687 - "GET /static/vendor/polices/archivo-latin-wdth-normal.woff2 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:62607 - "GET /static/style.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:49173 - "GET /static/vendor/htmx-2.0.4.min.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:53505 - "GET /static/site.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:53813 - "GET /static/vendor/htmx-ext-sse-2.2.2.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:53813 - "GET /static/vendor/polices/ibm-plex-mono-latin-500-normal.woff2 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:53505 - "GET /static/vendor/polices/ibm-plex-mono-latin-400-normal.woff2 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:53505 - "GET /produits/recherche?q=nutella HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53505 - "GET /produits/recherche?q=nutella HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53505 - "GET /panier/resultats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53505 - "GET /panier/prix/flux HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63675 - "POST /api/drives/intermarche-05052/connexion HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:63675 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63675 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51864 - "GET /panier/resultats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51864 - "GET /panier/prix/flux HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64376 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64376 - "POST /api/drives/taches/7/depot HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:53460 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52509 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60303 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60303 - "GET /static/vendor/polices/archivo-latin-wdth-normal.woff2 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60303 - "GET /static/style.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:52399 - "GET /static/vendor/htmx-2.0.4.min.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:53702 - "GET /static/site.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59774 - "GET /static/vendor/htmx-ext-sse-2.2.2.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59774 - "GET /static/vendor/polices/ibm-plex-mono-latin-500-normal.woff2 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:53702 - "GET /static/vendor/polices/ibm-plex-mono-latin-400-normal.woff2 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59539 - "GET /magasins?code_postal=75015&rayon_km= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58185 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51841 - "GET /magasins?code_postal=paris+15&rayon_km= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61708 - "GET /magasins?code_postal=paris+&rayon_km= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53628 - "GET /magasins?code_postal=paris+&rayon_km= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53628 - "GET /magasins?code_postal=paris+&rayon_km= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53628 - "GET /magasins?code_postal=rennes&rayon_km= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58681 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53628 - "GET /magasins?code_postal=bruz&rayon_km= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60898 - "GET /magasins?code_postal=35170&rayon_km= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60898 - "GET /static/vendor/leaflet-1.9.4/leaflet.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60898 - "GET /static/vendor/leaflet-1.9.4/leaflet.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59317 - "GET /panier HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59317 - "GET /panier/resultats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59317 - "GET /panier/prix/flux HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51783 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49162 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62840 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55619 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52801 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58818 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61937 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53700 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58661 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60543 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61512 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50597 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61274 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50821 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64330 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58096 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60268 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52313 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
