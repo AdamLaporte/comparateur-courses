@@ -10,7 +10,7 @@
 - Articles favoris : un produit précis (EAN) ou une recherche « le moins cher », sans doublon.
 - Maison : un code postal enregistré (table adresse_favorite, libellé « Maison »), proposé en un clic sur
   l'accueil et utilisé comme code postal par défaut à la connexion.
-Tables : schema.sql. Cagnotte : à venir.
+Tables : schema.sql. La cagnotte est gérée dans cagnotte.py.
 """
 
 import asyncio

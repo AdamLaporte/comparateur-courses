@@ -18,7 +18,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import ValidationError
 
-from app.comptes import service
+from app.comptes import cagnotte, service
 from app.comptes.service import ErreurCompte
 from app.config import ReglagesDep
 from app.contrats import AjoutLigne
@@ -68,8 +68,20 @@ async def page_compte(request: Request, reglages: ReglagesDep):
         "page",
         email=email,
         maison=request.session.get("maison") if email else None,
+        solde_cagnotte=cagnotte.solde(reglages, utilisateur_id) if email else 0,
         message=request.query_params.get("message"),
     )
+
+
+@router.post("/cagnotte")
+async def enregistrer_economie(
+    request: Request, reglages: ReglagesDep, comparaison: Champ = "", magasin_id: Champ = ""
+):
+    utilisateur_id = request.session.get("utilisateur_id")
+    if not utilisateur_id:
+        return _vers("/comptes/connexion?suivant=/panier")
+    ok = cagnotte.enregistrer(reglages, utilisateur_id, comparaison, magasin_id)
+    return _vers(f"/comptes?message={'cagnotte_ajoutee' if ok else 'cagnotte_indisponible'}")
 
 
 @router.get("/inscription", response_class=HTMLResponse)
@@ -304,6 +316,7 @@ async def enregistrer_maison(
             400,
             email=service.email_utilisateur(reglages, utilisateur_id),
             maison=request.session.get("maison"),
+            solde_cagnotte=cagnotte.solde(reglages, utilisateur_id),
             erreur_maison=str(erreur),
             code_postal_saisi=code_postal,
         )

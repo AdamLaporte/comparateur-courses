@@ -41,7 +41,7 @@
 | Lot | Qui | Statut |
 |---|---|---|
 | 1. Interface et parcours | Adam (avec Claude Code) | refonte graphique faite (charte, accueil, carte des magasins, liste, comparaison, comptes) ; reste : scénario de démo avec le lot 4 |
-| 2. Intermarché, magasins et comptes | magasins : à attribuer ; comptes : Jade (avec Claude Code) | magasins faits (OpenStreetMap, ville/position, rayon) ; comptes : connexion, articles favoris et « maison » faits ; cagnotte à faire ; API Intermarché mise de côté |
+| 2. Intermarché, magasins et comptes | magasins : à attribuer ; comptes : Jade (avec Claude Code) | magasins faits (OpenStreetMap, ville/position, rayon) ; comptes : connexion, articles favoris et « maison » faits ; cagnotte en attente de validation ; API Intermarché mise de côté |
 | 3. Collecte web : 3a Carrefour, 3b E.Leclerc Drive, 3c Courses U (avec Codex) | à attribuer | à faire |
 | 4. Données et fiabilité | Jade (avec Claude Code) | en cours : 1 à 5 faits, 6 (jeu de démo) à faire avec le lot 1 |
 

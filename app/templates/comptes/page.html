@@ -9,16 +9,54 @@
     "mot_de_passe_change": "Mot de passe enregistré.",
     "maison": "Maison enregistrée : elle vous sera proposée sur l'accueil.",
     "maison_retiree": "Maison retirée.",
+    "cagnotte_ajoutee": "Écart enregistré dans votre tirelire.",
   } %}
   {% if message in messages %}<p class="note succes">{{ messages[message] }}</p>{% endif %}
+  {% if message == "cagnotte_indisponible" %}<p class="erreur" role="alert">Cette comparaison est déjà enregistrée ou indisponible.</p>{% endif %}
 
   {% if email %}
   <h1>Mon compte</h1>
   <p>Connecté avec <strong>{{ email }}</strong>. Votre liste de courses est enregistrée dans votre compte.</p>
   <ul>
     <li><a href="/comptes/favoris">Mes articles favoris</a></li>
-    <li>Ma cagnotte d'économies : bientôt</li>
   </ul>
+  <section class="tirelire" aria-labelledby="titre-tirelire">
+    <button type="button" class="tirelire-dessin" id="tirelire-animation" aria-label="Faire jaillir les pièces">
+      <span class="tirelire-piece" aria-hidden="true">€</span><span class="tirelire-cochon" aria-hidden="true">🐷</span>
+    </button>
+    <script>
+      const tirelire = document.getElementById("tirelire-animation");
+      tirelire.addEventListener("click", () => {
+        tirelire.querySelectorAll(".tirelire-jet").forEach(piece => piece.remove());
+        const reduire = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        for (let index = 0; index < 7; index++) {
+          const piece = document.createElement("span");
+          const x = (index - 3) * 16;
+          const y = -25 - (3 - Math.abs(index - 3)) * 12;
+          piece.className = "tirelire-piece tirelire-jet";
+          piece.setAttribute("aria-hidden", "true");
+          piece.textContent = "€";
+          tirelire.append(piece);
+          if (reduire) {
+            piece.style.transform = `translate(${x}px, ${y}px)`;
+            setTimeout(() => piece.remove(), 750);
+            continue;
+          }
+          piece.animate([
+            { transform: "translate(0, 0) scale(.6)", opacity: 0 },
+            { transform: `translate(${x}px, ${y}px) rotate(${x}deg)`, opacity: 1, offset: .45 },
+            { transform: `translate(${x * 1.5}px, 16px) rotate(${2 * x}deg)`, opacity: 0 },
+          ], { duration: 850, delay: index * 25, fill: "both" }).finished.then(() => piece.remove(), () => {});
+        }
+      });
+    </script>
+    <div>
+      <h2 id="titre-tirelire">Ma tirelire</h2>
+      <p class="tirelire-solde">{{ solde_cagnotte | euros }}</p>
+      <p>Écarts cumulés entre le panier moyen et les paniers que vous avez choisis.</p>
+      <a href="/panier">Comparer ma liste</a>
+    </div>
+  </section>
   <h2>{{ icone("maison") }} Ma maison</h2>
   {% if maison %}
   <p>
@@ -54,7 +92,7 @@
   <h1>Compte</h1>
   <p>
     Le compte est facultatif : tout le site marche sans. Avec un compte, vous retrouvez votre liste
-    sur tous vos appareils, et bientôt vos articles favoris, votre « maison » et votre cagnotte
+    sur tous vos appareils, ainsi que vos articles favoris, votre « maison » et votre cagnotte
     d'économies.
   </p>
   <p class="actions">
