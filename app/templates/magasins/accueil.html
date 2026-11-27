@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% from "_icones.html" import icone %}
 {% block titre %}GrignotePrix · Remplis ton panier, grignote l'addition.{% endblock %}
+{% block classe_contenu %}contenu-accueil{% endblock %}
 {% block contenu %}
-{% set reglages = request.app.state.reglages %}
 <div class="accueil">
   <section aria-labelledby="titre-accueil">
     <p class="surtitre">Carrefour · Intermarché · Courses U · E.Leclerc</p>
@@ -11,8 +11,8 @@
       <span class="ligne-titre"><em>grignote l&#39;addition.</em></span>
     </h1>
     <p class="chapeau">
-      Dites-nous où vous faites vos courses. On relève le prix de votre liste dans les supermarchés
-      autour de vous, promos comprises, et on vous montre le ticket le moins cher.
+      Dis-nous où tu fais tes courses. On relève le prix de ta liste dans les supermarchés
+      autour de toi, promos comprises, et on te montre le ticket le moins cher.
     </p>
 
     {% if code_postal and nb_articles %}
@@ -21,12 +21,14 @@
       <span class="reprendre-icone">{{ icone("liste") }}</span>
       <span class="reprendre-texte">
         <strong>Reprendre ma liste</strong>
-        <span>{{ nb_articles }} article{{ "s" if nb_articles > 1 }} · autour de {{ "votre position" if est_position else code_postal }}</span>
+        <span>{{ nb_articles }} article{{ "s" if nb_articles > 1 }} · autour de {{ "ta position" if est_position else code_postal }}</span>
       </span>
       <span class="reprendre-action">Comparer {{ icone("fleche") }}</span>
     </a>
     {% endif %}
+  </section>
 
+  <div class="accueil-actions">
     <form action="/magasins" method="get" id="form-lieu" class="recherche-lieu">
       <label for="code_postal">Ville ou code postal</label>
       <div class="champ-lieu">
@@ -50,11 +52,6 @@
           </label>
           {% endfor %}
         </div>
-        <p class="aide">
-          « Au plus près » : les {{ reglages.max_magasins_par_enseigne }} magasins les plus proches de chaque
-          enseigne. Avec une distance : tous ceux du rayon, {{ reglages.max_magasins_par_enseigne_rayon }} au
-          plus par enseigne.
-        </p>
       </fieldset>
 
       {% include "magasins/_trajet.html" %}
@@ -63,31 +60,29 @@
       </p>
       <button type="submit" class="principal">Voir les magasins {{ icone("fleche") }}</button>
     </form>
-
-  </section>
-
-  <aside class="ticket" aria-label="Comment ça marche">
-    <div class="ticket-entete">
-      <strong>GrignotePrix</strong>
-      <span>Mode d'emploi · ticket n° 0001</span>
-    </div>
-    <hr>
-    <ol>
-      <li class="ligne-ticket"><span>1 · Votre ville</span><span class="points"></span><span class="valeur">Bruz</span></li>
-      <li class="ligne-ticket"><span>2 · Votre liste</span><span class="points"></span><span class="valeur">pâtes, lait…</span></li>
-      <li class="ligne-ticket"><span>3 · Les prix</span><span class="points"></span><span class="valeur">relevés en direct</span></li>
-    </ol>
-    <hr>
-    <ul class="enseignes-ticket">
-      <li><span class="badge carrefour">Carrefour</span></li>
-      <li><span class="badge intermarche">Intermarché</span></li>
-      <li><span class="badge coursesu">Courses U</span></li>
-      <li><span class="badge leclerc">E.Leclerc</span></li>
-    </ul>
-    <hr>
-    <p class="ticket-total"><span>TOTAL LE PLUS BAS</span><span>→ votre magasin</span></p>
-    <p class="ticket-pied">Chaque prix est daté et sourcé.<br>Promos comprises, fidélité à part.</p>
-    <div class="code-barres" aria-hidden="true"></div>
-  </aside>
+    <aside class="ticket" aria-label="Comment ça marche">
+      <div class="ticket-entete">
+        <strong>GrignotePrix</strong>
+        <span>Mode d'emploi · ticket n° 0001</span>
+      </div>
+      <hr>
+      <ol>
+        <li class="ligne-ticket"><span>1 · Ta ville</span><span class="points"></span><span class="valeur">Bruz</span></li>
+        <li class="ligne-ticket"><span>2 · Ta liste</span><span class="points"></span><span class="valeur">pâtes, lait…</span></li>
+        <li class="ligne-ticket"><span>3 · Les prix</span><span class="points"></span><span class="valeur">relevés en direct</span></li>
+      </ol>
+      <hr>
+      <ul class="enseignes-ticket">
+        <li><span class="badge carrefour">Carrefour</span></li>
+        <li><span class="badge intermarche">Intermarché</span></li>
+        <li><span class="badge coursesu">Courses U</span></li>
+        <li><span class="badge leclerc">E.Leclerc</span></li>
+      </ul>
+      <hr>
+      <p class="ticket-total"><span>TOTAL LE PLUS BAS</span><span>→ ton magasin</span></p>
+      <p class="ticket-pied">Chaque prix est daté et sourcé.<br>Promos comprises, fidélité à part.</p>
+      <div class="code-barres" aria-hidden="true"></div>
+    </aside>
+  </div>
 </div>
 {% endblock %}

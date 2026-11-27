@@ -14,8 +14,8 @@ from app.panier import service as panier
 
 router = APIRouter(tags=["magasins"])
 
-MESSAGE_INVALIDE = "Saisissez une ville ou un code postal à 5 chiffres, par exemple Bruz ou 35170."
-MESSAGE_INCONNU = "Ce lieu est introuvable pour l'instant. Vérifiez-le ou réessayez."
+MESSAGE_INVALIDE = "Saisis une ville ou un code postal à 5 chiffres, par exemple Bruz ou 35170."
+MESSAGE_INCONNU = "Ce lieu est introuvable pour l'instant. Vérifie-le ou réessaie."
 RAYONS_KM = (2, 5, 10, 20, 30)
 
 

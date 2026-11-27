@@ -169,7 +169,7 @@
 
     boutonLocaliser.addEventListener("click", () => {
       if (!navigator.geolocation) {
-        signaler("Votre navigateur ne permet pas la localisation : saisissez votre ville.");
+        signaler("Ton navigateur ne permet pas la localisation. Saisis ta ville.");
         return;
       }
       boutonLocaliser.disabled = true;
@@ -186,7 +186,7 @@
           boutonLocaliser.disabled = false;
           boutonLocaliser.classList.remove("localise");
           if (libelle) libelle.textContent = texteInitial;
-          signaler("Localisation refusée ou impossible : saisissez votre ville ou votre code postal.");
+          signaler("Localisation refusée ou impossible. Saisis ta ville ou ton code postal.");
         },
         { timeout: 10000, maximumAge: 300000 },
       );

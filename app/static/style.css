@@ -203,7 +203,7 @@ p { margin: 0 0 0.8rem; }
 }
 .bandeau-pastille {
   font-family: var(--police-mono); font-size: 0.7rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
-  padding: 2px 6px; color: var(--principal); background: var(--encre); border-radius: 3px;
+  padding: 2px 6px; color: var(--encre); background: var(--corail); border-radius: 3px;
 }
 
 .contenu { flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; padding: 32px 20px 72px; }
@@ -317,11 +317,12 @@ span.erreur { display: inline-flex; margin: 0; padding: 4px 8px; }
 
 /* ---------- Accueil ---------- */
 
-.accueil { display: grid; gap: 48px; align-items: start; }
+.accueil { display: grid; gap: 24px; align-items: start; }
+.accueil-actions { display: grid; gap: 24px; min-width: 0; }
 
 .titre-geant {
-  margin: 0.1em 0 0.3em;
-  font-size: clamp(2.8rem, 1.2rem + 6vw, 5.4rem);
+  margin: 0.1em 0 0.2em;
+  font-size: clamp(2.6rem, 1.2rem + 4.6vw, 4.8rem);
   font-weight: 860; font-stretch: 68%; line-height: 0.9; letter-spacing: -0.01em;
 }
 .panneau-trajet { margin-block: .75rem; }
@@ -358,21 +359,21 @@ span.erreur { display: inline-flex; margin: 0; padding: 4px 8px; }
   padding: 0 0.04em;
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
 }
-.chapeau { max-width: 38ch; font-size: 1.15rem; color: var(--encre-2); margin-bottom: 28px; }
+.chapeau { max-width: 57ch; font-size: 1.05rem; color: var(--encre-2); margin: 0 0 15px; }
 
 .recherche-lieu {
   max-width: 34rem;
   background: var(--blanc);
   border: 1px solid var(--trait); border-top: 5px solid var(--encre); border-radius: var(--rayon-bloc);
-  padding: 22px 20px 20px;
+  padding: 14px 16px;
   box-shadow: 0 14px 30px -22px rgb(15 23 42 / 0.45);
 }
 .recherche-lieu > label { display: block; margin-bottom: 8px; }
 .champ-lieu { display: flex; flex-wrap: wrap; gap: 10px; }
 .champ-lieu input { flex: 1 1 14rem; min-width: 0; font-size: 1.1rem; font-weight: 600; }
 
-.rayons { margin: 20px 0 0; padding: 0; border: 0; }
-.rayons legend { padding: 0; margin-bottom: 8px; font-weight: 650; }
+.rayons { margin: 10px 0 0; padding: 0; border: 0; }
+.rayons legend { padding: 0; margin-bottom: 5px; font-weight: 650; }
 .puces { display: flex; flex-wrap: wrap; gap: 8px; }
 .puce { position: relative; font-weight: 600; cursor: pointer; }
 .puce input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
@@ -386,7 +387,8 @@ span.erreur { display: inline-flex; margin: 0; padding: 4px 8px; }
 .puce input:checked + span { background: var(--principal); border-color: var(--encre); color: var(--encre); }
 .puce input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
 
-.recherche-lieu .principal { margin-top: 22px; width: 100%; min-height: 52px; font-size: 1.05rem; }
+.recherche-lieu .panneau-trajet { margin-block: 8px 0; }
+.recherche-lieu .principal { margin-top: 10px; width: 100%; min-height: 46px; font-size: 1.05rem; }
 
 .raccourci-maison { margin-top: 16px; }
 .bouton.maison { gap: 10px; font-weight: 600; }
@@ -419,6 +421,7 @@ span.erreur { display: inline-flex; margin: 0; padding: 4px 8px; }
 .ligne-ticket .valeur { text-align: right; }
 .ticket .enseignes-ticket { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-top: 6px; }
 .ticket-total { display: flex; justify-content: space-between; gap: 8px; font-weight: 500; font-size: 0.95rem; }
+.ticket-total span:first-child { box-shadow: inset 0 -3px var(--corail); }
 .ticket-pied { margin: 12px 0 0; text-align: center; color: var(--encre-3); font-size: 0.72rem; }
 .code-barres {
   height: 42px; margin: 14px auto 0; width: 78%;
@@ -857,7 +860,8 @@ span.favori { font-size: 0.85rem; font-weight: 600; color: var(--corail-texte); 
 }
 
 @media (min-width: 960px) {
-  .accueil { grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.8fr); gap: 56px; padding-top: 16px; }
+  .contenu-accueil { padding-top: 20px; }
+  .accueil { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 40px; }
   .ticket { margin-top: 64px; transform: rotate(1.5deg); }
   .magasins-grille { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); align-items: start; }
   .carte-magasins { position: sticky; top: 16px; height: min(580px, calc(100dvh - 32px)); }
@@ -1130,7 +1134,7 @@ td.case { transition: background-color 300ms var(--entree); }
 
 .reprendre {
   display: flex; align-items: center; gap: 14px;
-  max-width: 34rem; margin: 0 0 18px; padding: 14px 16px;
+  max-width: 34rem; margin: 0 0 12px; padding: 8px 12px;
   color: var(--encre); text-decoration: none;
   background: var(--blanc); border: 1.5px solid var(--encre); border-radius: var(--rayon-bloc);
   box-shadow: 0 3px 0 var(--encre);
@@ -1142,7 +1146,11 @@ td.case { transition: background-color 300ms var(--entree); }
 .reprendre-icone { display: grid; place-items: center; flex: none; width: 42px; height: 42px; background: var(--principal-pale); border-radius: 8px; }
 .reprendre-texte { display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .reprendre-texte span { font-size: 0.9rem; color: var(--encre-3); }
-.reprendre-action { display: inline-flex; align-items: center; gap: 6px; font-weight: 750; white-space: nowrap; }
+.reprendre-action {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px;
+  background: var(--corail); color: var(--encre); border-radius: var(--rayon);
+  font-weight: 750; white-space: nowrap;
+}
 
 /* --- Magasins : la liste et les repères de la carte arrivent dans l'ordre --- */
 .liste-magasins li { animation: monte 320ms var(--entree) backwards; animation-delay: calc(min(var(--i, 0), 8) * 40ms); }
