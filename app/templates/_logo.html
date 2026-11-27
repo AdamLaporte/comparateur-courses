@@ -1,0 +1,15 @@
+<svg class="marque-tag" viewBox="0 0 32 32" width="54" height="54" aria-hidden="true">
+  <defs>
+    <mask id="masque-grignoteprix">
+      <rect width="32" height="32" fill="white"/>
+      <path class="morsure-2" d="M15 8h5.4v1.5a1.5 1.5 0 0 1-2 1.4 1.7 1.7 0 0 1-3.4-1.4Z" fill="black"/>
+      <path class="morsure-3" d="M9.7 8h4.5v1.5a1.1 1.1 0 0 1-1.5 1 1.5 1.5 0 0 1-3-1Z" fill="black"/>
+    </mask>
+  </defs>
+  <g mask="url(#masque-grignoteprix)">
+    <image href="{{ url_for('static', path='logo-grignoteprix.svg') }}?v={{ version_statique('logo-grignoteprix.svg') }}"
+           width="32" height="32"/>
+    <path class="morsure-2" d="M15 9.5h5.4a2.7 2.7 0 0 1-5.4 0Z" fill="#F97316"/>
+    <path class="morsure-3" d="M9.7 9.5h4.5a2.25 2.25 0 0 1-4.5 0Z" fill="#F97316"/>
+  </g>
+</svg>

@@ -6,9 +6,43 @@
   const moinsDeMouvement = window.matchMedia("(prefers-reduced-motion: reduce)");
   const petitEcran = window.matchMedia("(max-width: 959px)");
   const logo = document.querySelector("[data-grignoter]");
-  logo?.addEventListener("click", () => {
-    logo.setAttribute("aria-pressed", String(logo.getAttribute("aria-pressed") === "false"));
-  });
+  if (logo) {
+    const cle = "grignoteprix.morsures";
+    const maximum = 3;
+    let reinitialisation;
+    const afficher = (nombre, expire) => {
+      logo.dataset.morsures = nombre;
+      clearTimeout(reinitialisation);
+      reinitialisation = setTimeout(() => { logo.dataset.morsures = 1; }, expire - Date.now());
+      if (!moinsDeMouvement.matches) {
+        logo.querySelector(".marque-tag").animate(
+          [{ transform: "scale(.93)" }, { transform: "scale(1.08)" }, { transform: "scale(1)" }],
+          { duration: 240, easing: "ease-out" },
+        );
+      }
+    };
+    try {
+      const etat = JSON.parse(sessionStorage.getItem(cle));
+      if (location.pathname === "/" && Date.now() < etat?.expire && [1, 2, 3].includes(etat.nombre)) {
+        afficher(etat.nombre, etat.expire);
+      } else {
+        sessionStorage.removeItem(cle);
+      }
+    } catch {
+      // Lien utilisable même lorsque le stockage de l’onglet est indisponible.
+    }
+    logo.addEventListener("click", (event) => {
+      if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      const nombre = Number(logo.dataset.morsures) % maximum + 1;
+      const expire = Date.now() + 10000;
+      afficher(nombre, expire);
+      try {
+        sessionStorage.setItem(cle, JSON.stringify({ nombre, expire }));
+      } catch {
+        // La navigation reste native.
+      }
+    });
+  }
   const ICONE_VALIDE =
     '<svg class="icone" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
   const ICONE_CROIX =

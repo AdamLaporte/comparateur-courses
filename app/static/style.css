@@ -169,16 +169,11 @@ p { margin: 0 0 0.8rem; }
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
 
-.marque { display: inline-flex; align-items: center; gap: 12px; }
-.marque .marque-tag {
-  display: grid; place-items: center;
-  flex: none;
-  min-height: 0; padding: 2px; border: 0; background: transparent; box-shadow: none;
-}
-.marque .marque-tag:hover { background: var(--principal-pale); }
-.marque-tag img { display: block; }
-.marque-tag .logo-grignote, .marque-tag[aria-pressed="true"] .logo-entier { display: none; }
-.marque-tag[aria-pressed="true"] .logo-grignote { display: block; }
+.marque { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
+.marque-tag { display: block; flex: none; }
+.marque-tag .morsure-2, .marque-tag .morsure-3 { display: none; }
+.marque:is([data-morsures="2"], [data-morsures="3"]) .morsure-2,
+.marque[data-morsures="3"] .morsure-3 { display: inline; }
 .marque-nom {
   font-size: 1.7rem; font-weight: 850; font-stretch: 72%; letter-spacing: 0.01em;
   line-height: 1; text-decoration: none; color: var(--encre);
@@ -865,7 +860,7 @@ span.favori { font-size: 0.85rem; font-weight: 600; color: var(--corail-texte); 
 @media (max-width: 760px) {
   .entete-dedans { flex-wrap: wrap; padding: 10px 12px; gap: 6px; }
   .marque { gap: 8px; }
-  .marque-tag img { width: 46px; height: 46px; }
+  .marque-tag { width: 46px; height: 46px; }
   .marque-nom { font-size: 1.5rem; }
   .menu { width: 100%; justify-content: space-between; gap: 2px; }
   .menu a { flex: 1; flex-direction: column; gap: 4px; min-height: 50px; padding: 4px; font-size: .83rem; justify-content: center; text-align: center; }

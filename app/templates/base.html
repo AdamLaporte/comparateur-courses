@@ -21,15 +21,10 @@
   {% set chemin = request.url.path %}
   <header class="entete">
     <div class="entete-dedans">
-      <div class="marque">
-        <button type="button" class="marque-tag" data-grignoter aria-label="Grignoter le chariot" aria-pressed="false">
-          <img class="logo-entier" src="{{ url_for('static', path='logo-grignoteprix-entier.svg') }}?v={{ version_statique('logo-grignoteprix-entier.svg') }}"
-               width="54" height="54" alt="">
-          <img class="logo-grignote" src="{{ url_for('static', path='logo-grignoteprix.svg') }}?v={{ version_statique('logo-grignoteprix.svg') }}"
-               width="54" height="54" alt="">
-        </button>
-        <a class="marque-nom" href="/" aria-label="GrignotePrix, accueil">GrignotePrix</a>
-      </div>
+      <a class="marque" href="/" data-grignoter data-morsures="1" aria-label="GrignotePrix, accueil">
+        {% include "_logo.html" %}
+        <span class="marque-nom">GrignotePrix</span>
+      </a>
       <nav class="menu" aria-label="Navigation principale">
         <a href="/" {% if chemin == "/" or chemin.startswith("/magasins") %}aria-current="page"{% endif %}>
           {{ icone("repere") }}<span>Magasins</span>
