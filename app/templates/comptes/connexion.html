@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block titre %}Connexion · Comparateur de courses{% endblock %}
+{% block contenu %}
+<section class="carte">
+  <h1>Se connecter</h1>
+  {% if erreur %}<p class="erreur">{{ erreur }}</p>{% endif %}
+  <form action="/comptes/connexion" method="post" class="formulaire">
+    <input type="hidden" name="suivant" value="{{ suivant }}">
+    <label for="email">Adresse e-mail</label>
+    <input id="email" name="email" type="email" value="{{ email }}" autocomplete="email" required autofocus>
+    <label for="mot_de_passe">Mot de passe</label>
+    <input id="mot_de_passe" name="mot_de_passe" type="password" autocomplete="current-password" required>
+    <button type="submit" class="principal">Se connecter</button>
+  </form>
+  <p><a href="/comptes/mot-de-passe-perdu">Mot de passe perdu ?</a></p>
+  <p>Pas encore de compte ? <a href="/comptes/inscription">Créer un compte</a></p>
+</section>
+{% endblock %}

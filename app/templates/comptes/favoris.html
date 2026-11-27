@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block titre %}Mes favoris · Comparateur de courses{% endblock %}
+{% block contenu %}
+<section class="carte">
+  <h1>Mes articles favoris</h1>
+  {% set messages = {
+    "ajoute": "Article ajouté à votre liste.",
+    "tous": "Favoris ajoutés à votre liste.",
+    "retire": "Favori retiré.",
+  } %}
+  {% if message in messages %}<p class="note succes">{{ messages[message] }}</p>{% endif %}
+
+  {% if favoris %}
+  <ul class="lignes">
+    {% for f in favoris %}
+    <li>
+      <span class="libelle">{{ f.libelle }}</span>
+      <span class="mode {{ f.mode }}">{{ "produit précis" if f.mode == "produit" else "le moins cher" }}</span>
+      <form action="/comptes/favoris/{{ f.id }}/ajouter-a-la-liste" method="post">
+        <button type="submit">Ajouter à ma liste</button>
+      </form>
+      <form action="/comptes/favoris/{{ f.id }}/supprimer" method="post">
+        <button type="submit" class="lien">Retirer</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  <form action="/comptes/favoris/tout-ajouter" method="post">
+    <button type="submit" class="principal">Tout ajouter à ma liste</button>
+  </form>
+  {% else %}
+  <p class="note">
+    Aucun favori pour l'instant. Dans <a href="/panier">votre liste</a>, cliquez sur « ☆ Favori » à côté
+    d'un article pour le retrouver ici.
+  </p>
+  {% endif %}
+  <p><a href="/panier">Ma liste</a> · <a href="/comptes">Mon compte</a></p>
+</section>
+{% endblock %}

@@ -62,6 +62,13 @@ class Reglages(BaseSettings):
     # User-Agent des appels aux services ouverts (Open Food Facts le demande). Pas d'e-mail ici.
     user_agent_services: str = "ComparateurCourses/0.1 (hackathon ENSAI)"
 
+    # E-mails (lien « mot de passe perdu »). SMTP_HOTE vide = lien écrit dans le journal du serveur.
+    smtp_hote: str = ""
+    smtp_port: int = 587
+    smtp_utilisateur: str = ""
+    smtp_mot_de_passe: str = ""
+    smtp_expediteur: str = ""
+
     # Application.
     secret_key: str = "dev-secret-a-changer"
     db_path: Path = Path("data/app.db")

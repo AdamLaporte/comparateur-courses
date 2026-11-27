@@ -157,3 +157,14 @@ td.total small, .prix small { display: block; }
 .manquants { color: var(--alerte); }
 .economies { color: var(--accent); }
 .resume { margin-top: 1rem; }
+
+/* Comptes : formulaires en colonne, messages de réussite */
+.formulaire { display: flex; flex-direction: column; gap: 0.4rem; max-width: 24rem; }
+.formulaire input { padding: 0.5rem; }
+.formulaire button { margin-top: 0.6rem; align-self: flex-start; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.succes { color: var(--accent); font-weight: 600; }
+.favori { color: #a16207; }
+.lignes li form { display: inline; }
+.maison { color: var(--accent); }
+.carte h2 { margin-top: 1.4rem; }
