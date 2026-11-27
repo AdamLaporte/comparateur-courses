@@ -32,7 +32,7 @@
     <form action="/magasins" method="get" id="form-lieu" class="recherche-lieu">
       <label for="code_postal">Ville ou code postal</label>
       <div class="champ-lieu">
-        <input id="code_postal" name="code_postal" value="{{ code_postal }}" maxlength="80"
+        <input id="code_postal" name="code_postal" value="{{ code_postal }}" maxlength="160"
                placeholder="Bruz, Rennes ou 35170" autocomplete="address-level2"
                aria-describedby="erreur-lieu">
         <button type="button" id="me-localiser">{{ icone("localiser") }}<span>Me localiser</span></button>

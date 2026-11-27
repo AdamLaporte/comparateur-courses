@@ -110,3 +110,47 @@ def test_trajet_rayon_du_mode_et_badge_de_proximite(client, mode, rayon):
     assert "moins de 10,5 km" in perso.text
     assert 'class="badge-trajet"' in perso.text
     assert "≈ " in perso.text
+
+
+@pytest.mark.anyio
+async def test_adresse_la_plus_proche_d_abord_le_numero(reglages, monkeypatch):
+    appels = []
+
+    async def api(chemin, params, reglages):
+        appels.append(params.get("type"))
+        if params.get("type") == "housenumber":
+            return [{"properties": {"label": "7bis Avenue Jules Tricault 35170 Bruz"}}]
+        return []
+
+    monkeypatch.setattr(geocodage, "_api_adresse", api)
+    assert await geocodage.adresse_proche(BRUZ, reglages) == "7bis Avenue Jules Tricault 35170 Bruz"
+    assert appels == ["housenumber"]
+
+
+@pytest.mark.anyio
+async def test_une_adresse_complete_n_est_pas_cherchee_parmi_les_communes(reglages, monkeypatch):
+    recus = []
+
+    async def api(chemin, params, reglages):
+        recus.append(params)
+        return [
+            {"geometry": {"coordinates": [-1.748454, 48.025294]}, "properties": {"city": "Bruz"}}
+        ]
+
+    monkeypatch.setattr(geocodage, "_api_adresse", api)
+    ville, position = await geocodage.geocoder("7bis Avenue Jules Tricault 35170 Bruz", reglages)
+    assert ville == "Bruz" and position.lat == 48.025294
+    assert "type" not in recus[0]
+    await geocodage.geocoder("Saint-Malo", reglages)
+    assert recus[1]["type"] == "municipality"
+
+
+def test_route_adresse_proche(client, monkeypatch):
+    async def proche(position, reglages):
+        return "9 Rue de l'Horloge 35000 Rennes"
+
+    monkeypatch.setattr("app.magasins.routes.adresse_proche", proche)
+    assert client.get("/api/adresse-proche", params={"lat": 48.11, "lon": -1.68}).json() == {
+        "adresse": "9 Rue de l'Horloge 35000 Rennes"
+    }
+    assert client.get("/api/adresse-proche", params={"lat": 300, "lon": 0}).status_code == 422
