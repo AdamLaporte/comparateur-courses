@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<title>Démarrage automatique des collecteurs</title>
+</head><body><output id="rapport">DRIVES_COLLECTEUR_OK</output>
+<script type="module">
+  async function tester(dossier, id, erreurAttendue = "") {
+    const evenement = () => ({ addListener() {} });
+    const declencheurs = [];
+    const session = {};
+    const onglet = { id: 1, status: "complete", url: "about:blank" };
+    const ouvertures = [];
+    let depot;
+    let terminer;
+    const fini = new Promise((resolve) => { terminer = resolve; });
+    Object.defineProperty(globalThis, "chrome", {
+      configurable: true,
+      value: {
+        alarms: { get: async () => ({}), onAlarm: evenement() },
+        runtime: {
+          onStartup: { addListener: (fonction) => declencheurs.push(fonction) },
+          onMessage: evenement(), onInstalled: evenement(),
+        },
+        webRequest: { onCompleted: evenement(), onErrorOccurred: evenement() },
+        storage: {
+          local: { get: async () => ({ jeton: "simulation" }) },
+          session: {
+            get: async () => ({ ...session }),
+            set: async (valeurs) => Object.assign(session, valeurs),
+            remove: async (cle) => delete session[cle],
+          },
+        },
+        tabs: {
+          create: async (options) => {
+            if (options.active !== false) throw new Error("L’onglet doit s’ouvrir en arrière-plan");
+            ouvertures.push("onglet");
+            return onglet;
+          },
+          get: async () => onglet,
+          update: async (_id, { url }) => {
+            ouvertures.push(url);
+            onglet.url = url;
+          },
+          onRemoved: evenement(),
+        },
+        scripting: {
+          executeScript: async ({ func, args = [] }) => {
+            const [adaptateur, requete, soumettre] = args;
+            if (soumettre) onglet.url = new URL("?q=lait", onglet.url).href;
+            const produit = { produit: "Lait fictif", prix_eur: "1.20" };
+            const resultat = func.name === "extractProductPage" ? { items: [produit] }
+              : erreurAttendue ? { erreur: erreurAttendue }
+              : { retrait: id, document: requete && !soumettre ? 2 : 1,
+                recherche: requete === "lait", charge: true, cartes: 1 };
+            if (!adaptateur) throw new Error("Un adaptateur est requis");
+            return [{ documentId: "test", result: resultat }];
+          },
+        },
+      },
+    });
+    globalThis.fetch = async (url, options) => {
+      if (url.endsWith("/prendre")) {
+        return { ok: true, json: async () => ({ id: 1, drive_id: dossier === "super-u-bruz"
+          ? "coursesu-33315" : "intermarche-05052", bail: "test", requete: "lait" }) };
+      }
+      depot = JSON.parse(options.body);
+      terminer();
+      return { ok: true };
+    };
+    await import("/extensions-edge/" + dossier + "/collecteur.js");
+    declencheurs[0]();
+    await fini;
+    if (ouvertures[0] !== "onglet" || !ouvertures[1]?.startsWith("https://")) {
+      throw new Error("Aucune page marchande ouverte automatiquement pour " + dossier);
+    }
+    if (erreurAttendue ? depot.erreur !== erreurAttendue || depot.produits
+        : depot.etat !== "succes" || depot.service_observe !== id) {
+      throw new Error("Réponse du collecteur incorrecte pour " + dossier);
+    }
+  }
+
+  const rapport = document.querySelector("#rapport");
+  try {
+    await tester("super-u-bruz", "33315");
+    await tester("intermarche-bruz-cap-vert", "05052", "defi");
+    rapport.textContent = "DRIVES_COLLECTEUR_OK";
+  } catch (erreur) {
+    rapport.textContent = "DRIVES_COLLECTEUR_ECHEC " + erreur.message;
+  }
+</script>
+
+</body></html>

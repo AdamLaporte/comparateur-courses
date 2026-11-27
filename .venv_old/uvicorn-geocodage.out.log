@@ -1,0 +1,386 @@
+INFO:     127.0.0.1:56327 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56327 - "GET /api/magasins?code_postal=35510 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56327 - "GET /api/magasins?code_postal=Paris HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56327 - "GET /api/magasins?code_postal=35170 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56335 - "GET /api/magasins?code_postal=75001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56728 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49307 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49307 - "GET /static/style.css?v=1795812522 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63681 - "GET /static/site.js?v=1795812522 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63681 - "GET /magasins?code_postal=35170&rayon_km= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63681 - "GET /static/vendor/leaflet-1.9.4/leaflet.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63681 - "GET /static/vendor/leaflet-1.9.4/leaflet.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51784 - "GET /magasins?code_postal=Paris&rayon_km= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54590 - "GET /panier?comparer=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54590 - "GET /panier/resultats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54590 - "GET /panier/prix/flux?liste=principale HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65105 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62835 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53304 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55359 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55125 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63891 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55333 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63641 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64616 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50724 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63812 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56091 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65473 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57428 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53624 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64882 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64448 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62698 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64081 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61495 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64253 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58293 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55687 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56802 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56083 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53717 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52147 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64584 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60579 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59674 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63155 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55537 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51167 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58142 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57297 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57297 - "GET /static/vendor/polices/archivo-latin-wdth-normal.woff2 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60685 - "GET /static/style.css?v=1795812522 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60918 - "GET /static/vendor/htmx-ext-sse-2.2.2.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57297 - "GET /static/vendor/htmx-2.0.4.min.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57280 - "GET /static/site.js?v=1795812522 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57280 - "GET /static/vendor/polices/ibm-plex-mono-latin-500-normal.woff2 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57297 - "GET /static/vendor/polices/ibm-plex-mono-latin-400-normal.woff2 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:53710 - "GET /magasins?code_postal=35170&rayon_km= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53710 - "GET /static/vendor/leaflet-1.9.4/leaflet.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:53710 - "GET /static/vendor/leaflet-1.9.4/leaflet.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63964 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53710 - "GET /panier?comparer=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53710 - "GET /panier/resultats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53710 - "GET /panier/prix/flux?liste=principale HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49292 - "GET /produits/recherche?q=s HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49292 - "GET /produits/recherche?q=sp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49292 - "GET /produits/recherche?q=spa HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49292 - "GET /produits/recherche?q=spaghett HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59481 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53031 - "POST /panier/lignes HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53031 - "GET /panier/resultats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53031 - "GET /panier/prix/flux?liste=principale HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57144 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64495 - "GET /produits/recherche?q=lait HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64495 - "GET /produits/recherche?q=lait%20d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64495 - "POST /panier/lignes HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64495 - "DELETE /panier/lignes/5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64495 - "GET /panier/resultats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64495 - "GET /panier/prix/flux?liste=principale HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55697 - "POST /api/drives/taches/11/depot HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:51078 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51078 - "POST /api/drives/taches/14/depot HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:56042 - "GET /produits/recherche?q=lait HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56042 - "POST /panier/lignes HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56967 - "GET /panier/resultats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56967 - "GET /panier/prix/flux?liste=principale HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53212 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52863 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50524 - "POST /api/drives/coursesu-33315/connexion HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:50524 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50524 - "POST /api/drives/taches/10/depot HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:57410 - "GET /panier/resultats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57410 - "GET /panier/prix/flux?liste=principale HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51207 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53120 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51749 - "POST /api/drives/taches/12/depot HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:61242 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52603 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52603 - "POST /api/drives/taches/13/depot HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:56096 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53437 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56337 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64986 - "POST /api/drives/taches/15/depot HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:55845 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60395 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52972 - "POST /api/drives/taches/16/depot HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:58815 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55294 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58692 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58887 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63538 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65073 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56040 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62594 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53211 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65434 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55370 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54883 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54214 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53254 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49804 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59988 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56650 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63917 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60465 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59171 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59093 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54837 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63696 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55496 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58365 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49776 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53522 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52716 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49349 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52269 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50650 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58991 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53912 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65167 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52875 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50935 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55382 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57919 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59161 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58614 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56210 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49347 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56720 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52517 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50339 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57846 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64800 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64337 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61523 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52311 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61839 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55245 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57871 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60305 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52262 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56848 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62230 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61663 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51732 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50174 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62715 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50829 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50243 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49335 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53900 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57682 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63159 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64198 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62294 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65040 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57701 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57158 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51759 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61560 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59432 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61233 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60659 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54103 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61298 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58874 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57056 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55495 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51062 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64018 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57474 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55781 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63366 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61246 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55331 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63343 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56652 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65336 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49972 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64430 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60050 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59584 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58726 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59335 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56040 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56631 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54997 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51821 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62525 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51607 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55126 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59046 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62344 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56933 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57008 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57097 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55273 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55602 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62718 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55740 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58788 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52182 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57999 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53688 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59172 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65125 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60393 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50779 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59871 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63471 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56992 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53376 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54238 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53479 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60433 - "POST /api/drives/intermarche-05052/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56207 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50506 - "POST /api/drives/coursesu-33315/prendre HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50506 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57488 - "GET /panier?comparer=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57488 - "GET /static/vendor/polices/archivo-latin-wdth-normal.woff2 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:50155 - "GET /static/style.css?v=1795816591 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /static/vendor/htmx-2.0.4.min.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:53548 - "GET /static/site.js?v=1795816591 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52733 - "GET /static/vendor/htmx-ext-sse-2.2.2.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57990 - "GET /static/logo-grignoteprix-entier.svg?v=1795815906 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57488 - "GET /static/logo-grignoteprix.svg?v=1795815906 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57990 - "GET /static/vendor/polices/ibm-plex-mono-latin-400-normal.woff2 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:53548 - "GET /static/vendor/polices/ibm-plex-mono-latin-500-normal.woff2 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:53548 - "GET /panier/resultats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59857 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53548 - "GET /panier/prix/flux?liste=principale HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56863 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63916 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50175 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54698 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55586 - "GET /static/style.css?v=1795816591 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59976 - "GET /static/site.js?v=1795816591 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59976 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55586 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:61772 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55743 - "GET / HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55255 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63334 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55579 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55936 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55781 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54965 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57260 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62126 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62868 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63125 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56972 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59469 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53488 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64397 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63624 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57570 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61347 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51113 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60820 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62985 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62918 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60098 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53098 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63290 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49666 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64602 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64016 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65036 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55036 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59832 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56774 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57691 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59341 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61269 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64447 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58546 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56815 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60400 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54588 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57754 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59491 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53172 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60011 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57463 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57079 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59309 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65188 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61672 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52110 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53766 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52866 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63690 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58001 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49161 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52723 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54924 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49666 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62849 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55743 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50890 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50652 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58348 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58942 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49666 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60492 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63309 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55625 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50060 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61719 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65461 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52654 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65307 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62194 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52831 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58954 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53515 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49990 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58256 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59317 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60853 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50599 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63206 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65254 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49865 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65371 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51974 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50624 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60674 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53074 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64256 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62525 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50668 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65446 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50664 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50284 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57798 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64037 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53562 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63807 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62704 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60277 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55532 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56970 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63342 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62796 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64959 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50823 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64214 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49666 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52290 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51388 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50595 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55618 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58274 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63688 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65128 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52730 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51266 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63412 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59011 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49768 - "POST /api/drives/enseignes/intermarche/prendre HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57454 - "POST /api/drives/enseignes/coursesu/prendre HTTP/1.1" 404 Not Found
