@@ -38,6 +38,10 @@
 
 ## Lots
 
+Le lot Drives de Bruz couvre `app/drives/**`, `app/templates/drives/**`, `extensions-edge/**`,
+`tests/test_drives.py`, `tests/donnees/drives/**` et le guide de lancement. Le parcours local, le relevé
+simulé et l’import sont implémentés. La validation des recherches sur les deux sites dans Edge est en attente.
+
 | Lot | Qui | Statut |
 |---|---|---|
 | 1. Interface et parcours | Adam (avec Claude Code) | refonte graphique faite (charte, accueil, carte des magasins, liste, comparaison, comptes) ; reste : scénario de démo avec le lot 4 |

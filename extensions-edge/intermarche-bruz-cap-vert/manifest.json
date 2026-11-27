@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Prix – Intermarché Super Bruz Cap Vert",
+  "version": "1.3.0",
+  "description": "Relève les prix des fiches produits ouvertes et exporte un CSV local.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "alarms",
+    "webRequest"
+  ],
+  "host_permissions": ["http://127.0.0.1/*", "https://*.intermarche.com/*", "https://*.intermarche.fr/*"],
+  "background": {"service_worker": "collecteur.js", "type": "module"},
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Prix – Intermarché Super Bruz Cap Vert"
+  }
+}

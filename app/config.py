@@ -41,6 +41,8 @@ class Reglages(BaseSettings):
     timeout_requete_s: float = 5.0
     concurrence_par_enseigne: int = 3
     cache_ttl_min: int = 360
+    drives_fraicheur_min: int = 1440
+    drives_jeton: str = ""
     # Délai aléatoire maximal de la source fictive, pour voir l'affichage progressif (0 dans les tests).
     delai_fictif_max_s: float = 0.8
 

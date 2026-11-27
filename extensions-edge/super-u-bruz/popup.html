@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Relevés de courses</title>
+<link rel="stylesheet" href="popup.css">
+<script type="module" src="popup.js"></script>
+</head>
+<body>
+<header><h1>Relevés de courses</h1><span id="count">0 relevé</span></header>
+<p><strong id="drive-name"></strong><br><span id="drive-address"></span></p>
+<details>
+  <summary>Collecte du comparateur local</summary>
+  <label>Jeton de collecte<input id="jeton" type="password" autocomplete="off"></label>
+  <p>Choisis le retrait indiqué sur le site, puis garde cet onglet marchand ouvert.</p>
+  <button id="activer" type="button">Utiliser cet onglet pour la collecte</button>
+  <button id="desactiver" type="button">Arrêter la collecte automatique</button>
+  <p id="collecte-statut" role="status"></p>
+</details>
+<button id="read" type="button">Relever cette page</button>
+<p id="status" role="status">Ouvre une fiche produit sur le drive souhaité.</p>
+<form id="form">
+  <section id="listing" hidden>
+    <label>Produit de la page<select id="items"></select></label>
+  </section>
+  <label>Prix affiché (€)<input name="prix_eur" inputmode="decimal" placeholder="1,49" maxlength="12" required></label>
+  <label>Produit<input name="produit" required></label>
+  <div class="pair">
+    <label>EAN si disponible<input name="ean" inputmode="numeric" maxlength="14"></label>
+    <label>Format<input name="format" placeholder="500 g"></label>
+  </div>
+  <label class="check"><input name="confirme" type="checkbox" required> J’ai vérifié le magasin, le produit et le prix affichés.</label>
+  <details><summary>Marque, promotion et lien</summary>
+    <label>Marque<input name="marque"></label>
+    <label>Promotion et conditions<input name="promos" placeholder="Ex. 2e à −50 % avec la carte"></label>
+    <label>Lien public de la fiche<input name="url" type="url" placeholder="https://…"></label>
+  </details>
+  <button id="single" type="submit" class="primary" hidden>Enregistrer l’article sélectionné</button>
+  <button id="save-list" type="button" hidden></button>
+</form>
+<footer><button id="export" type="button" disabled>Exporter le CSV</button></footer>
+</body>
+</html>

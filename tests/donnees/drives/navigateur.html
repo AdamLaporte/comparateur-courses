@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<title>Vérification des extracteurs Edge</title>
+<output id="rapport">Tests en cours</output>
+<header id="entete"></header>
+<main id="resultats"></main>
+<script type="application/json" id="etat-marchand"></script>
+<script type="module">
+  import { lirePage as lireU } from "/extensions-edge/super-u-bruz/navigation.js";
+  import { lirePage as lireInter } from "/extensions-edge/intermarche-bruz-cap-vert/navigation.js";
+  import { extractProductPage as extraireU } from "/extensions-edge/super-u-bruz/extract.js";
+  import { extractProductPage as extraireInter } from "/extensions-edge/intermarche-bruz-cap-vert/extract.js";
+
+  function verifier(condition, description) {
+    if (!condition) throw new Error(description);
+  }
+
+  const entete = document.querySelector("#entete");
+  const resultats = document.querySelector("#resultats");
+  const etat = document.querySelector("#etat-marchand");
+  const rapport = document.querySelector("#rapport");
+
+  window.addEventListener("load", tester, { once: true });
+
+  function tester() {
+    try {
+    history.replaceState(null, "", "?q=lait");
+    entete.innerHTML = '<span>Super U Bruz</span><form role="search"><input type="search" name="q"></form>';
+    const form = entete.querySelector("form");
+    let valeurSoumise;
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      valeurSoumise = new FormData(form).get("q");
+    });
+    verifier(lireU("u", "lait", true).retrait === "33315" && valeurSoumise === "lait", "Formulaire Super U");
+    const cartes = Array.from({ length: 62 }, (_, i) => `
+      <li data-tc-product-tile='{"name":"Lait fictif","EAN":"","brand":"Test","id":"${i}"}'>
+        <a href="/p/lait/${i}.html">Lait</a><span data-item-price="1.25">1,25 €</span>
+      </li>`).join("");
+    resultats.innerHTML = `<ul id="search-result-items">${cartes}</ul>`;
+    const pageU = lireU("u", "lait");
+    verifier(pageU.retrait === "33315" && pageU.recherche && pageU.cartes === 60, "Page de résultats Super U");
+    verifier(!lireU("u", "pâtes").recherche, "Requête différente chez Super U");
+    const articlesU = extraireU("u", 60).items;
+    verifier(articlesU.length === 60 && articlesU[0].prix_eur === "1.25", "Cartes et limite Super U");
+    entete.firstElementChild.textContent = "Super U Autre magasin";
+    verifier(lireU("u", "lait").retrait === "", "Mauvais retrait Super U");
+
+    history.replaceState(null, "", "/recherche/lait");
+    entete.innerHTML = '<button id="headerStoreName">Bruz</button>';
+    const hydrater = (ref) => {
+      etat.textContent = 'self.__next_f.push([1,' + JSON.stringify(JSON.stringify({
+        pdvRefFicheMagasin: ref,
+      })) + '])';
+    };
+    hydrater("05052");
+    resultats.innerHTML = `
+      <div data-navigate-product-item><article data-testid="product-layout">
+        <a href="/produit/lait/0304360041667">
+          <span class="stime-product--details__title">Lait fictif</span>
+          <div class="stime-product--details__summary"><p>Test</p></div>
+          <span class="stime-product--details__packaging">6 × 1 L • 1,25 €/L</span>
+        </a>
+        <div class="stime-product--footer__prices"><span class="product--price">7,50 €</span></div>
+        <span data-slot="sticker" aria-label="2e à −50 %">Promo</span>
+      </article></div>`;
+    const pageInter = lireInter("intermarche", "lait");
+    verifier(pageInter.retrait === "05052" && pageInter.recherche && pageInter.cartes === 1, "Page Intermarché");
+    const [article] = extraireInter("intermarche", 60).items;
+    verifier(article.ean === "0304360041667" && article.format === "6 × 1 L", "EAN et format Intermarché");
+    verifier(article.prix_eur === "7.50" && article.prix_par_unite_eur === "1.25"
+      && article.promos === "2e à −50 %", "Prix et condition Intermarché");
+    hydrater("11111");
+    verifier(lireInter("intermarche", "lait").retrait !== "05052", "Bruz seul insuffisant");
+    hydrater("05052");
+    resultats.innerHTML = "<p>Chargement en cours</p>";
+    verifier(!lireInter("intermarche", "lait").vide, "Un chargement ne confirme pas une absence");
+    resultats.innerHTML = "<h1>Aucun produit trouvé pour cette recherche</h1>";
+    verifier(lireInter("intermarche", "lait").vide, "Absence confirmée");
+    document.title = "Attention Required! | Cloudflare";
+    verifier(lireInter("intermarche", "lait").erreur === "defi", "Défi détecté");
+    rapport.textContent = "DRIVES_BROWSER_OK";
+    } catch (erreur) {
+      rapport.textContent = "DRIVES_BROWSER_ECHEC " + erreur.message;
+    }
+  }
+</script>
+</html>

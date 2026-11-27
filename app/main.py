@@ -18,6 +18,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app import db
 from app.comptes import routes as routes_comptes
 from app.config import Reglages
+from app.drives.routes import router as routes_drives
 from app.gabarits import templates
 from app.magasins import routes as routes_magasins
 from app.panier import routes as routes_panier
@@ -54,6 +55,8 @@ def creer_app(reglages: Reglages | None = None) -> FastAPI:
 
     for module in (routes_magasins, routes_produits, routes_panier, routes_comptes):
         app.include_router(module.router)
+
+    app.include_router(routes_drives)
 
     # Jamais d'erreur brute à l'utilisateur : page d'erreur lisible pour le HTML, message court en JSON.
     @app.exception_handler(StarletteHTTPException)

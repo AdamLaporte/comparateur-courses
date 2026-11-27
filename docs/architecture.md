@@ -416,6 +416,20 @@ Modèle dans `.env.example`.
 - Le repli après un délai dépassé traite les lignes restantes en parallèle (lot 4).
 - Le Dockerfile n'a pas pu être testé sur la machine du squelette (pas d'accès au démon Docker).
 
+## 15. Recherche locale des drives de Bruz
+
+- `/drives` recherche dans l’historique SQLite par point de retrait. HTMX interroge
+  `/drives/suivi` tant que le relevé est actif. Une recherche récente suffit à répondre depuis la base.
+- `app/drives/schema.sql` déclare les références marchandes, les observations et la file des recherches.
+  Les tâches actives sont uniques par drive et requête normalisée. La prise de tâche et le dépôt utilisent
+  des transactions SQLite. Chaque dépôt doit correspondre au bail actif et au point de retrait.
+- Les deux extensions Edge existantes sont adaptées dans `extensions-edge/`. Elles exécutent les
+  recherches dans les onglets marchands choisis et déposent seulement les observations via `/api/drives/`.
+  Les cookies de session restent dans Edge. Les opérations de collecte exigent un client local et
+  `DRIVES_JETON`.
+- `app.drives.importer` alimente facultativement l’historique à partir des exports CSV. Les dates sans
+  heure restent au format d’origine. Leur fraîcheur se calcule depuis le début de la journée à Paris.
+
 ## Annexe : notes techniques sur les sources (relevées le 27/11/2026)
 
 **Intermarché**, portail `developers.intermarche.com` (spécifications OpenAPI téléchargeables, bouton

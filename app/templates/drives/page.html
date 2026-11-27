@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block titre %}Prix des drives de Bruz · Comparateur de courses{% endblock %}
+{% block contenu %}
+<h1>Prix des drives de Bruz</h1>
+<form id="recherche-drives" action="/drives" method="post"
+      hx-post="/drives" hx-target="#resultats-drives" hx-swap="outerHTML"
+      hx-sync="#recherche-drives:replace">
+  <label for="produit-drive">Produit ou EAN</label>
+  <input id="produit-drive" name="q" type="search" required maxlength="160"
+         value="{{ recherche.q if recherche else '' }}" placeholder="Lait Lactel demi-écrémé 1 L">
+  <fieldset>
+    <legend>Points de retrait</legend>
+    {% for id, (nom, adresse, domaines) in drives.items() %}
+    <label>
+      <input type="checkbox" name="drives" value="{{ id }}"
+             {% if not recherche or id in recherche.drives %}checked{% endif %}>
+      {{ nom }} · {{ adresse }}
+    </label>
+    {% endfor %}
+  </fieldset>
+  <button class="bouton principal" type="submit">Rechercher les prix</button>
+</form>
+{% include "drives/_resultats.html" %}
+{% endblock %}

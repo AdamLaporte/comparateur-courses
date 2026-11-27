@@ -1,0 +1,58 @@
+<div id="resultats-drives" aria-live="polite"
+     {% if resultats | selectattr('tache_id') | list %}
+     hx-get="/drives/suivi?{{ suivi }}" hx-trigger="load delay:2s" hx-swap="outerHTML"
+     hx-sync="#recherche-drives:drop"
+     {% endif %}>
+  {% if erreur_formulaire %}<p role="alert">{{ erreur_formulaire }}</p>{% endif %}
+  {% for resultat in resultats %}
+  <section>
+    <h2>{{ resultat.nom }}</h2>
+    {% if resultat.etat == "recent" %}
+      <p>Relevé récent.</p>
+    {% elif resultat.etat == "attente" and not resultat.connecte %}
+      <p>En attente de l’extension Edge. Ouvrez Edge et activez la collecte pour ce drive.</p>
+    {% elif resultat.etat == "attente" %}
+      <p>Relevé en attente.</p>
+    {% elif resultat.etat == "cours" %}
+      <p>Relevé en cours dans Edge.</p>
+    {% elif resultat.etat == "vide" %}
+      <p>Aucun produit trouvé lors de la dernière recherche sur le site.</p>
+    {% elif resultat.etat == "sans_correspondance" %}
+      <p>Les produits relevés ne contenaient pas cet EAN.</p>
+    {% elif resultat.etat == "pause" %}
+      <p>Collecte en pause pour ce drive. {{ messages.get(resultat.erreur, "Réessayez plus tard.") }}</p>
+    {% elif resultat.etat == "echec" %}
+      <p>Relevé échoué. {{ messages.get(resultat.erreur, "") }}</p>
+    {% else %}
+      <p>Collecte indisponible. Configurez la connexion locale à Edge.</p>
+    {% endif %}
+    {% if resultat.produits %}
+    <ul class="liste-magasins">
+      {% for p in resultat.produits %}
+      <li>
+        <div>
+          <strong><a href="{{ p.url }}">{{ p.produit }}</a></strong>
+          {% if p.marque %} · {{ p.marque }}{% endif %}
+          {% if p.variante %} · {{ p.variante }}{% endif %}
+          {% if p.format %} · {{ p.format }}{% endif %}
+          {% if p.ean %}<div>EAN {{ p.ean }}</div>{% endif %}
+          {% if p.correspondance == "ean" %}<div>Même EAN dans les deux drives</div>{% endif %}
+          {% if p.correspondance == "possible" %}<div>Correspondance possible entre drives</div>{% endif %}
+          {% if p.promos %}<div>Promotion affichée · {{ p.promos }}</div>{% endif %}
+          {% if p.promos_json and not p.promos %}<div>Conditions affichées · {{ p.promos_json }}</div>{% endif %}
+          <div>{% if p.ancien %}Dernier prix connu · {% endif %}{{ p.source }} ·
+            <time datetime="{{ p.releve_le }}">{{ p.date_affichee }}</time></div>
+        </div>
+        <div>
+          <strong>{{ p.prix_centimes | euros }}</strong>
+          {% if p.prix_par_unite_eur is not none and p.unite %}
+          <div>{{ p.prix_par_unite_eur | replace(".", ",") }} € / {{ p.unite }}</div>
+          {% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+  {% endfor %}
+</div>
