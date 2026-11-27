@@ -8,7 +8,7 @@ from collections.abc import AsyncIterable, AsyncIterator
 from typing import Annotated
 
 from fastapi import APIRouter, Form, HTTPException, Request, UploadFile
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import ValidationError
 
@@ -74,7 +74,7 @@ async def comparer(
 def _liste_maj(
     request: Request, reglages: Reglages, erreur: str | None = None, ticket_fini: bool = False
 ) -> HTMLResponse:
-    lignes = service.lister(reglages, service.proprietaire(request))
+    lignes = service.lister(reglages, service.cle_liste(request, reglages))
     return templates.TemplateResponse(
         request,
         "panier/_liste_maj.html",
@@ -85,10 +85,54 @@ def _liste_maj(
 @router.get("/panier", response_class=HTMLResponse)
 async def page_panier(request: Request, reglages: ReglagesDep):
     code_postal = request.session.get("code_postal", "")
-    lignes = service.lister(reglages, service.proprietaire(request))
+    compte = service.proprietaire(request)
+    active = service.cle_liste(request, reglages)
+    listes = service.listes(reglages, compte)
     return templates.TemplateResponse(
-        request, "panier/page.html", {"code_postal": code_postal, "lignes": lignes}
+        request,
+        "panier/page.html",
+        {
+            "code_postal": code_postal,
+            "lignes": service.lister(reglages, active),
+            "listes_courses": {
+                "principale" if cle == compte else cle: nom for cle, nom in listes.items()
+            },
+            "liste_active": "principale" if active == compte else active,
+            "erreur_liste": request.query_params.get("erreur") == "nom",
+        },
     )
+
+
+@router.post("/panier/listes")
+async def creer_liste(request: Request, reglages: ReglagesDep, nom: Annotated[str, Form()]):
+    try:
+        cle = service.enregistrer_liste(reglages, service.proprietaire(request), nom)
+    except ValueError:
+        return RedirectResponse("/panier?erreur=nom", status_code=303)
+    request.session["liste_active"] = cle
+    return RedirectResponse("/panier", status_code=303)
+
+
+@router.post("/panier/listes/selection")
+async def selectionner_liste(
+    request: Request, reglages: ReglagesDep, liste: Annotated[str, Form()]
+):
+    compte = service.proprietaire(request)
+    if liste != "principale" and liste not in service.listes(reglages, compte):
+        raise HTTPException(404, "Liste introuvable.")
+    request.session["liste_active"] = liste
+    return RedirectResponse("/panier", status_code=303)
+
+
+@router.post("/panier/listes/nom")
+async def renommer_liste(request: Request, reglages: ReglagesDep, nom: Annotated[str, Form()]):
+    compte = service.proprietaire(request)
+    active = service.cle_liste(request, reglages)
+    try:
+        service.enregistrer_liste(reglages, compte, nom, active)
+    except ValueError:
+        return RedirectResponse("/panier?erreur=nom", status_code=303)
+    return RedirectResponse("/panier", status_code=303)
 
 
 @router.post("/panier/lignes", response_class=HTMLResponse)
@@ -111,7 +155,7 @@ async def ajouter_ligne(
         )
     except ValidationError:
         return _liste_maj(request, reglages, erreur="Article non ajouté : vérifiez la quantité.")
-    service.ajouter(reglages, service.proprietaire(request), ajout)
+    service.ajouter(reglages, service.cle_liste(request, reglages), ajout)
     return _liste_maj(request, reglages)
 
 
@@ -161,7 +205,7 @@ async def ajouter_ticket(
 ):
     """Ajoute les articles du ticket gardés par l'utilisateur : chacun est soit le produit choisi
     (« <ean>|<libellé> »), soit « inexistant » (gardé dans la liste mais jamais comparé)."""
-    proprietaire = service.proprietaire(request)
+    proprietaire = service.cle_liste(request, reglages)
     ignores = 0
     for texte, nombre, produit in zip(recherche, quantite, choix, strict=False):
         if not texte.strip():
@@ -194,7 +238,7 @@ async def changer_mode_liste(
 ):
     """Toute la liste en « le moins cher » (mode=equivalent), ou retour aux produits choisis."""
     if mode in (ModeLigne.PRODUIT, ModeLigne.EQUIVALENT):
-        service.changer_mode_tout(reglages, service.proprietaire(request), ModeLigne(mode))
+        service.changer_mode_tout(reglages, service.cle_liste(request, reglages), ModeLigne(mode))
     return _liste_maj(request, reglages)
 
 
@@ -204,22 +248,29 @@ async def changer_mode_ligne(
 ):
     """Un article : « produit précis » ↔ « le moins cher »."""
     if mode in (ModeLigne.PRODUIT, ModeLigne.EQUIVALENT):
-        service.changer_mode(reglages, service.proprietaire(request), ligne_id, ModeLigne(mode))
+        service.changer_mode(
+            reglages, service.cle_liste(request, reglages), ligne_id, ModeLigne(mode)
+        )
     return _liste_maj(request, reglages)
 
 
 @router.delete("/panier/lignes/{ligne_id}", response_class=HTMLResponse)
 async def supprimer_ligne(request: Request, ligne_id: int, reglages: ReglagesDep):
-    service.supprimer(reglages, service.proprietaire(request), ligne_id)
+    service.supprimer(reglages, service.cle_liste(request, reglages), ligne_id)
     return _liste_maj(request, reglages)
 
 
 @router.get("/panier/resultats", response_class=HTMLResponse)
 async def tableau_resultats(request: Request, reglages: ReglagesDep):
     """Tableau vide (articles × magasins) qui se remplit ensuite par le flux SSE."""
-    lignes = service.lister(reglages, service.proprietaire(request, creer=False))
+    lignes = service.lister(reglages, service.cle_liste(request, reglages, creer=False))
     code_postal = request.session.get("code_postal", "")
-    contexte: dict = {"lignes": lignes, "magasins": [], "message": None}
+    contexte: dict = {
+        "lignes": lignes,
+        "magasins": [],
+        "message": None,
+        "liste_flux": request.headers.get("X-Liste-Courses") or request.query_params.get("liste"),
+    }
     if not lignes:
         contexte["message"] = "Ajoutez au moins un article à votre liste."
     elif not comparables(lignes):
@@ -241,7 +292,9 @@ async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[Se
     """Une case du tableau par événement « prix-<ligne>-<magasin> », le total du magasin par
     « total-<magasin> », le classement par « resume », puis « fin » (le navigateur ferme alors).
     Les articles « inexistant en magasins » ne sont ni cherchés ni comptés."""
-    lignes = comparables(service.lister(reglages, service.proprietaire(request, creer=False)))
+    lignes = comparables(
+        service.lister(reglages, service.cle_liste(request, reglages, creer=False))
+    )
     try:
         magasins = (
             await magasins_proches(

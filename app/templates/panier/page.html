@@ -18,7 +18,30 @@
   </p>
 </div>
 
-<div class="panier-grille">
+<section class="bloc gestion-listes" aria-label="Mes listes de courses">
+  <form action="/panier/listes/selection" method="post">
+    <label for="liste-courses">Mes listes</label>
+    <select id="liste-courses" name="liste">
+      {% for cle, nom in listes_courses.items() %}
+      <option value="{{ cle }}" {% if cle == liste_active %}selected{% endif %}>{{ nom }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Ouvrir</button>
+  </form>
+  <form action="/panier/listes/nom?liste={{ liste_active|urlencode }}" method="post">
+    <label for="nom-liste">Nom de la liste ouverte</label>
+    <input id="nom-liste" name="nom" value="{{ listes_courses[liste_active] }}" maxlength="60" required>
+    <button type="submit">Renommer</button>
+  </form>
+  <form action="/panier/listes" method="post">
+    <label for="nouvelle-liste">Nouvelle liste</label>
+    <input id="nouvelle-liste" name="nom" placeholder="Ex. Courses de la semaine" maxlength="60" required>
+    <button type="submit" class="principal">Créer</button>
+  </form>
+  {% if erreur_liste %}<p class="erreur" role="alert">Le nom doit contenir entre 1 et 60 caractères.</p>{% endif %}
+</section>
+
+<div class="panier-grille" hx-headers='{{ {"X-Liste-Courses": liste_active}|tojson }}'>
   <section class="bloc" aria-labelledby="titre-ajout">
     <div class="bloc-titre"><h2 id="titre-ajout">Ajouter un article</h2></div>
     <label for="q" class="masque">Rechercher un article</label>
@@ -56,7 +79,7 @@
 
   <section class="bloc bloc-liste" aria-labelledby="titre-liste">
     <div class="bloc-titre">
-      <h2 id="titre-liste">Ma liste</h2>
+      <h2 id="titre-liste">{{ listes_courses[liste_active] }}</h2>
       {% if request.session.get("utilisateur_id") %}<a class="lien-discret" href="/comptes/favoris">★ Mes favoris</a>{% endif %}
     </div>
     {% include "panier/_liste.html" %}

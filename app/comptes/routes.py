@@ -219,7 +219,7 @@ async def reinitialiser(
 # --- Articles favoris ---
 
 
-def _ajouter_a_la_liste(reglages, utilisateur_id: int, favori: dict) -> None:
+def _ajouter_a_la_liste(reglages, cle_liste: str, favori: dict) -> None:
     try:
         ajout = AjoutLigne(
             mode=favori["mode"],
@@ -229,7 +229,7 @@ def _ajouter_a_la_liste(reglages, utilisateur_id: int, favori: dict) -> None:
         )
     except ValidationError:
         return
-    service_panier.ajouter(reglages, f"utilisateur:{utilisateur_id}", ajout)
+    service_panier.ajouter(reglages, cle_liste, ajout)
 
 
 @router.get("/favoris", response_class=HTMLResponse)
@@ -251,7 +251,7 @@ async def favori_depuis_ligne(request: Request, reglages: ReglagesDep, ligne_id:
     utilisateur_id = request.session.get("utilisateur_id")
     if not utilisateur_id:
         return HTMLResponse('<a class="note" href="/comptes/connexion">Connectez-vous</a>')
-    lignes = service_panier.lister(reglages, f"utilisateur:{utilisateur_id}")
+    lignes = service_panier.lister(reglages, service_panier.cle_liste(request, reglages))
     ligne = next((lg for lg in lignes if lg.id == ligne_id), None)
     if ligne is None:
         return HTMLResponse("", status_code=404)
@@ -271,7 +271,7 @@ async def favori_vers_liste(request: Request, reglages: ReglagesDep, favori_id: 
         return _vers("/comptes/connexion?suivant=/comptes/favoris")
     favori = service.favori(reglages, utilisateur_id, favori_id)
     if favori is not None:
-        _ajouter_a_la_liste(reglages, utilisateur_id, favori)
+        _ajouter_a_la_liste(reglages, service_panier.cle_liste(request, reglages), favori)
     return _vers("/comptes/favoris?message=ajoute")
 
 
@@ -280,8 +280,9 @@ async def favoris_vers_liste(request: Request, reglages: ReglagesDep):
     utilisateur_id = request.session.get("utilisateur_id")
     if not utilisateur_id:
         return _vers("/comptes/connexion?suivant=/comptes/favoris")
+    cle_liste = service_panier.cle_liste(request, reglages)
     for favori in service.lister_favoris(reglages, utilisateur_id):
-        _ajouter_a_la_liste(reglages, utilisateur_id, favori)
+        _ajouter_a_la_liste(reglages, cle_liste, favori)
     return _vers(
         "/panier" if request.session.get("code_postal") else "/comptes/favoris?message=tous"
     )

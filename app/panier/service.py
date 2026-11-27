@@ -7,7 +7,7 @@ Clés de session utilisées : "sid" (identifiant de session anonyme), "code_post
 import uuid
 from pathlib import Path
 
-from fastapi import Request
+from fastapi import HTTPException, Request
 
 from app import db
 from app.config import Reglages
@@ -43,6 +43,47 @@ def migrer(chemin_db: Path) -> None:
         cnx.execute(
             "CREATE INDEX IF NOT EXISTS idx_ligne_liste_proprietaire ON ligne_liste (proprietaire)"
         )
+
+
+def listes(reglages: Reglages, compte: str) -> dict[str, str]:
+    """La liste principale conserve la clé historique de ses articles."""
+    with db.connexion(reglages.db_path) as cnx:
+        lignes = cnx.execute(
+            "SELECT cle, nom FROM liste_courses WHERE proprietaire = ? ORDER BY rowid", (compte,)
+        )
+        return {compte: "Ma liste", **{ligne["cle"]: ligne["nom"] for ligne in lignes}}
+
+
+def cle_liste(request: Request, reglages: Reglages, creer: bool = True) -> str | None:
+    compte = proprietaire(request, creer)
+    if compte is None:
+        return None
+    explicite = request.headers.get("X-Liste-Courses") or request.query_params.get("liste")
+    identifiant = explicite or request.session.get("liste_active")
+    if not identifiant or identifiant == "principale":
+        return compte
+    if identifiant in listes(reglages, compte):
+        return identifiant
+    if explicite:
+        raise HTTPException(404, "Liste introuvable.")
+    request.session.pop("liste_active", None)
+    return compte
+
+
+def enregistrer_liste(reglages: Reglages, compte: str, nom: str, cle: str | None = None) -> str:
+    nom = nom.strip()
+    if not 1 <= len(nom) <= 60:
+        raise ValueError("Le nom doit contenir entre 1 et 60 caractères.")
+    if cle is None:
+        cle = f"liste:{uuid.uuid4().hex}"
+    with db.connexion(reglages.db_path) as cnx:
+        cnx.execute(
+            """INSERT INTO liste_courses (cle, proprietaire, nom) VALUES (?, ?, ?)
+               ON CONFLICT(cle) DO UPDATE SET nom = excluded.nom
+               WHERE proprietaire = excluded.proprietaire""",
+            (cle, compte, nom),
+        )
+    return cle
 
 
 def lister(reglages: Reglages, proprietaire: str | None) -> list[LigneListe]:

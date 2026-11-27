@@ -11,3 +11,11 @@ CREATE TABLE IF NOT EXISTS ligne_liste (
 );
 
 CREATE INDEX IF NOT EXISTS idx_ligne_liste_proprietaire ON ligne_liste (proprietaire);
+
+CREATE TABLE IF NOT EXISTS liste_courses (
+    cle TEXT PRIMARY KEY,
+    proprietaire TEXT NOT NULL,
+    nom TEXT NOT NULL CHECK (length(nom) BETWEEN 1 AND 60)
+);
+
+CREATE INDEX IF NOT EXISTS idx_liste_courses_proprietaire ON liste_courses (proprietaire);

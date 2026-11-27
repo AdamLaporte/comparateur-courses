@@ -3,7 +3,7 @@
 {% if message %}
 <div class="comparaison"><div class="vide"><p>{{ message }}</p></div></div>
 {% else %}
-<div class="comparaison" hx-ext="sse" sse-connect="/panier/prix/flux" sse-close="fin">
+<div class="comparaison" hx-ext="sse" sse-connect="/panier/prix/flux{% if liste_flux %}?liste={{ liste_flux|urlencode }}{% endif %}" sse-close="fin">
   <h2>Comparaison</h2>
   <div class="resume" sse-swap="resume" aria-live="polite">
     <div class="attente-resume">

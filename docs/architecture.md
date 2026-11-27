@@ -362,11 +362,15 @@ erDiagram
 - Un cookie signé (`SessionMiddleware`, clé `SECRET_KEY`) porte les clés `sid` (identifiant de session anonyme),
   `code_postal` (choisi sur la page des magasins) et, si l'utilisateur est connecté, `utilisateur_id` (posée par le
   module comptes).
-- **Sans compte**, la liste est liée à la session (`proprietaire = "session:<uuid>"`). **Avec un compte**, elle est
-  liée à l'utilisateur, et ses articles et adresses favoris sont enregistrés.
+- **Sans compte**, les listes sont liées à la session. **Avec un compte**, elles sont liées à l'utilisateur,
+  avec ses articles et adresses favoris. La table `liste_courses` conserve les noms et les propriétaires.
+  La liste principale garde la clé historique dans `ligne_liste`. Les autres listes utilisent une clé
+  `liste:<uuid>`. La session mémorise la sélection et les requêtes HTMX et SSE identifient la liste affichée.
 - Les mots de passe sont hachés en argon2 avec `pwdlib`. Pas de connexion par un service tiers.
-- À la connexion, `utilisateur_id` et `email` sont posés dans la session, et la liste faite sans compte
-  (`session:<sid>`) passe dans celle du compte. À la déconnexion, la session est vidée (sauf le code postal).
+- À la connexion, `utilisateur_id` et `email` sont posés dans la session, les listes nommées sont transférées
+  au compte et les articles de la liste principale anonyme sont ajoutés à la liste principale du compte.
+  Une liste principale anonyme renommée est transférée comme liste distincte. À la déconnexion,
+  la session est vidée (sauf le code postal).
 - Mot de passe perdu : lien signé (itsdangerous, clé `SECRET_KEY`), valable 1 h, à usage unique, envoyé par SMTP
   si `SMTP_HOTE` est réglé, sinon écrit dans le journal du serveur. Réponse identique que l'e-mail existe ou non.
 - Après 5 échecs de connexion pour un e-mail, blocage de 15 min (en mémoire : remis à zéro au redémarrage).

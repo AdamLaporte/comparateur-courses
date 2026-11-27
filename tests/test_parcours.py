@@ -79,6 +79,34 @@ def test_ajouter_des_articles_avant_de_choisir_sa_ville(client):
     assert "Comparer les prix" in panier.text
 
 
+def test_listes_nommees_separees_et_conservees_a_l_inscription(client):
+    client.post("/panier/lignes", data={"mode": "equivalent", "recherche": "bananes"})
+    nouvelle = client.post("/panier/listes", data={"nom": "Soirée pizza"})
+    assert 'id="titre-liste">Soirée pizza' in nouvelle.text
+    assert "bananes" not in nouvelle.text
+    client.post("/panier/lignes", data={"mode": "equivalent", "recherche": "mozzarella"})
+    renommee = client.post("/panier/listes/nom", data={"nom": "Samedi soir"})
+    assert 'id="titre-liste">Samedi soir' in renommee.text
+    assert "mozzarella" in renommee.text
+    assert (
+        client.post("/panier/listes/selection", data={"liste": "liste:inconnue"}).status_code == 404
+    )
+
+    client.post(
+        "/comptes/inscription",
+        data={
+            "email": "listes@example.org",
+            "mot_de_passe": "un-mot-de-passe",
+            "confirmation": "un-mot-de-passe",
+        },
+    )
+    assert "mozzarella" in client.get("/panier").text
+    principale = client.post("/panier/listes/selection", data={"liste": "principale"})
+    assert "bananes" in principale.text
+    assert "mozzarella" not in principale.text
+    assert "Samedi soir" in principale.text
+
+
 def test_parcours_html_et_flux_sse(client):
     accueil = client.get("/")
     assert accueil.status_code == 200

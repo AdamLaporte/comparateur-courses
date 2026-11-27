@@ -140,10 +140,19 @@ def rattacher_liste(reglages: Reglages, sid: str | None, utilisateur_id: int) ->
     """À la connexion : les lignes de la liste faite sans compte passent dans celle du compte."""
     if not sid:
         return
+    session = f"session:{sid}"
+    compte = f"utilisateur:{utilisateur_id}"
     with db.connexion(reglages.db_path) as cnx:
+        destination = compte
+        if cnx.execute("SELECT 1 FROM liste_courses WHERE cle = ?", (session,)).fetchone():
+            destination = f"liste:{sid}"
+            cnx.execute("UPDATE liste_courses SET cle = ? WHERE cle = ?", (destination, session))
         cnx.execute(
             "UPDATE ligne_liste SET proprietaire = ? WHERE proprietaire = ?",
-            (f"utilisateur:{utilisateur_id}", f"session:{sid}"),
+            (destination, session),
+        )
+        cnx.execute(
+            "UPDATE liste_courses SET proprietaire = ? WHERE proprietaire = ?", (compte, session)
         )
 
 
