@@ -1,6 +1,6 @@
-# 2026-11-27 : claude : lot 4, données et fiabilité
+# 2026-11-27 : jade : lot 4, données et fiabilité
 
-- **Agent / personne** : Claude Code (prénom de la personne qui pilote : à compléter)
+- **Agent / personne** : Claude Code piloté par Jade
 - **Branche** : `claude/nifty-curie-x3h69j` (branche imposée par la session cloud, à fusionner comme `feat/donnees-fiabilite`)
 - **Lot** : 4. Données et fiabilité
 

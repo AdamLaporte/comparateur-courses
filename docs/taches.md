@@ -43,7 +43,7 @@
 | 1. Interface et parcours | à attribuer | à faire |
 | 2. Intermarché, magasins et comptes | à attribuer | à faire |
 | 3. Collecte web : 3a Carrefour, 3b E.Leclerc Drive, 3c Courses U (avec Codex) | à attribuer | à faire |
-| 4. Données et fiabilité | Claude Code (piloté par : à compléter) | en cours : 1 à 5 faits, 6 (jeu de démo) à faire avec le lot 1 |
+| 4. Données et fiabilité | Jade (avec Claude Code) | en cours : 1 à 5 faits, 6 (jeu de démo) à faire avec le lot 1 |
 
 ### Lot 1 : Interface et parcours
 
