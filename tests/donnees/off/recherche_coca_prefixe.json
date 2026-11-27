@@ -1,0 +1,567 @@
+{
+ "hits": [
+  {
+   "code": "5449000214799",
+   "brands": [
+    "xx:coca-cola"
+   ],
+   "quantity": "330 mL",
+   "unique_scans_n": 777,
+   "product_name": "Coca-Cola sans sucres",
+   "product_name_fr": "Coca-Cola sans sucres",
+   "_score": null
+  },
+  {
+   "code": "5449000214911",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "330ml",
+   "unique_scans_n": 640,
+   "product_name": "Coca-Cola Original",
+   "product_name_fr": "Coca-Cola Original",
+   "_score": null
+  },
+  {
+   "code": "5449000000996",
+   "brands": [
+    "xx:COCA-COLA SERVICES SA/NV"
+   ],
+   "quantity": "330 ml",
+   "unique_scans_n": 570,
+   "product_name": "Coca-Cola Original",
+   "product_name_fr": "Coca-Cola",
+   "_score": null
+  },
+  {
+   "code": "5449000000439",
+   "brands": [
+    "xx:coca-cola"
+   ],
+   "quantity": "1.5 L",
+   "unique_scans_n": 391,
+   "product_name": "Coca Cola Original Taste 1.5L",
+   "product_name_fr": "Coca Cola Original taste",
+   "_score": null
+  },
+  {
+   "code": "5449000133328",
+   "brands": [
+    "xx:COCA-COLA SERVICES SA/NV",
+    "xx:Coke ZERO"
+   ],
+   "quantity": "1 L",
+   "unique_scans_n": 373,
+   "product_name": "Coca-Cola zero sugar",
+   "product_name_fr": "Coca-Cola zero sugar",
+   "_score": null
+  },
+  {
+   "code": "5449000233295",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "0,330",
+   "unique_scans_n": 358,
+   "product_name": "Coca-Cola Zero Caffeine Free",
+   "product_name_fr": "Coca-Cola sans sucres sans caféine",
+   "_score": null
+  },
+  {
+   "code": "5449000131805",
+   "brands": [
+    "xx:Coca Cola"
+   ],
+   "quantity": "330 ml",
+   "unique_scans_n": 334,
+   "product_name": "Coca-Cola Zero Sugar",
+   "product_name_fr": "Canette Coca-Cola Zero",
+   "_score": null
+  },
+  {
+   "code": "5449000000286",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "2 L",
+   "unique_scans_n": 288,
+   "product_name": "Coca Cola",
+   "product_name_fr": "Coca-Cola",
+   "_score": null
+  },
+  {
+   "code": "5449000133335",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "1.5l",
+   "unique_scans_n": 235,
+   "product_name": "Coca-Cola Zero 6petfl BEL",
+   "product_name_fr": "Coca-Cola Zero",
+   "_score": null
+  },
+  {
+   "code": "5000112611861",
+   "brands": [
+    "xx:coca-cola"
+   ],
+   "quantity": "1.75 L ℮",
+   "unique_scans_n": 212,
+   "product_name": "PET 1.75L COCA",
+   "product_name_fr": "PET 1.75L COCA",
+   "_score": null
+  },
+  {
+   "code": "5449000267412",
+   "brands": [
+    "xx:coca-cola"
+   ],
+   "quantity": "1,25 L",
+   "unique_scans_n": 205,
+   "product_name": "Coca-Cola goût original",
+   "product_name_fr": "Coca-Cola goût original",
+   "_score": null
+  },
+  {
+   "code": "5000112611878",
+   "brands": [
+    "xx:Coca-Cola Europacific Partners Services Bulgaria EOOD"
+   ],
+   "quantity": "1,75 L e",
+   "unique_scans_n": 181,
+   "product_name": "coca cola zero",
+   "product_name_fr": "coca cola zero",
+   "_score": null
+  },
+  {
+   "code": "5449000131843",
+   "brands": [
+    "xx:COCA-COLA SERVICES SA/NV"
+   ],
+   "quantity": "2L",
+   "unique_scans_n": 167,
+   "product_name": "Coca-Cola Zero",
+   "product_name_fr": "Coca-Cola® Coke Zero®",
+   "_score": null
+  },
+  {
+   "code": "5000112611762",
+   "brands": [
+    "xx:Coca-Cola",
+    "xx:Coke ZÉRO®"
+   ],
+   "quantity": "1,25 L e",
+   "unique_scans_n": 165,
+   "product_name": "coca cola zero 1,25L",
+   "product_name_fr": "coca cola zero 1,25L",
+   "_score": null
+  },
+  {
+   "code": "5449000223555",
+   "brands": [
+    "xx:Coca-Cola Company"
+   ],
+   "quantity": "1.25l",
+   "unique_scans_n": 151,
+   "product_name": "Coca Cola Zéro Sucres Zéro Caféine",
+   "product_name_fr": "Coca Cola Zéro Sucres Zéro Caféine",
+   "_score": null
+  },
+  {
+   "code": "90338243",
+   "brands": [
+    "xx:maroc"
+   ],
+   "quantity": "250 ml",
+   "unique_scans_n": 147,
+   "product_name": "Coca-Cola original taste",
+   "product_name_fr": "Coca-Cola original taste",
+   "_score": null
+  },
+  {
+   "code": "5449000169358",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "1,5 l",
+   "unique_scans_n": 131,
+   "product_name": "Coca-Cola Zero zuccheri Zero caffeina",
+   "product_name_fr": "Coca Cola Zéro sans caféine",
+   "_score": null
+  },
+  {
+   "code": "5449000009067",
+   "brands": [
+    "xx:COCA-COLA SERVICES SA/NV"
+   ],
+   "quantity": "2 l",
+   "unique_scans_n": 108,
+   "product_name": "Coca-Cola Sabor Original",
+   "product_name_fr": "Coca-Cola Sabor Original",
+   "_score": null
+  },
+  {
+   "code": "5449000214843",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "330 ml",
+   "unique_scans_n": 102,
+   "product_name": "Coca-Cola Cherry",
+   "product_name_fr": "Coca-Cola Cherry",
+   "_score": null
+  },
+  {
+   "code": "5449000201935",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "500 ml.",
+   "unique_scans_n": 87,
+   "product_name": "Coca-Cola Zero Zero",
+   "product_name_fr": "Coca zéro sans caféine",
+   "_score": null
+  },
+  {
+   "code": "5449000008046",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "250 ml",
+   "unique_scans_n": 86,
+   "product_name": "Coca-Cola slim 25cl",
+   "product_name_fr": "Coca cola",
+   "_score": null
+  },
+  {
+   "code": "5449000004840",
+   "brands": [
+    "xx:COCA-COLA SERVICES SA/NV"
+   ],
+   "quantity": "2L",
+   "unique_scans_n": 77,
+   "product_name": "Fanta Naranja",
+   "product_name_fr": "Fanta Orange",
+   "_score": null
+  },
+  {
+   "code": "5000112557664",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "33",
+   "unique_scans_n": 76,
+   "product_name": "Coca Cola",
+   "product_name_fr": "Coca-Cola",
+   "_score": null
+  },
+  {
+   "code": "5449000169327",
+   "brands": [
+    "xx:COCA-COLA SERVICES SA/NV"
+   ],
+   "quantity": "330 ml",
+   "unique_scans_n": 76,
+   "product_name": "Coca-Cola Zero Zero",
+   "product_name_fr": "Coca Cola zéro sans caféine",
+   "_score": null
+  },
+  {
+   "code": "5000112558272",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "500 ml",
+   "unique_scans_n": 73,
+   "product_name": "COCA COLA 50CL",
+   "product_name_fr": "COCA COLA 50CL",
+   "_score": null
+  },
+  {
+   "code": "3174780000363",
+   "brands": [
+    "xx:Coca cola"
+   ],
+   "quantity": "500 ml",
+   "unique_scans_n": 72,
+   "product_name": "Original COCA-COLA",
+   "product_name_fr": "Coca-Cola goût original",
+   "_score": null
+  },
+  {
+   "code": "54490086",
+   "brands": [
+    "xx:coca-cola"
+   ],
+   "quantity": "250mL",
+   "unique_scans_n": 72,
+   "product_name": "Coca-Cola Original Taste",
+   "product_name_fr": "Coca-Cola Original Taste",
+   "_score": null
+  },
+  {
+   "code": "5449000028921",
+   "brands": [
+    "xx:COCA-COLA SERVICES SA/NV"
+   ],
+   "quantity": "1.25 L",
+   "unique_scans_n": 63,
+   "product_name": "Coca Cola",
+   "product_name_fr": "Coca-Cola",
+   "_score": null
+  },
+  {
+   "code": "5449000267436",
+   "brands": [
+    "xx:Coca-Cola",
+    "xx:Coke"
+   ],
+   "quantity": "1.25 L",
+   "unique_scans_n": 63,
+   "product_name": "Coca-Cola Cherry",
+   "product_name_fr": "Coca-Cola Cherry",
+   "_score": null
+  },
+  {
+   "code": "5000112558265",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "50cl",
+   "unique_scans_n": 57,
+   "product_name": "Coca-Cola Zero",
+   "product_name_fr": "Coca-Cola Zero",
+   "_score": null
+  },
+  {
+   "code": "5000112594218",
+   "brands": [
+    "xx:Coca-Cola",
+    "xx:The Coca-Cola Company"
+   ],
+   "quantity": "1,5l",
+   "unique_scans_n": 56,
+   "product_name": "Coca cola Zero",
+   "product_name_fr": "Coca cola zéro",
+   "_score": null
+  },
+  {
+   "code": "90338052",
+   "brands": [
+    "xx:Coca cola"
+   ],
+   "quantity": "300ml",
+   "unique_scans_n": 54,
+   "product_name": "Coca-Cola Plastic",
+   "product_name_fr": "Coca-Cola Plastic",
+   "_score": null
+  },
+  {
+   "code": "5000112678284",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "33 cl",
+   "unique_scans_n": 49,
+   "product_name": "",
+   "product_name_fr": "Coca cola",
+   "_score": null
+  },
+  {
+   "code": "5000112678116",
+   "brands": [
+    "xx:Coca-cola"
+   ],
+   "quantity": "1.5l",
+   "unique_scans_n": 48,
+   "product_name": "CocaCola 1.5 l",
+   "product_name_fr": "Coca cola",
+   "_score": null
+  },
+  {
+   "code": "5000112552232",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "0,5 L",
+   "unique_scans_n": 44,
+   "product_name": "Coca-Cola Zero Null Zucker",
+   "product_name_fr": "Coca-Cola Zero Sugar",
+   "_score": null
+  },
+  {
+   "code": "5000112638745",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "330ml",
+   "unique_scans_n": 44,
+   "product_name": "Coca cola zero sugar",
+   "product_name_fr": "Coca cola zero sugar",
+   "_score": null
+  },
+  {
+   "code": "5449000020987",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "250 ml",
+   "unique_scans_n": 40,
+   "product_name": "Coca-Cola Zero Sugar 25cl",
+   "product_name_fr": "Coca Cola Zero",
+   "_score": null
+  },
+  {
+   "code": "5000112548068",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "500ml",
+   "unique_scans_n": 40,
+   "product_name": "Coca-Cola Classic",
+   "product_name_fr": "Coca-Cola Original 0,5 Liter",
+   "_score": null
+  },
+  {
+   "code": "5000112545326",
+   "brands": [
+    "xx:Coca-Cola Europacific Partners Services Bulgaria EOOD"
+   ],
+   "quantity": "330 ml",
+   "unique_scans_n": 40,
+   "product_name": "Coke Original Taste",
+   "product_name_fr": "Coca-Cola Original Taste",
+   "_score": null
+  },
+  {
+   "code": "54491014",
+   "brands": [
+    "xx:Coca-Cola Company"
+   ],
+   "quantity": "150ml",
+   "unique_scans_n": 38,
+   "product_name": "Cocacola mini original taste",
+   "product_name_fr": "Coca cola",
+   "_score": null
+  },
+  {
+   "code": "5449000195340",
+   "brands": [
+    "xx:Coca-Cola-light",
+    "xx:coca cola"
+   ],
+   "quantity": "1,25 L",
+   "unique_scans_n": 38,
+   "product_name": "Coca cola zero cherry",
+   "product_name_fr": "Coca cola zero cherry",
+   "_score": null
+  },
+  {
+   "code": "90357473",
+   "brands": [
+    "xx:Coke ZERO"
+   ],
+   "quantity": "150 ml",
+   "unique_scans_n": 37,
+   "product_name": "Cocacola mini zero sugar",
+   "product_name_fr": "Cocacola mini zero sugar",
+   "_score": null
+  },
+  {
+   "code": "5449000261748",
+   "brands": [
+    "xx:coca-cola"
+   ],
+   "quantity": "200 ml",
+   "unique_scans_n": 36,
+   "product_name": "Coca Cola sans sucre sans caféine",
+   "product_name_fr": "Coca Cola sans sucre sans caféine",
+   "_score": null
+  },
+  {
+   "code": "5000112638769",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "33 cl",
+   "unique_scans_n": 35,
+   "product_name": "Coca-Cola",
+   "product_name_fr": "Coca Cola 33cl",
+   "_score": null
+  },
+  {
+   "code": "5449000137609",
+   "brands": [
+    "xx:Coca-Cola"
+   ],
+   "quantity": "1,5 L",
+   "unique_scans_n": 35,
+   "product_name": "Coca-Cola Zero",
+   "product_name_fr": "Coca-Cola Zero",
+   "_score": null
+  },
+  {
+   "code": "3760269851047",
+   "brands": [
+    "xx:Yass Soda"
+   ],
+   "unique_scans_n": 34,
+   "product_name_fr": "Yass Soda Cherie Cherry Coca",
+   "_score": null
+  },
+  {
+   "code": "5449000134264",
+   "brands": [
+    "xx:Coca-Cola",
+    "xx:Cola"
+   ],
+   "quantity": "1l",
+   "unique_scans_n": 34,
+   "product_name": "Coca-Cola Zero",
+   "product_name_fr": "Coca-Cola Zero Sugar 1 Liter",
+   "_score": null
+  },
+  {
+   "code": "5449000297280",
+   "brands": [
+    "xx:Coke"
+   ],
+   "quantity": "500ml",
+   "unique_scans_n": 34,
+   "product_name": "Coca-Cola goût original",
+   "product_name_fr": "Coca-Cola goût original",
+   "_score": null
+  },
+  {
+   "code": "5000112677867",
+   "quantity": "8 x 250 ml",
+   "unique_scans_n": 33,
+   "product_name_fr": "Coca cola",
+   "_score": null
+  },
+  {
+   "code": "5000112554359",
+   "brands": [
+    "xx:Coca-Cola",
+    "xx:Coca-Cola-light",
+    "xx:The Coca-Cola Company"
+   ],
+   "quantity": "330ml",
+   "unique_scans_n": 33,
+   "product_name": "Coca-Cola zéro",
+   "product_name_fr": "Coca-Cola zéro",
+   "_score": null
+  }
+ ],
+ "aggregations": null,
+ "facets": {},
+ "charts": {},
+ "page": 1,
+ "page_size": 50,
+ "page_count": 35,
+ "took": 18,
+ "timed_out": false,
+ "count": 1708,
+ "is_count_exact": true,
+ "warnings": null
+}

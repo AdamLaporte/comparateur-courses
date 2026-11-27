@@ -24,6 +24,8 @@ FICHIERS = {
     "oeufs": "recherche_oeufs.json",
     "(nutella) AND quantity:(400*)": "recherche_nutella_quantite_400.json",
     "spag*": "recherche_spag_prefixe.json",
+    "coca*": "recherche_coca_prefixe.json",
+    "activia*": "recherche_activia_prefixe.json",
 }
 
 
@@ -63,7 +65,7 @@ def test_mots_recherche():
 async def test_nutella_produits_francais_en_tete(reglages_off):
     produits = await _chercher("nutella", reglages_off, FauxOFF())
     assert 0 < len(produits) <= 8
-    assert produits[0].ean.startswith("3017620")  # Nutella vendu en France (Ferrero France)
+    assert produits[0].ean.startswith("301762")  # Nutella vendu en France (Ferrero France)
     assert all("nutella" in p.libelle.lower() for p in produits[:3])
     assert produits[0].marque and not produits[0].marque.startswith("xx:")
 
@@ -100,7 +102,7 @@ async def test_panne_apres_une_reponse_enregistree(reglages_off, monkeypatch):
     await _chercher("nutella", reglages_off, FauxOFF())
     monkeypatch.setattr(service, "DUREE_REPONSE_MIN", -1)  # tout est périmé
     produits = await _chercher("nutella", reglages_off, FauxOFF(statut=503))
-    assert produits[0].ean.startswith("3017620")  # ancienne réponse, pas le catalogue fictif
+    assert produits[0].ean.startswith("301762")  # ancienne réponse, pas le catalogue fictif
 
 
 async def test_mode_fictif_sans_reseau(reglages_off):
@@ -198,3 +200,86 @@ async def test_debut_de_mot_trouve_les_spaghetti(reglages_off):
     assert all(service.normaliser(p.libelle).startswith("spaghetti") for p in produits[:3])
     # Nom simple d'abord : pas de sauce ni de plat préparé en tête.
     assert "sauce" not in service.normaliser(produits[0].libelle)
+
+
+# --- Nettoyage des marques et des quantités (tous les produits) ---
+
+
+@pytest.mark.parametrize(
+    ("brutes", "attendu"),
+    [
+        (["xx:COCA-COLA SERVICES SA/NV", "xx:Coke ZERO"], ["Coca-Cola", "Coke ZERO"]),
+        (["xx:DANONE PRODUITS FRAIS FRANCE"], ["Danone"]),
+        (["xx:Danone Belux nv"], ["Danone"]),
+        (["xx:166", "xx:43122 Parma - Italy", "xx:Barilla"], ["Barilla"]),
+        (["xx:Carrefour", "xx:carrefour"], ["Carrefour"]),
+        (["xx:Scamark (Filiale E. Leclerc)"], ["Scamark"]),
+        (["xx:C\\'est qui le patron"], ["C'est qui le patron"]),
+        (["xx:Elle&Vire International"], ["Elle&Vire"]),
+        (["xx:The Coca-Cola Company"], ["Coca-Cola"]),
+        (["xx:Barilla G. e R. Fratelli"], ["Barilla"]),
+        (["xx:Campagne de France"], ["Campagne de France"]),
+        (["xx:FERRERO FRANCE COMMERCIALE"], ["Ferrero"]),
+        (None, []),
+    ],
+)
+def test_nettoyer_marques(brutes, attendu):
+    assert service.nettoyer_marques(brutes) == attendu
+
+
+def test_choisir_la_marque_qui_n_est_pas_dans_le_nom():
+    assert service.choisir_marque(["Nutella", "Ferrero"], "Nutella") == "Ferrero"
+    assert service.choisir_marque(["Activia", "Danone"], "Activia bifidus nature") == "Danone"
+    assert service.choisir_marque(["Coca-Cola"], "Coca-Cola zero") == "Coca-Cola"
+    assert service.choisir_marque([], "Riz") is None
+
+
+@pytest.mark.parametrize(
+    ("brute", "attendu"),
+    [
+        ("400 g e", "400 g"),
+        ("1000g", "1 kg"),
+        ("0.5 kg", "500 g"),
+        ("2,5 kg", "2,5 kg"),
+        ("330 mL", "33 cl"),
+        ("1.5 L", "1,5 L"),
+        ("4 x 125g", "4 × 125 g"),
+        ("24 rouleaux", "24 rouleaux"),
+        ("450", None),
+        ("0,330", None),
+        (None, None),
+    ],
+)
+def test_formater_quantite(brute, attendu):
+    assert service.formater_quantite(brute) == attendu
+
+
+async def test_nutella_marque_coherente_et_sans_doublon(reglages_off):
+    produits = await _chercher("nutella", reglages_off, FauxOFF())
+    nutella = [p for p in produits if service.normaliser(p.libelle) == "nutella"]
+    assert {p.marque for p in nutella} == {"Ferrero"}  # jamais « Nutella » ni vide
+    assert all(not p.libelle.islower() for p in produits)  # « nutella » → « Nutella »
+    formats = [(p.libelle.lower(), p.marque, p.quantite) for p in produits]
+    assert len(formats) == len(set(formats))  # pas deux fois « 1 kg »
+
+
+async def test_coca_cola_marque_unifiee(reglages_off):
+    produits = await _chercher("coca", reglages_off, FauxOFF())
+    marques = {p.marque for p in produits if p.marque}
+    assert marques == {
+        "Coca-Cola"
+    }  # « COCA-COLA SERVICES SA/NV », « The Coca-Cola Company »… unifiés
+    assert all(
+        p.marque for p in produits if "coca" in p.libelle.lower()
+    )  # même sans marque d'origine
+    assert not any("SA/NV" in m or "SERVICES" in m or m.islower() for m in marques)
+    assert all(
+        p.quantite is None or any(u in p.quantite for u in ("cl", "L", "ml", "×", " "))
+        for p in produits
+    )
+
+
+async def test_activia_marque_danone(reglages_off):
+    produits = await _chercher("activia", reglages_off, FauxOFF())
+    assert produits
+    assert all(p.marque == "Danone" for p in produits if "activia" in p.libelle.lower())

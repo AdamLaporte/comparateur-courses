@@ -24,6 +24,7 @@ import re
 import sqlite3
 import time
 import unicodedata
+from collections import Counter, defaultdict
 from datetime import UTC, datetime
 
 import httpx
@@ -146,14 +147,180 @@ def mots_recherche(texte: str) -> list[str]:
     return mots
 
 
-def _marque(marques: list[str] | str | None) -> str | None:
+# --- Nettoyage des marques et des quantités (Open Food Facts est rempli par des bénévoles) ---
+
+# Mots juridiques ou administratifs retirés d'une marque : « COCA-COLA SERVICES SA/NV » → « Coca-Cola ».
+MOTS_JURIDIQUES = {
+    "sa",
+    "nv",
+    "sas",
+    "sasu",
+    "sarl",
+    "snc",
+    "sca",
+    "scop",
+    "gmbh",
+    "ag",
+    "kg",
+    "bv",
+    "spa",
+    "srl",
+    "ltd",
+    "limited",
+    "inc",
+    "llc",
+    "plc",
+    "co",
+    "cie",
+    "company",
+    "corporation",
+    "corp",
+    "group",
+    "groupe",
+    "holding",
+    "services",
+    "international",
+    "france",
+    "belux",
+    "benelux",
+    "europe",
+    "produits",
+    "frais",
+    "distribution",
+    "industries",
+    "filiale",
+    "commerciale",
+    "technical",
+    "fratelli",
+    "freres",
+    "fils",
+}
+# Petits mots qui ne terminent jamais une marque : « Campagne de France » ne perd pas « France ».
+MOTS_DE_LIAISON = {
+    "de",
+    "du",
+    "des",
+    "d",
+    "la",
+    "le",
+    "les",
+    "l",
+    "et",
+    "e",
+    "y",
+    "and",
+    "di",
+    "del",
+}
+
+
+def _cle_marque(marque: str) -> str:
+    return normaliser(marque).replace(" ", "")
+
+
+def nettoyer_marque(brute: str) -> str | None:
+    """« xx:COCA-COLA SERVICES SA/NV » → « Coca-Cola » ; « 43122 Parma - Italy » ou « 166 » → None."""
+    marque = re.sub(r"^[a-z]{2}:", "", brute.strip()).replace("\\", "")  # « C\\'est » → « C'est »
+    marque = re.sub(r"\([^)]*\)", " ", marque)  # « Scamark (Filiale E. Leclerc) » → « Scamark »
+    if re.search(r"\d{3,}", marque):  # adresse, code postal, numéro : pas une marque
+        return None
+    mots = [m for m in re.split(r"[\s/]+", marque) if m]
+    while mots:
+        dernier = normaliser(mots[-1])
+        initiale = re.fullmatch(r"[^\W\d_]\.?", mots[-1]) is not None  # « G. e R. »
+        if dernier in MOTS_DE_LIAISON or initiale or dernier == "":
+            mots.pop()  # restes d'une forme juridique : « Barilla G. e R. Fratelli »
+        elif dernier in MOTS_JURIDIQUES and not (
+            len(mots) >= 2 and normaliser(mots[-2]) in MOTS_DE_LIAISON - {"e", "et", "and", "y"}
+        ):
+            mots.pop()
+        else:
+            break
+    while mots and normaliser(mots[0]) in {"the", "groupe", "group", "societe", ""}:
+        mots.pop(0)  # « The Coca-Cola Company » → « Coca-Cola »
+    marque = " ".join(mots).strip(" -.,&")
+    if len(normaliser(marque)) < 2:
+        return None
+    if (
+        marque.islower() or marque.isupper()
+    ):  # « coca-cola », « DANONE » → « Coca-Cola », « Danone »
+        marque = re.sub(r"[^\W\d_]+", lambda m: m[0].capitalize(), marque.lower())
+    return marque
+
+
+def nettoyer_marques(marques: list[str] | str | None) -> list[str]:
+    """Marques nettoyées, sans doublon (« Carrefour » et « carrefour » ne comptent qu'une fois)."""
     if not marques:
+        return []
+    brutes = marques if isinstance(marques, list) else marques.split(",")
+    propres: dict[str, str] = {}
+    for brute in brutes:
+        marque = nettoyer_marque(brute)
+        if marque and _cle_marque(marque) not in propres:
+            propres[_cle_marque(marque)] = marque
+    return list(propres.values())
+
+
+def _dans_le_nom(marque: str, libelle: str) -> bool:
+    return _cle_marque(marque) in normaliser(libelle).replace(" ", "")
+
+
+def _variante(marque: str, marques: list[str], libelle: str) -> bool:
+    """« Coca-Cola-light » est une variante de « Coca-Cola » (présente dans le nom), pas un fabricant."""
+    cle = _cle_marque(marque)
+    return any(
+        _dans_le_nom(autre, libelle) and _cle_marque(autre) in cle
+        for autre in marques
+        if autre is not marque
+    )
+
+
+def choisir_marque(
+    marques: list[str], libelle: str, frequences: Counter | None = None
+) -> str | None:
+    """La marque qui apporte une information : celle qui n'est pas déjà dans le nom
+    (« Nutella » de Ferrero → « Ferrero », « Activia bifidus » de Danone → « Danone »).
+
+    Avec `frequences` (nombre de produits de la recherche qui portent chaque marque), une marque hors du nom
+    n'est retenue que si elle revient sur au moins deux produits : un fabricant (« Ferrero ») revient
+    souvent, une sous-marque isolée (« Coke ZERO ») non."""
+    for marque in marques:
+        if _dans_le_nom(marque, libelle) or _variante(marque, marques, libelle):
+            continue
+        if frequences is None or frequences[_cle_marque(marque)] >= 2:
+            return marque
+    return marques[0] if marques else None
+
+
+def _nombre_fr(valeur: float) -> str:
+    return f"{valeur:.3f}".rstrip("0").rstrip(".").replace(".", ",")
+
+
+def formater_quantite(brute: str | None) -> str | None:
+    """« 1000g » → « 1 kg », « 0.5 kg » → « 500 g », « 330 mL » → « 33 cl », « 4 x 125g » → « 4 × 125 g ».
+    Une quantité sans unité (« 450 », « 0,330 ») n'est pas affichée ; « 24 rouleaux » reste tel quel."""
+    texte = " ".join((brute or "").split())
+    if not texte:
         return None
-    premiere = marques[0] if isinstance(marques, list) else marques.split(",")[0]
-    premiere = re.sub(r"^[a-z]{2}:", "", premiere).strip()
-    if not premiere:
-        return None
-    return premiere[0].upper() + premiere[1:] if premiere.islower() else premiere
+    trouve = MOTIF_QUANTITE.search(_sans_accents(texte))
+    if trouve is None:
+        # Pas de poids ni de volume : on garde un nombre de pièces (« 6 œufs », « 24 rouleaux »).
+        return texte if re.search(r"\d\s*[^\W\d_]{2,}", texte) else None
+    facteur, unite = UNITES[trouve[3].lower()]
+    unitaire = float(trouve[2].replace(",", ".")) * facteur
+
+    def ecrire(valeur: float) -> str:
+        if unite == "g":
+            return (
+                f"{_nombre_fr(valeur / 1000)} kg" if valeur >= 1000 else f"{_nombre_fr(valeur)} g"
+            )
+        if valeur >= 1000:
+            return f"{_nombre_fr(valeur / 1000)} L"
+        return f"{_nombre_fr(valeur / 10)} cl" if valeur % 10 == 0 else f"{_nombre_fr(valeur)} ml"
+
+    if trouve[1] and int(trouve[1]) > 1:
+        return f"{int(trouve[1])} × {ecrire(unitaire)}"
+    return ecrire(unitaire)
 
 
 def requete_prefixe(texte: str) -> str | None:
@@ -176,29 +343,101 @@ def correspond(hit: dict, mots: list[str]) -> bool:
 
 
 def produits_depuis_reponse(contenu: dict, texte: str) -> list[Produit]:
-    """Produits d'une réponse search-a-licious, reclassés pour la recherche `texte`."""
+    """Produits d'une réponse search-a-licious, nettoyés et reclassés pour la recherche `texte`.
+
+    Marque choisie et nettoyée, quantité réécrite, un seul produit par (nom, marque, quantité) ; à nom égal,
+    les formats vont du plus petit au plus grand (sauf si la recherche demande une quantité)."""
     texte, quantite_voulue = separer_quantite(texte)
     mots = mots_recherche(texte)
+    mots_tapes = [m for m in normaliser(texte).split() if len(m) >= 2]
+    hits = [
+        hit
+        for hit in contenu.get("hits") or []
+        if re.fullmatch(r"\d{8,14}", str(hit.get("code") or "").strip())
+        and (hit.get("product_name_fr") or hit.get("product_name") or "").strip()
+    ]
+
+    # Écriture la plus fréquente de chaque marque dans la réponse : « Coca Cola » → « Coca-Cola ».
+    ecritures: dict[str, Counter] = defaultdict(Counter)
+    frequences: Counter = Counter()  # nombre de produits qui portent chaque marque
+    for hit in hits:
+        for marque in nettoyer_marques(hit.get("brands")):
+            ecritures[_cle_marque(marque)][marque] += 1
+            frequences[_cle_marque(marque)] += 1
+
+    def bien_ecrite(marque: str | None) -> str | None:
+        if marque is None:
+            return None
+        # La plus fréquente ; à égalité, celle qui a un tiret ou des majuscules et minuscules mêlées.
+        return max(
+            ecritures[_cle_marque(marque)].items() or [(marque, 1)],
+            key=lambda e: (e[1], "-" in e[0], not e[0].istitle()),
+        )[0]
+
+    # Fabricant d'une sous-marque, appris sur les autres produits de la réponse : un produit marqué
+    # seulement « nutella » reçoit « Ferrero » si d'autres Nutella portent « nutella, Ferrero ». Le
+    # fabricant retenu est le plus fréquent, et seulement s'il revient sur au moins deux produits.
+    associes: dict[str, Counter] = defaultdict(Counter)
+    for hit in hits:
+        libelle = (hit.get("product_name_fr") or hit.get("product_name")).strip()
+        marques = nettoyer_marques(hit.get("brands"))
+        hors_nom = [
+            m
+            for m in marques
+            if not _dans_le_nom(m, libelle) and not _variante(m, marques, libelle)
+        ]
+        for sous_marque in (m for m in marques if _dans_le_nom(m, libelle)):
+            for autre in hors_nom:
+                associes[_cle_marque(sous_marque)][autre] += 1
+    fabricants = {
+        sous_marque: compte.most_common(1)[0][0]
+        for sous_marque, compte in associes.items()
+        if compte.most_common(1)[0][1] >= 2
+    }
+
     candidats = []
     vus: set[str] = set()
-    for rang, hit in enumerate(contenu.get("hits") or []):
-        ean = str(hit.get("code") or "").strip()
-        libelle = (hit.get("product_name_fr") or hit.get("product_name") or "").strip()
-        if not re.fullmatch(r"\d{8,14}", ean) or not libelle or ean in vus:
+    for rang, hit in enumerate(hits):
+        ean = str(hit["code"]).strip()
+        if ean in vus:
             continue
         vus.add(ean)
+        libelle = " ".join((hit.get("product_name_fr") or hit.get("product_name")).split())
+        if libelle.islower():  # « nutella » → « Nutella »
+            libelle = libelle[0].upper() + libelle[1:]
+        marques = nettoyer_marques(hit.get("brands"))
+        marque = choisir_marque(marques, libelle, frequences)
+        if marque and _dans_le_nom(marque, libelle):
+            marque = fabricants.get(_cle_marque(marque), marque)
+        elif marque is None:
+            # Sans marque : fabricant d'une sous-marque présente dans le nom, sinon une marque fréquente
+            # de la recherche que le nom contient (« Coca cola » → « Coca-Cola »).
+            cle_nom = normaliser(libelle).replace(" ", "")
+            marque = next(
+                (f for sm, f in fabricants.items() if sm and sm in cle_nom), None
+            ) or next(
+                (
+                    e.most_common(1)[0][0]
+                    for c, e in ecritures.items()
+                    if frequences[c] >= 2 and c in cle_nom
+                ),
+                None,
+            )
         produit = Produit(
             ean=ean,
             libelle=libelle,
-            marque=_marque(hit.get("brands")),
-            quantite=(hit.get("quantity") or "").strip() or None,
+            marque=bien_ecrite(marque),
+            quantite=formater_quantite(hit.get("quantity")),
         )
         mots_nom = normaliser(libelle).split()
         en_plus = max(len(mots_nom) - len(mots), 0)
         commence = bool(mots and mots_nom and mots_nom[0].startswith(mots[0]))
+        # Mots tapés retrouvés tels quels (« pâtes » : « Pâtes coquillettes » avant « Pâte à tartiner »).
+        exacts = sum(mot in mots_nom for mot in mots_tapes)
         cle = (
             not correspond(hit, mots),
             not meme_quantite(quantite_voulue, lire_quantite(produit.quantite)),
+            -exacts,
             # Nom le plus simple d'abord : « Spaghetti 500 g » avant « Sauce à spag ».
             (0 if commence else 2) + en_plus - (2 if ean.startswith("3") else 0),
             produit.quantite is None,
@@ -207,7 +446,39 @@ def produits_depuis_reponse(contenu: dict, texte: str) -> list[Produit]:
         )
         candidats.append((cle, produit))
     candidats.sort(key=lambda c: c[0])
-    return [produit for _, produit in candidats]
+
+    # Un seul produit par (nom, marque, quantité) : « 1 kg » et « 1000g » ne font qu'une ligne.
+    uniques: list[Produit] = []
+    deja: set[tuple] = set()
+    for _, produit in candidats:
+        cle = (
+            normaliser(produit.libelle),
+            _cle_marque(produit.marque or ""),
+            lire_quantite(produit.quantite) or produit.quantite,
+        )
+        if cle not in deja:
+            deja.add(cle)
+            uniques.append(produit)
+    if quantite_voulue is not None:
+        return uniques
+
+    # À nom égal : vendus en France d'abord, puis du plus petit au plus grand format, à la place du
+    # premier produit de ce nom.; les produits vendus
+    # en France (EAN en 3) d'abord.
+    premier: dict[str, int] = {}
+    for position, produit in enumerate(uniques):
+        premier.setdefault(normaliser(produit.libelle), position)
+
+    def ordre(produit: Produit) -> tuple:
+        quantite = lire_quantite(produit.quantite)
+        return (
+            premier[normaliser(produit.libelle)],
+            not (produit.ean or "").startswith("3"),  # vendus en France d'abord
+            quantite is None,
+            quantite[0] if quantite else 0,
+        )
+
+    return sorted(uniques, key=ordre)
 
 
 async def _patienter() -> None:
