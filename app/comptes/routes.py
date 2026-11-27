@@ -7,17 +7,22 @@
 /comptes/mot-de-passe         changer son mot de passe (connecté)
 /comptes/mot-de-passe-perdu   recevoir un lien de réinitialisation
 /comptes/reinitialiser        choisir un nouveau mot de passe depuis le lien
+/comptes/favoris              articles favoris : ajout depuis la liste, ajout à la liste, retrait
 """
 
+import html
 from typing import Annotated
 
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
+from pydantic import ValidationError
 
 from app.comptes import service
 from app.comptes.service import ErreurCompte
 from app.config import ReglagesDep
+from app.contrats import AjoutLigne
 from app.gabarits import templates
+from app.panier import service as service_panier
 
 router = APIRouter(prefix="/comptes", tags=["comptes"])
 
@@ -186,3 +191,82 @@ async def reinitialiser(
         request, reglages, utilisateur_id, service.email_utilisateur(reglages, utilisateur_id) or ""
     )
     return _vers("/comptes?message=mot_de_passe_change")
+
+
+# --- Articles favoris ---
+
+
+def _ajouter_a_la_liste(reglages, utilisateur_id: int, favori: dict) -> None:
+    try:
+        ajout = AjoutLigne(
+            mode=favori["mode"],
+            ean=favori["ean"],
+            recherche=favori["recherche"],
+            libelle=favori["libelle"],
+        )
+    except ValidationError:
+        return
+    service_panier.ajouter(reglages, f"utilisateur:{utilisateur_id}", ajout)
+
+
+@router.get("/favoris", response_class=HTMLResponse)
+async def page_favoris(request: Request, reglages: ReglagesDep):
+    utilisateur_id = request.session.get("utilisateur_id")
+    if not utilisateur_id:
+        return _vers("/comptes/connexion?suivant=/comptes/favoris")
+    return _page(
+        request,
+        "favoris",
+        favoris=service.lister_favoris(reglages, utilisateur_id),
+        message=request.query_params.get("message"),
+    )
+
+
+@router.post("/favoris/depuis-ligne/{ligne_id}", response_class=HTMLResponse)
+async def favori_depuis_ligne(request: Request, reglages: ReglagesDep, ligne_id: int):
+    """Bouton « ☆ Favori » d'une ligne de la liste (HTMX) : rend l'étiquette « ★ En favori »."""
+    utilisateur_id = request.session.get("utilisateur_id")
+    if not utilisateur_id:
+        return HTMLResponse('<a class="note" href="/comptes/connexion">Connectez-vous</a>')
+    lignes = service_panier.lister(reglages, f"utilisateur:{utilisateur_id}")
+    ligne = next((lg for lg in lignes if lg.id == ligne_id), None)
+    if ligne is None:
+        return HTMLResponse("", status_code=404)
+    try:
+        service.ajouter_favori(
+            reglages, utilisateur_id, ligne.mode.value, ligne.ean, ligne.recherche, ligne.libelle
+        )
+    except ErreurCompte as erreur:
+        return HTMLResponse(f'<span class="erreur">{html.escape(str(erreur))}</span>')
+    return HTMLResponse('<span class="favori">★ En favori</span>')
+
+
+@router.post("/favoris/{favori_id}/ajouter-a-la-liste")
+async def favori_vers_liste(request: Request, reglages: ReglagesDep, favori_id: int):
+    utilisateur_id = request.session.get("utilisateur_id")
+    if not utilisateur_id:
+        return _vers("/comptes/connexion?suivant=/comptes/favoris")
+    favori = service.favori(reglages, utilisateur_id, favori_id)
+    if favori is not None:
+        _ajouter_a_la_liste(reglages, utilisateur_id, favori)
+    return _vers("/comptes/favoris?message=ajoute")
+
+
+@router.post("/favoris/tout-ajouter")
+async def favoris_vers_liste(request: Request, reglages: ReglagesDep):
+    utilisateur_id = request.session.get("utilisateur_id")
+    if not utilisateur_id:
+        return _vers("/comptes/connexion?suivant=/comptes/favoris")
+    for favori in service.lister_favoris(reglages, utilisateur_id):
+        _ajouter_a_la_liste(reglages, utilisateur_id, favori)
+    return _vers(
+        "/panier" if request.session.get("code_postal") else "/comptes/favoris?message=tous"
+    )
+
+
+@router.post("/favoris/{favori_id}/supprimer")
+async def supprimer_favori(request: Request, reglages: ReglagesDep, favori_id: int):
+    utilisateur_id = request.session.get("utilisateur_id")
+    if utilisateur_id:
+        service.supprimer_favori(reglages, utilisateur_id, favori_id)
+    return _vers("/comptes/favoris?message=retire")

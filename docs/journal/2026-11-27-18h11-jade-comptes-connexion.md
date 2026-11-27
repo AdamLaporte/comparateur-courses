@@ -10,12 +10,17 @@
 - La liste faite sans compte est gardée dans le compte à la connexion.
 - Pages : `app/templates/comptes/` (page, inscription, connexion, mot_de_passe, mot_de_passe_perdu, reinitialiser),
   styles de formulaire dans `style.css`, lien du menu « Se connecter » / « Mon compte ».
-- 15 tests dans `tests/test_comptes.py` ; 62 tests verts, ruff propre. Parcours vérifié dans un navigateur.
+- Articles favoris : « ☆ Favori » sur chaque ligne de la liste (connecté), page `/comptes/favoris` (ajouter à la liste,
+  tout ajouter, retirer), sans doublon.
+- Suggestions d'articles : plus de « None » quand Open Food Facts ne donne pas de marque ou de quantité.
+- 19 tests dans `tests/test_comptes.py` ; 66 tests verts, ruff propre. Parcours vérifiés dans un navigateur.
 
 ## Fichiers modifiés
 
 - `app/comptes/service.py`, `app/comptes/routes.py`
-- `app/templates/comptes/*.html`, `app/static/style.css` (ajout en fin de fichier)
+- `app/templates/comptes/*.html` (dont `favoris.html`), `app/static/style.css` (ajouts en fin de fichier)
+- Lot 1, ajouts : `panier/_liste.html` (bouton favori), `panier/page.html` (lien « mes favoris »),
+  `produits/_suggestions.html` (marque ou quantité absente)
 - Partagés (commit à part) : `app/config.py`, `.env.example` (SMTP), `app/templates/base.html` (menu)
 - `tests/test_comptes.py`, `docs/decisions.md`, `docs/taches.md`, `docs/architecture.md`
 
@@ -25,7 +30,8 @@
 
 ## Reste à faire
 
-- Articles favoris (table `article_favori` déjà créée), « maison » (table `adresse_favorite`), cagnotte (à concevoir).
+- « Maison » (table `adresse_favorite`).
+- Cagnotte : écart avec la moyenne des magasins comparés, au clic « J'ai fait mes courses ici » (décision du 27/11).
 
 ## Points d'attention pour la suite
 

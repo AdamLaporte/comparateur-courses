@@ -7,7 +7,8 @@
   contient une empreinte du hachage actuel, qui change dès que le mot de passe change). Envoyé par SMTP si
   SMTP_HOTE est réglé, sinon écrit dans le journal du serveur (développement et démo).
 - Trop d'échecs de connexion pour un e-mail : blocage temporaire (MAX_ECHECS en FENETRE_ECHECS_S).
-Tables : schema.sql. Articles favoris, « maison » et cagnotte : à venir.
+- Articles favoris : un produit précis (EAN) ou une recherche « le moins cher », sans doublon.
+Tables : schema.sql. « Maison » et cagnotte : à venir.
 """
 
 import asyncio
@@ -223,3 +224,69 @@ async def demander_reinitialisation(reglages: Reglages, email: str, base_url: st
         return
     jeton = creer_jeton(reglages, ligne["id"])
     await envoyer_lien(reglages, ligne["email"], f"{base_url}comptes/reinitialiser?jeton={jeton}")
+
+
+# --- Articles favoris ---
+
+MAX_FAVORIS = 100
+
+
+def lister_favoris(reglages: Reglages, utilisateur_id: int) -> list[dict]:
+    with db.connexion(reglages.db_path) as cnx:
+        lignes = cnx.execute(
+            "SELECT id, mode, ean, recherche, libelle FROM article_favori "
+            "WHERE utilisateur_id = ? ORDER BY libelle COLLATE NOCASE",
+            (utilisateur_id,),
+        ).fetchall()
+    return [dict(ligne) for ligne in lignes]
+
+
+def ajouter_favori(
+    reglages: Reglages,
+    utilisateur_id: int,
+    mode: str,
+    ean: str | None,
+    recherche: str,
+    libelle: str,
+) -> None:
+    """Ajoute un favori, sauf s'il existe déjà (même EAN, ou même recherche en mode « équivalent »)."""
+    if mode not in ("produit", "equivalent") or (mode == "produit" and not ean):
+        raise ErreurCompte("Favori invalide.")
+    recherche = " ".join(recherche.split())[:120]
+    libelle = " ".join((libelle or recherche).split())[:200]
+    favoris = lister_favoris(reglages, utilisateur_id)
+    for favori in favoris:
+        if mode == "produit" and favori["mode"] == "produit" and favori["ean"] == ean:
+            return
+        if (
+            mode == "equivalent"
+            and favori["mode"] == "equivalent"
+            and favori["recherche"].lower() == recherche.lower()
+        ):
+            return
+    if len(favoris) >= MAX_FAVORIS:
+        raise ErreurCompte(f"{MAX_FAVORIS} favoris au plus.")
+    with db.connexion(reglages.db_path) as cnx:
+        cnx.execute(
+            "INSERT INTO article_favori (utilisateur_id, mode, ean, recherche, libelle) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (utilisateur_id, mode, ean if mode == "produit" else None, recherche, libelle),
+        )
+
+
+def supprimer_favori(reglages: Reglages, utilisateur_id: int, favori_id: int) -> None:
+    with db.connexion(reglages.db_path) as cnx:
+        cnx.execute(
+            "DELETE FROM article_favori WHERE id = ? AND utilisateur_id = ?",
+            (favori_id, utilisateur_id),
+        )
+
+
+def favori(reglages: Reglages, utilisateur_id: int, favori_id: int) -> dict | None:
+    with db.connexion(reglages.db_path) as cnx:
+        ligne = cnx.execute(
+            "SELECT id, mode, ean, recherche, libelle FROM article_favori "
+            "WHERE id = ? AND utilisateur_id = ?",
+            (favori_id, utilisateur_id),
+        ).fetchone()
+    return dict(ligne) if ligne else None

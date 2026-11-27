@@ -211,3 +211,80 @@ def test_changer_de_mot_de_passe(client):
     assert "Mot de passe enregistré" in ok.text
     client.post("/comptes/deconnexion")
     assert _connecter(client, mdp=nouveau).status_code == 200
+
+
+# --- Articles favoris ---
+
+
+def _ligne_dans_la_liste(client, recherche="cornichons extra-fins", **champs):
+    client.get("/magasins", params={"code_postal": "35170"})
+    client.post("/panier/lignes", data={"mode": "equivalent", "recherche": recherche, **champs})
+
+
+def _ids_lignes(client) -> list[int]:
+    return [
+        int(i)
+        for i in re.findall(r"/comptes/favoris/depuis-ligne/(\d+)", client.get("/panier").text)
+    ]
+
+
+def test_bouton_favori_seulement_si_connecte(client):
+    _ligne_dans_la_liste(client)
+    assert "☆ Favori" not in client.get("/panier").text
+    _inscrire(client)
+    assert "☆ Favori" in client.get("/panier").text
+
+
+def test_favori_depuis_la_liste_puis_vers_la_liste(client):
+    _inscrire(client)
+    _ligne_dans_la_liste(client)
+    client.post(
+        "/panier/lignes",
+        data={
+            "mode": "produit",
+            "ean": "3017620422003",
+            "recherche": "nutella",
+            "libelle": "Nutella 400 g",
+        },
+    )
+    for ligne_id in _ids_lignes(client):
+        assert "★ En favori" in client.post(f"/comptes/favoris/depuis-ligne/{ligne_id}").text
+        client.post(f"/comptes/favoris/depuis-ligne/{ligne_id}")  # deuxième clic : pas de doublon
+
+    page = client.get("/comptes/favoris").text
+    assert page.count("Ajouter à ma liste") == 2
+    assert "Nutella 400 g" in page and "cornichons extra-fins" in page
+
+    # On vide la liste, puis on la reconstruit depuis les favoris.
+    for ligne_id in _ids_lignes(client):
+        client.delete(f"/panier/lignes/{ligne_id}")
+    assert _ids_lignes(client) == []
+    reponse = client.post("/comptes/favoris/tout-ajouter")
+    assert "Nutella 400 g" in reponse.text and "cornichons extra-fins" in reponse.text
+    assert len(_ids_lignes(client)) == 2
+
+
+def test_retirer_un_favori_et_favoris_prives(client):
+    _inscrire(client)
+    _ligne_dans_la_liste(client)
+    client.post(f"/comptes/favoris/depuis-ligne/{_ids_lignes(client)[0]}")
+    favori_id = re.search(r"/comptes/favoris/(\d+)/supprimer", client.get("/comptes/favoris").text)[
+        1
+    ]
+    client.post("/comptes/deconnexion")
+
+    # Un autre compte ne voit ni ne supprime les favoris du premier.
+    _inscrire(client, email="autre@example.org")
+    assert "cornichons" not in client.get("/comptes/favoris").text
+    client.post(f"/comptes/favoris/{favori_id}/supprimer")
+    client.post("/comptes/deconnexion")
+
+    _connecter(client)
+    assert "cornichons" in client.get("/comptes/favoris").text
+    client.post(f"/comptes/favoris/{favori_id}/supprimer")
+    assert "Aucun favori" in client.get("/comptes/favoris").text
+
+
+def test_favoris_demandent_une_connexion(client):
+    assert "Se connecter" in client.get("/comptes/favoris").text
+    assert "Connectez-vous" in client.post("/comptes/favoris/depuis-ligne/1").text

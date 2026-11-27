@@ -6,6 +6,7 @@
   Autour de {{ code_postal }} ·
   <a href="/magasins?code_postal={{ code_postal }}">voir les magasins</a> ·
   <a href="/">changer de code postal</a>
+  {% if request.session.get("utilisateur_id") %} · <a href="/comptes/favoris">★ mes favoris</a>{% endif %}
 </p>
 
 <section class="carte">
