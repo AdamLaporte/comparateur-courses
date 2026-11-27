@@ -545,8 +545,12 @@ def enregistrer(reglages: Reglages, produits: list[Produit]) -> None:
     try:
         with db.connexion(reglages.db_path) as cnx:
             cnx.executemany(
-                "INSERT OR REPLACE INTO produit (ean, libelle, marque, quantite, source, maj_le) "
-                "VALUES (?, ?, ?, ?, 'open_food_facts', ?)",
+                # Mise à jour d'une fiche Open Food Facts, jamais d'une fiche relevée sur un drive.
+                "INSERT INTO produit (ean, libelle, marque, quantite, source, maj_le) "
+                "VALUES (?, ?, ?, ?, 'open_food_facts', ?) "
+                "ON CONFLICT(ean) DO UPDATE SET libelle=excluded.libelle, marque=excluded.marque, "
+                "quantite=excluded.quantite, maj_le=excluded.maj_le "
+                "WHERE produit.source = 'open_food_facts'",
                 [(p.ean, p.libelle, p.marque, p.quantite, maintenant) for p in produits if p.ean],
             )
     except sqlite3.Error:
@@ -562,6 +566,40 @@ def produit_par_ean(reglages: Reglages, ean: str) -> Produit | None:
     except sqlite3.Error:
         return None
     return Produit(**dict(ligne)) if ligne else None
+
+
+def produits_locaux(
+    reglages: Reglages, texte: str, limite: int, *, drives_seulement: bool = False
+) -> list[Produit]:
+    """Produits réels déjà en base qui contiennent tous les mots cherchés : ceux relevés sur un drive
+    d'abord (ils sont vendus dans les magasins du coin), puis ceux vus sur Open Food Facts."""
+    mots = mots_recherche(texte)
+    if not mots:
+        return []
+    try:
+        with db.connexion(reglages.db_path) as cnx:
+            lignes = cnx.execute(
+                "SELECT ean, libelle, marque, quantite, source FROM produit"
+            ).fetchall()
+    except sqlite3.Error:
+        logger.exception("Lecture des produits en base impossible")
+        return []
+    trouves = []
+    for ligne in lignes:
+        contenu = set(normaliser(f"{ligne['libelle']} {ligne['marque'] or ''}").split())
+        drive = ligne["source"].startswith("drive:")
+        if drives_seulement and not drive:
+            continue
+        if all(any(m.startswith(mot) for m in contenu) for mot in mots):
+            produit = Produit(
+                ean=ligne["ean"],
+                libelle=ligne["libelle"],
+                marque=ligne["marque"],
+                quantite=ligne["quantite"],
+            )
+            trouves.append((not drive, len(ligne["libelle"]), produit))
+    trouves.sort(key=lambda t: (t[0], t[1]))
+    return [produit for *_, produit in trouves[:limite]]
 
 
 def _catalogue_fictif(texte: str, limite: int) -> list[Produit]:
@@ -596,7 +634,11 @@ async def rechercher(
         generale = await _reponse_off(recherche, reglages, transport)
         hits += (generale or {}).get("hits") or []
     produits = produits_depuis_reponse({"hits": hits}, texte)[:limite]
-    if not produits:
-        return _catalogue_fictif(base if len(base) >= 2 else texte, limite)
     enregistrer(reglages, produits)
-    return produits
+    # Uniquement du réel : les produits relevés sur les drives d'abord, puis Open Food Facts. Sans aucun
+    # résultat, la liste est vide (l'utilisateur garde « le moins cher ») : plus de catalogue fictif ici.
+    if not produits:  # Open Food Facts muet ou en panne : ce qui est déjà en base (réel)
+        return produits_locaux(reglages, recherche, limite)
+    drives = produits_locaux(reglages, recherche, limite, drives_seulement=True)
+    vus = {p.ean for p in drives}
+    return (drives + [p for p in produits if p.ean not in vus])[:limite]

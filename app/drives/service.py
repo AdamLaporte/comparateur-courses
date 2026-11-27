@@ -68,6 +68,21 @@ def observer(
         " ".join((produit.produit, produit.marque, produit.variante, produit.format))
     )
     cnx.execute("INSERT OR IGNORE INTO drive_reference VALUES (?, ?)", (drive, reference))
+    # Un produit relevé sur un drive, avec un vrai code-barres, rejoint le catalogue des produits : la
+    # recherche d'articles le propose ensuite. On ne remplace pas une fiche déjà connue.
+    if ean_valide(produit.ean):
+        cnx.execute(
+            "INSERT OR IGNORE INTO produit (ean, libelle, marque, quantite, source, maj_le) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (
+                produit.ean,
+                produit.produit,
+                produit.marque or None,
+                produit.format or None,
+                f"drive:{drive}",
+                horodater(maintenant()),
+            ),
+        )
     cnx.execute(
         "INSERT OR IGNORE INTO drive_observation "
         "(drive_id, reference, date_tri, releve_le, texte, ean, contenu)"
