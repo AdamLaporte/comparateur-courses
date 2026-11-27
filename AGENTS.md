@@ -33,7 +33,7 @@ Fonctionnalités secondaires, prévues dans le modèle mais pas promises : mode 
 
 - Python 3.13, dépendances gérées avec **uv**.
 - **FastAPI** dans un seul processus : pages **Jinja2** + **HTMX**, prix au fil de l'eau en **SSE**
-  (`sse-starlette` + extension SSE de HTMX), API JSON sous `/api/...`.
+  (SSE intégré à FastAPI, `fastapi.sse`, + extension SSE de HTMX 2), API JSON sous `/api/...`.
 - Schémas **Pydantic** v2 (`app/contrats.py`) : le contrat entre interface, serveur et sources.
 - **httpx** asynchrone pour les appels externes, **asyncio** pour le parallélisme.
 - **SQLite** via le module `sqlite3` de Python, sans ORM.
@@ -57,6 +57,7 @@ Détails et diagrammes : [`docs/architecture.md`](docs/architecture.md). Décisi
 │   ├── config.py              # réglages (.env), tous pré-déclarés (partagé)
 │   ├── db.py                  # connexion SQLite + création des tables (partagé)
 │   ├── contrats.py            # schémas Pydantic communs (partagé, modification concertée)
+│   ├── gabarits.py            # moteur Jinja2 commun + filtres euros/releve (partagé)
 │   ├── sources/               # interface SourcePrix + une source par fichier
 │   │   ├── base.py            # interface commune (partagé, modification concertée)
 │   │   ├── registre.py        # quelle source pour quelle enseigne
@@ -64,15 +65,15 @@ Détails et diagrammes : [`docs/architecture.md`](docs/architecture.md). Décisi
 │   │   ├── intermarche.py     # API officielle (aucune requête sans clé)
 │   │   ├── carrefour.py, leclerc.py, coursesu.py   # collecte en direct
 │   │   └── open_prices.py     # source de secours
-│   ├── collecte/              # orchestrateur.py, repli.py, cache.py, prechauffer.py
-│   ├── magasins/              # code postal → magasins proches
-│   ├── produits/              # recherche d'articles (Open Food Facts)
-│   ├── panier/                # liste, flux SSE, calcul.py (totaux)
-│   ├── comptes/               # inscription, connexion, favoris
-│   ├── templates/             # base.html + un dossier par fonctionnalité
-│   └── static/
+│   ├── collecte/              # orchestrateur.py, repli.py, cache.py, prechauffer.py, schema.sql
+│   ├── magasins/              # routes.py, service.py (distances), geocodage.py
+│   ├── produits/              # routes.py, service.py (recherche d'articles)
+│   ├── panier/                # routes.py (liste, flux SSE, API), service.py, calcul.py, schema.sql
+│   ├── comptes/               # routes.py, service.py, schema.sql (inscription, connexion, favoris)
+│   ├── templates/             # base.html, erreur.html + un dossier par fonctionnalité
+│   └── static/style.css
 ├── data/demo/recherches.txt   # recherches pour préchauffer le cache avant la démo
-├── tests/                     # un fichier par fonctionnalité, jamais de réseau
+├── tests/                     # conftest.py, test_parcours.py, test_calcul.py, test_orchestrateur.py
 └── docs/
     ├── architecture.md        # architecture et diagrammes (à jour)
     ├── decisions.md           # une ligne par décision importante
@@ -80,11 +81,13 @@ Détails et diagrammes : [`docs/architecture.md`](docs/architecture.md). Décisi
     └── journal/               # un fichier par session d'agent
 ```
 
-> État au 27/11 15h : seuls la documentation et `.gitignore` existent. Le code arrive à l'étape 3 (squelette).
+> État au 27/11 (squelette) : parcours complet avec données fictives. Les modules marqués « BOUCHON » en tête de
+> fichier (sources réelles, cache, Open Prices, comptes, préchauffage) sont à remplir par les lots.
 
 ## Commandes
 
-Disponibles à partir de l'étape 3 (squelette).
+Toutes les commandes se lancent à la racine du dépôt. `uv run` utilise le `.venv` du projet : pas besoin de
+l'activer (si vous préférez, `source .venv/bin/activate` puis les commandes sans `uv run`).
 
 ```bash
 # Installer uv (une seule fois par machine)
@@ -98,6 +101,8 @@ uv run pytest                             # lancer les tests
 uv run ruff format .                      # formater
 uv run ruff check --fix .                 # vérifier (lint)
 uv run python -m app.collecte.prechauffer data/demo/recherches.txt --code-postal 35170   # remplir le cache (lot 4)
+
+# Parcours de démo : http://localhost:8000 → 35170 → « Composer ma liste » → « nutella », « lait » → « Comparer »
 ```
 
 Avant chaque fusion dans `main` : `uv run pytest` vert, `uv run ruff format --check .` et `uv run ruff check .`
@@ -138,8 +143,8 @@ propres.
    structure.
 2. Écrire son fichier dans `docs/journal/` avant de terminer la session (voir la règle n°1).
 3. Ne modifier **que les fichiers de son lot** (voir `docs/taches.md`). Les fichiers partagés (`app/main.py`,
-   `app/config.py`, `app/db.py`, `app/contrats.py`, `app/sources/base.py`, `app/templates/base.html`) ne reçoivent
-   que des **ajouts**, annoncés dans `docs/decisions.md` et commités à part.
+   `app/config.py`, `app/db.py`, `app/contrats.py`, `app/gabarits.py`, `app/sources/base.py`,
+   `app/templates/base.html`) ne reçoivent que des **ajouts**, annoncés dans `docs/decisions.md` et commités à part.
 4. Tenir à jour : `docs/taches.md` (statut de son lot), `docs/decisions.md` (une ligne par décision importante :
    date, décision, raison), `docs/architecture.md` (dès que la structure change).
 5. Le reste de l'application ne dépend que de l'interface `SourcePrix`. Une nouvelle source implémente

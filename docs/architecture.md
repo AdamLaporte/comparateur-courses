@@ -17,7 +17,8 @@ Contrainte principale : une démo qui marche le **samedi 28 novembre 2026 à 13h
 ## 2. Choix d'architecture
 
 **Retenu : un seul serveur FastAPI (option A).** Les pages sont rendues en Jinja2 et mises à jour avec HTMX. Les prix
-arrivent au fil de l'eau par Server-Sent Events (SSE). Une API JSON (`/api/...`) expose les mêmes schémas Pydantic,
+arrivent au fil de l'eau par Server-Sent Events (SSE), avec le support SSE intégré à FastAPI (`fastapi.sse`) et
+l'extension SSE de HTMX. Une API JSON (`/api/...`) expose les mêmes schémas Pydantic,
 pour les tests et pour d'éventuels autres clients. On lance un seul processus avec `uv run`.
 
 Options écartées :
@@ -67,13 +68,15 @@ aux mêmes fichiers. L'arborescence exacte et les commandes sont dans [`AGENTS.m
 | `app/config.py` | Réglages lus dans `.env` (pydantic-settings), tous pré-déclarés | partagé, ajout concerté |
 | `app/db.py` | Connexion `sqlite3`, exécute au démarrage les schémas déclarés par chaque fonctionnalité | partagé |
 | `app/contrats.py` | Schémas Pydantic communs (le contrat) | partagé, **modification concertée** |
+| `app/gabarits.py` | Moteur Jinja2 commun, filtres `euros` et `releve`, `rendre()` pour les fragments SSE | partagé, ajout concerté |
 | `app/sources/` | `base.py` (interface `SourcePrix`), `registre.py`, puis un fichier par source : `fictive.py`, `intermarche.py`, `carrefour.py`, `leclerc.py`, `coursesu.py`, `open_prices.py` | un fichier = un lot ou sous-lot |
 | `app/collecte/` | `orchestrateur.py` (parallélisme, limites), `repli.py`, `cache.py`, `prechauffer.py` (commande) | lot données et fiabilité |
 | `app/magasins/` | Code postal → position → magasins proches triés par distance | lot Intermarché et magasins |
 | `app/produits/` | Recherche d'un article pour composer la liste (Open Food Facts) | lot données et fiabilité |
 | `app/panier/` | Liste de courses, flux SSE des prix, `calcul.py` (totaux, fonctions pures) | lot interface + cœur |
 | `app/comptes/` | Inscription, connexion, articles et adresses favoris | lot Intermarché et magasins |
-| `app/templates/` | `base.html` + un sous-dossier par fonctionnalité (`magasins/`, `panier/`, `comptes/`) | lot interface |
+| `app/templates/` | `base.html`, `erreur.html` + un sous-dossier par fonctionnalité (`magasins/`, `produits/`, `panier/`, `comptes/`) | lot interface |
+| `app/<fonctionnalite>/schema.sql` | Tables SQLite de la fonctionnalité, créées au démarrage | la fonctionnalité concernée |
 | `tests/` | Un fichier de test par fonctionnalité, jamais de réseau | chacun pour son lot |
 
 Règle : un lot ne modifie que ses fichiers. Les fichiers marqués « partagé » ne reçoivent que des **ajouts**, annoncés
@@ -124,9 +127,15 @@ class SourcePrix(ABC):
     enseigne: Enseigne
     type_source: TypeSource
 
-    async def trouver_magasins(self, position: Position, rayon_km: float, max_magasins: int) -> list[Magasin]: ...
-    async def chercher_produits(self, magasin: Magasin, recherche: str, limite: int = 20) -> list[Prix]: ...
-    async def obtenir_prix(self, magasin: Magasin, ean: str) -> Prix | None: ...  # prix + promotions
+    async def trouver_magasins(
+        self, position: Position, rayon_km: float, max_magasins: int
+    ) -> list[Magasin]: ...
+    async def chercher_produits(
+        self, magasin: Magasin, recherche: str, limite: int = 20
+    ) -> list[Prix]: ...
+    async def obtenir_prix(
+        self, magasin: Magasin, ean: str
+    ) -> Prix | None: ...  # prix + promotions
 ```
 
 - Une source lève `SourceIndisponible` en cas d'échec (403, délai, format inattendu) et `SourceNonConfiguree` quand
@@ -232,8 +241,9 @@ Routes prévues :
 | `POST /api/panier/totaux` | Calcul complet sans session (code postal + lignes) | `TotauxReponse` |
 | `/comptes/...` | Inscription, connexion, favoris | pages (lot comptes) |
 
-Événements SSE : `prix-<ligne_id>-<magasin_id>` (case du tableau), `total-<magasin_id>` (total du magasin) et `fin`
-(HTMX ferme la connexion).
+Événements SSE : `prix-<ligne_id>-<magasin_id>` (case du tableau), `total-<magasin_id>` (total du magasin),
+`resume` (classement final) et `fin`. À la réception de `fin`, HTMX ferme la connexion (`sse-close="fin"`), ce qui
+évite que le navigateur relance toute la collecte en se reconnectant.
 
 ## 9. Calcul du total (`app/panier/calcul.py`)
 
@@ -251,8 +261,11 @@ Fonctions pures, sans réseau, testées à part.
 
 ## 10. Modèle de données (SQLite)
 
-Chaque fonctionnalité déclare ses tables (`CREATE TABLE IF NOT EXISTS`) dans son propre module, et `app/db.py` les
-crée au démarrage. Pas d'ORM, module `sqlite3` de Python.
+Chaque fonctionnalité déclare ses tables (`CREATE TABLE IF NOT EXISTS`) dans son propre fichier
+`app/<fonctionnalite>/schema.sql`. Au démarrage, `app/db.py` exécute tous ces fichiers : ajouter une table ne demande
+jamais de modifier un fichier partagé. Pas d'ORM, module `sqlite3` de Python. Au squelette : `panier/schema.sql`
+(`ligne_liste`), `comptes/schema.sql` (`utilisateur`, `adresse_favorite`, `article_favori`) et `collecte/schema.sql`
+(`cache_prix`). `MAGASIN`, `PRODUIT` et `PROFIL` viendront avec leurs lots.
 
 ```mermaid
 erDiagram
@@ -337,8 +350,9 @@ erDiagram
 
 ## 11. Sessions et comptes
 
-- Un cookie signé (`SessionMiddleware`, clé `SECRET_KEY`) porte un identifiant de session, le code postal choisi et,
-  si l'utilisateur est connecté, son identifiant.
+- Un cookie signé (`SessionMiddleware`, clé `SECRET_KEY`) porte les clés `sid` (identifiant de session anonyme),
+  `code_postal` (choisi sur la page des magasins) et, si l'utilisateur est connecté, `utilisateur_id` (posée par le
+  module comptes).
 - **Sans compte**, la liste est liée à la session (`proprietaire = "session:<uuid>"`). **Avec un compte**, elle est
   liée à l'utilisateur, et ses articles et adresses favoris sont enregistrés.
 - Les mots de passe sont hachés en argon2 avec `pwdlib`. Pas de connexion par un service tiers.
@@ -365,11 +379,24 @@ Modèle dans `.env.example`.
 | `RAYON_KM` | `10` | Rayon de recherche des magasins |
 | `MAX_MAGASINS_PAR_ENSEIGNE` | `2` | Magasins interrogés par enseigne |
 | `TIMEOUT_ENSEIGNE_S` | `6` | Limite de temps par enseigne |
+| `TIMEOUT_REQUETE_S` | `5` | Limite de temps d'une requête (géocodage, Open Prices…) |
 | `CONCURRENCE_PAR_ENSEIGNE` | `3` | Requêtes simultanées par enseigne |
 | `CACHE_TTL_MIN` | `360` | Durée de validité du cache |
+| `DELAI_FICTIF_MAX_S` | `0.8` | Délai aléatoire de la source fictive, pour voir les prix arriver un par un (0 dans les tests) |
 | `INTERMARCHE_API_KEY` | vide | Clé de l'API Intermarché. Vide = aucune requête |
 | `SECRET_KEY` | valeur de développement | Signature du cookie de session |
 | `DB_PATH` | `data/app.db` | Fichier SQLite (ignoré par Git) |
+
+## 14. Limites connues du squelette
+
+- La page des résultats et le flux SSE appellent chacun `magasins_proches`. Avec la source fictive, les magasins sont
+  identiques. Avec de vraies sources, il faudra mettre la liste des magasins en cache (table `MAGASIN`, lot 2 ou 4)
+  pour que le tableau et le flux voient exactement les mêmes magasins.
+- Le cache, Open Prices, la recherche Open Food Facts, les comptes et le préchauffage sont des modules vides
+  documentés (« BOUCHON » en tête de fichier).
+- Le repli après un délai dépassé traite les lignes restantes une par une. Quand Open Prices sera branché, le lot 4
+  pourra les traiter en parallèle.
+- Le Dockerfile n'a pas pu être testé sur la machine du squelette (pas d'accès au démon Docker).
 
 ## Annexe : notes techniques sur les sources (relevées le 27/11/2026)
 

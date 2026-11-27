@@ -27,3 +27,13 @@ est aussi notée ici.
 | 2026-11-27 | HTMX et son extension SSE chargés depuis un CDN | Rien à compiler. Internet est de toute façon nécessaire pendant la démo pour les prix |
 | 2026-11-27 | Adam (GitHub `AdamLaporte`) est responsable du dépôt Git : dépôt distant, ajout des participants, fusions et envois. Sur son poste, les commits sont signés « Adam Laporte » avec son adresse noreply GitHub | Demande d'Adam. Commits rattachés à son compte sans exposer d'e-mail personnel |
 | 2026-11-27 | Journal des sessions d'agent : `prenom` = prénom de la personne qui pilote l'agent, ou `claude` / `codex` s'il n'est pas connu | Savoir qui a fait quoi |
+| 2026-11-27 | SSE avec le support intégré à FastAPI (`fastapi.sse`, version 0.165) au lieu de `sse-starlette` | Même service avec une dépendance de moins |
+| 2026-11-27 | Dépendance `tzdata` ajoutée | L'heure de Paris s'affiche aussi sous Windows, où le système ne fournit pas les fuseaux |
+| 2026-11-27 | Tables déclarées dans `app/<fonctionnalite>/schema.sql`, toutes exécutées au démarrage par `app/db.py` | Ajouter une table ne touche aucun fichier partagé |
+| 2026-11-27 | Nouveau fichier partagé `app/gabarits.py` (Jinja2 commun, filtres `euros` et `releve`, `rendre()` pour les fragments SSE) | Un seul moteur de templates pour les pages et les fragments envoyés par SSE |
+| 2026-11-27 | Dépendance FastAPI des réglages : `reglages: ReglagesDep` (`Annotated`), réglages portés par `app.state` | Forme recommandée par FastAPI, et les tests créent l'application avec leurs propres réglages (`creer_app(reglages)`) |
+| 2026-11-27 | ruff : règle E501 (longueur des lignes) ignorée, `ruff format` gère la longueur du code | Les docstrings et commentaires en français dépassent souvent 100 caractères |
+| 2026-11-27 | Mode « équivalent » : on retient l'offre la moins chère au prix unitaire (au kilo, au litre) si toutes les offres l'ont, sinon au prix | Règle simple et défendable. Le lot 4 pourra l'affiner (mode fin de mois) |
+| 2026-11-27 | Données fictives : 5 vrais EAN (Nutella, Coca-Cola, Uncle Ben's, Carte Noire, lait Carrefour Classic') et des EAN fictifs commençant par 2 (plage réservée à l'usage interne), avec des marques inventées | Pas de fausses associations entre un vrai code-barres et un faux produit |
+| 2026-11-27 | La source fictive donne un prix générique à tout EAN hors catalogue | Le parcours marche aussi avec des produits venus d'Open Food Facts quand le lot 4 les branchera |
+| 2026-11-27 | Événement SSE `fin` + `sse-close="fin"` côté HTMX | Sans cela, le navigateur se reconnecte et relance toute la collecte |
