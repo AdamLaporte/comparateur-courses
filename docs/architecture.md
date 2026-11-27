@@ -369,6 +369,8 @@ erDiagram
 - Mot de passe perdu : lien signé (itsdangerous, clé `SECRET_KEY`), valable 1 h, à usage unique, envoyé par SMTP
   si `SMTP_HOTE` est réglé, sinon écrit dans le journal du serveur. Réponse identique que l'e-mail existe ou non.
 - Après 5 échecs de connexion pour un e-mail, blocage de 15 min (en mémoire : remis à zéro au redémarrage).
+- Avec un compte : articles favoris (`article_favori`, page `/comptes/favoris`) et « maison » (`adresse_favorite`,
+  libellé « Maison ») ; la maison est gardée dans la session (`maison`) et sert de code postal par défaut.
 
 ## 12. Fonctionnalités secondaires : points d'accroche
 

@@ -2,6 +2,18 @@
 {% block titre %}Magasins autour de {{ reponse.code_postal }} · Comparateur de courses{% endblock %}
 {% block contenu %}
 <h1>Magasins autour de {{ reponse.code_postal }} {{ reponse.ville }}</h1>
+{% set maison = request.session.get("maison") %}
+{% if request.session.get("utilisateur_id") %}
+  {% if maison and maison.code_postal == reponse.code_postal %}
+  <p class="note">🏠 C'est votre maison.</p>
+  {% else %}
+  <form action="/comptes/maison" method="post">
+    <input type="hidden" name="code_postal" value="{{ reponse.code_postal }}">
+    <input type="hidden" name="suivant" value="/magasins?code_postal={{ reponse.code_postal }}">
+    <button type="submit" class="lien maison">🏠 Enregistrer comme maison</button>
+  </form>
+  {% endif %}
+{% endif %}
 {% if reponse.magasins %}
 <ul class="magasins">
   {% for m in reponse.magasins %}

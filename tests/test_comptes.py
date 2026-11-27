@@ -288,3 +288,49 @@ def test_retirer_un_favori_et_favoris_prives(client):
 def test_favoris_demandent_une_connexion(client):
     assert "Se connecter" in client.get("/comptes/favoris").text
     assert "Connectez-vous" in client.post("/comptes/favoris/depuis-ligne/1").text
+
+
+# --- Maison ---
+
+
+def test_maison(client):
+    assert "🏠 Maison" not in client.get("/").text
+    _inscrire(client)
+    page = client.post("/comptes/maison", data={"code_postal": "35170"})
+    assert "Maison enregistrée" in page.text and "35170 Bruz" in page.text
+
+    # Proposée sur l'accueil, et reconnue sur la page des magasins.
+    assert "🏠 Maison · 35170 Bruz" in client.get("/").text
+    assert "C'est votre maison" in client.get("/magasins", params={"code_postal": "35170"}).text
+
+    # Reconnexion : la maison revient et sert de code postal par défaut.
+    client.post("/comptes/deconnexion")
+    client.cookies.clear()
+    _connecter(client)
+    assert "🏠 Maison · 35170 Bruz" in client.get("/").text
+    assert (
+        client.get("/panier", follow_redirects=False).status_code == 200
+    )  # code postal déjà connu
+
+    client.post("/comptes/maison/supprimer")
+    assert "🏠 Maison" not in client.get("/").text
+
+
+def test_maison_depuis_la_page_des_magasins(client):
+    _inscrire(client)
+    page = client.get("/magasins", params={"code_postal": "35170"})
+    assert "Enregistrer comme maison" in page.text
+    reponse = client.post(
+        "/comptes/maison",
+        data={"code_postal": "35170", "suivant": "/magasins?code_postal=35170"},
+        follow_redirects=False,
+    )
+    assert reponse.headers["location"] == "/magasins?code_postal=35170"
+
+
+def test_maison_code_postal_refuse(client):
+    _inscrire(client)
+    page = client.post("/comptes/maison", data={"code_postal": "abc"})
+    assert page.status_code == 400 and "5 chiffres" in page.text
+    assert client.post("/comptes/deconnexion").status_code == 200
+    assert "Se connecter" in client.post("/comptes/maison", data={"code_postal": "35170"}).text

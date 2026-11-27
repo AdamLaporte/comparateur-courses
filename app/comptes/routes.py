@@ -8,6 +8,7 @@
 /comptes/mot-de-passe-perdu   recevoir un lien de réinitialisation
 /comptes/reinitialiser        choisir un nouveau mot de passe depuis le lien
 /comptes/favoris              articles favoris : ajout depuis la liste, ajout à la liste, retrait
+/comptes/maison               enregistrer ou retirer sa « maison » (code postal)
 """
 
 import html
@@ -44,11 +45,15 @@ def _suivant_sur(suivant: str) -> str:
     return "/comptes"
 
 
-def _ouvrir_session(request: Request, reglages, utilisateur_id: int, email: str) -> None:
+async def _ouvrir_session(request: Request, reglages, utilisateur_id: int, email: str) -> None:
     service.rattacher_liste(reglages, request.session.get("sid"), utilisateur_id)
     request.session.pop("sid", None)
     request.session["utilisateur_id"] = utilisateur_id
     request.session["email"] = email
+    maison = await service.maison_pour_session(reglages, utilisateur_id)
+    if maison:
+        request.session["maison"] = maison
+        request.session.setdefault("code_postal", maison["code_postal"])
 
 
 @router.get("", response_class=HTMLResponse)
@@ -58,7 +63,13 @@ async def page_compte(request: Request, reglages: ReglagesDep):
     if utilisateur_id and email is None:  # compte supprimé entre-temps
         request.session.pop("utilisateur_id", None)
         request.session.pop("email", None)
-    return _page(request, "page", email=email, message=request.query_params.get("message"))
+    return _page(
+        request,
+        "page",
+        email=email,
+        maison=request.session.get("maison") if email else None,
+        message=request.query_params.get("message"),
+    )
 
 
 @router.get("/inscription", response_class=HTMLResponse)
@@ -80,7 +91,7 @@ async def inscription(
         utilisateur_id = service.creer_compte(reglages, email, mot_de_passe)
     except ErreurCompte as erreur:
         return _page(request, "inscription", 400, email=email, erreur=str(erreur))
-    _ouvrir_session(request, reglages, utilisateur_id, service.normaliser_email(email))
+    await _ouvrir_session(request, reglages, utilisateur_id, service.normaliser_email(email))
     return _vers("/comptes?message=bienvenue")
 
 
@@ -108,7 +119,7 @@ async def connexion(
             suivant=_suivant_sur(suivant),
             erreur=str(erreur),
         )
-    _ouvrir_session(request, reglages, utilisateur_id, service.normaliser_email(email))
+    await _ouvrir_session(request, reglages, utilisateur_id, service.normaliser_email(email))
     return _vers(_suivant_sur(suivant))
 
 
@@ -187,7 +198,7 @@ async def reinitialiser(
         return _page(
             request, "reinitialiser", 400, jeton=jeton if lien_valide else "", erreur=str(erreur)
         )
-    _ouvrir_session(
+    await _ouvrir_session(
         request, reglages, utilisateur_id, service.email_utilisateur(reglages, utilisateur_id) or ""
     )
     return _vers("/comptes?message=mot_de_passe_change")
@@ -270,3 +281,40 @@ async def supprimer_favori(request: Request, reglages: ReglagesDep, favori_id: i
     if utilisateur_id:
         service.supprimer_favori(reglages, utilisateur_id, favori_id)
     return _vers("/comptes/favoris?message=retire")
+
+
+# --- Maison ---
+
+
+@router.post("/maison", response_class=HTMLResponse)
+async def enregistrer_maison(
+    request: Request, reglages: ReglagesDep, code_postal: Champ = "", suivant: Champ = "/comptes"
+):
+    utilisateur_id = request.session.get("utilisateur_id")
+    if not utilisateur_id:
+        return _vers("/comptes/connexion")
+    try:
+        request.session["maison"] = await service.enregistrer_maison(
+            reglages, utilisateur_id, code_postal
+        )
+    except ErreurCompte as erreur:
+        return _page(
+            request,
+            "page",
+            400,
+            email=service.email_utilisateur(reglages, utilisateur_id),
+            maison=request.session.get("maison"),
+            erreur_maison=str(erreur),
+            code_postal_saisi=code_postal,
+        )
+    suivant = _suivant_sur(suivant)
+    return _vers("/comptes?message=maison" if suivant == "/comptes" else suivant)
+
+
+@router.post("/maison/supprimer")
+async def supprimer_maison(request: Request, reglages: ReglagesDep):
+    utilisateur_id = request.session.get("utilisateur_id")
+    if utilisateur_id:
+        service.supprimer_maison(reglages, utilisateur_id)
+        request.session.pop("maison", None)
+    return _vers("/comptes?message=maison_retiree")

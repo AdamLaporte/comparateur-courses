@@ -164,3 +164,5 @@ td.total small, .prix small { display: block; }
 .succes { color: var(--accent); font-weight: 600; }
 .favori { color: #a16207; }
 .lignes li form { display: inline; }
+.maison { color: var(--accent); }
+.carte h2 { margin-top: 1.4rem; }

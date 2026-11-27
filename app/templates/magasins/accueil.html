@@ -13,5 +13,13 @@
     <button type="submit" class="principal">Trouver les magasins</button>
   </form>
   {% if erreur %}<p class="erreur">{{ erreur }}</p>{% endif %}
+  {% set maison = request.session.get("maison") %}
+  {% if maison %}
+  <p class="actions">
+    <a class="bouton maison" href="/magasins?code_postal={{ maison.code_postal }}">
+      🏠 Maison · {{ maison.code_postal }} {{ maison.ville }}
+    </a>
+  </p>
+  {% endif %}
 </section>
 {% endblock %}

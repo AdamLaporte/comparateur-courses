@@ -13,14 +13,16 @@
 - Articles favoris : « ☆ Favori » sur chaque ligne de la liste (connecté), page `/comptes/favoris` (ajouter à la liste,
   tout ajouter, retirer), sans doublon.
 - Suggestions d'articles : plus de « None » quand Open Food Facts ne donne pas de marque ou de quantité.
-- 19 tests dans `tests/test_comptes.py` ; 66 tests verts, ruff propre. Parcours vérifiés dans un navigateur.
+- « Maison » : code postal enregistré, bouton « 🏠 Maison » sur l'accueil, « Enregistrer comme maison » sur la page des
+  magasins, code postal par défaut à la connexion.
+- 22 tests dans `tests/test_comptes.py` ; 69 tests verts, ruff propre. Parcours vérifiés dans un navigateur.
 
 ## Fichiers modifiés
 
 - `app/comptes/service.py`, `app/comptes/routes.py`
 - `app/templates/comptes/*.html` (dont `favoris.html`), `app/static/style.css` (ajouts en fin de fichier)
 - Lot 1, ajouts : `panier/_liste.html` (bouton favori), `panier/page.html` (lien « mes favoris »),
-  `produits/_suggestions.html` (marque ou quantité absente)
+  `produits/_suggestions.html` (marque ou quantité absente), `magasins/accueil.html` et `magasins/liste.html` (maison)
 - Partagés (commit à part) : `app/config.py`, `.env.example` (SMTP), `app/templates/base.html` (menu)
 - `tests/test_comptes.py`, `docs/decisions.md`, `docs/taches.md`, `docs/architecture.md`
 
@@ -30,7 +32,6 @@
 
 ## Reste à faire
 
-- « Maison » (table `adresse_favorite`).
 - Cagnotte : écart avec la moyenne des magasins comparés, au clic « J'ai fait mes courses ici » (décision du 27/11).
 
 ## Points d'attention pour la suite

@@ -8,7 +8,9 @@
   SMTP_HOTE est réglé, sinon écrit dans le journal du serveur (développement et démo).
 - Trop d'échecs de connexion pour un e-mail : blocage temporaire (MAX_ECHECS en FENETRE_ECHECS_S).
 - Articles favoris : un produit précis (EAN) ou une recherche « le moins cher », sans doublon.
-Tables : schema.sql. « Maison » et cagnotte : à venir.
+- Maison : un code postal enregistré (table adresse_favorite, libellé « Maison »), proposé en un clic sur
+  l'accueil et utilisé comme code postal par défaut à la connexion.
+Tables : schema.sql. Cagnotte : à venir.
 """
 
 import asyncio
@@ -25,6 +27,7 @@ from pwdlib import PasswordHash
 
 from app import db
 from app.config import Reglages
+from app.magasins.geocodage import CodePostalInconnu, CodePostalInvalide, geocoder
 
 logger = logging.getLogger(__name__)
 
@@ -290,3 +293,64 @@ def favori(reglages: Reglages, utilisateur_id: int, favori_id: int) -> dict | No
             (favori_id, utilisateur_id),
         ).fetchone()
     return dict(ligne) if ligne else None
+
+
+# --- Maison (adresse favorite « Maison », comme sur une carte) ---
+
+LIBELLE_MAISON = "Maison"
+
+
+def maison(reglages: Reglages, utilisateur_id: int) -> dict | None:
+    """{"code_postal", "lat", "lon"} de la maison de l'utilisateur, ou None."""
+    with db.connexion(reglages.db_path) as cnx:
+        ligne = cnx.execute(
+            "SELECT code_postal, lat, lon FROM adresse_favorite "
+            "WHERE utilisateur_id = ? AND libelle = ? ORDER BY id DESC LIMIT 1",
+            (utilisateur_id, LIBELLE_MAISON),
+        ).fetchone()
+    return dict(ligne) if ligne else None
+
+
+async def maison_pour_session(reglages: Reglages, utilisateur_id: int) -> dict | None:
+    """{"code_postal", "ville"} à garder dans la session (ville retrouvée par le géocodage)."""
+    adresse = maison(reglages, utilisateur_id)
+    if adresse is None:
+        return None
+    try:
+        ville, _ = await geocoder(adresse["code_postal"], reglages)
+    except (CodePostalInvalide, CodePostalInconnu):
+        ville = ""
+    except Exception:  # géocodage indisponible : on affiche seulement le code postal
+        logger.exception("Géocodage de la maison impossible")
+        ville = ""
+    return {"code_postal": adresse["code_postal"], "ville": ville}
+
+
+async def enregistrer_maison(reglages: Reglages, utilisateur_id: int, code_postal: str) -> dict:
+    """Remplace la maison de l'utilisateur. Rend {"code_postal", "ville"} ou lève ErreurCompte."""
+    try:
+        ville, position = await geocoder(code_postal, reglages)
+    except CodePostalInvalide as erreur:
+        raise ErreurCompte("Le code postal doit faire 5 chiffres.") from erreur
+    except CodePostalInconnu as erreur:
+        raise ErreurCompte("Ce code postal est introuvable pour l'instant.") from erreur
+    code_postal = code_postal.strip()
+    with db.connexion(reglages.db_path) as cnx:
+        cnx.execute(
+            "DELETE FROM adresse_favorite WHERE utilisateur_id = ? AND libelle = ?",
+            (utilisateur_id, LIBELLE_MAISON),
+        )
+        cnx.execute(
+            "INSERT INTO adresse_favorite (utilisateur_id, libelle, code_postal, lat, lon) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (utilisateur_id, LIBELLE_MAISON, code_postal, position.lat, position.lon),
+        )
+    return {"code_postal": code_postal, "ville": ville}
+
+
+def supprimer_maison(reglages: Reglages, utilisateur_id: int) -> None:
+    with db.connexion(reglages.db_path) as cnx:
+        cnx.execute(
+            "DELETE FROM adresse_favorite WHERE utilisateur_id = ? AND libelle = ?",
+            (utilisateur_id, LIBELLE_MAISON),
+        )

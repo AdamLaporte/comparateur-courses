@@ -41,7 +41,7 @@
 | Lot | Qui | Statut |
 |---|---|---|
 | 1. Interface et parcours | à attribuer | à faire |
-| 2. Intermarché, magasins et comptes | à attribuer ; comptes : Jade (avec Claude Code) | comptes : connexion et articles favoris faits ; « maison » et cagnotte à faire |
+| 2. Intermarché, magasins et comptes | à attribuer ; comptes : Jade (avec Claude Code) | comptes : connexion, articles favoris et « maison » faits ; cagnotte à faire |
 | 3. Collecte web : 3a Carrefour, 3b E.Leclerc Drive, 3c Courses U (avec Codex) | à attribuer | à faire |
 | 4. Données et fiabilité | Jade (avec Claude Code) | en cours : 1 à 5 faits, 6 (jeu de démo) à faire avec le lot 1 |
 
