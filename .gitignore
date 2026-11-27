@@ -1,0 +1,45 @@
+# Secrets et configuration locale
+.env
+.env.*
+!.env.example
+*.cookies
+cookies.txt
+
+# Bases SQLite locales (cache, comptes, listes)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+data/*.db
+
+# Python / uv
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Outils
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Pages et réponses brutes récupérées à la main pour essais (hors données de test versionnées)
+/essais/
+*.har
+
+# Éditeurs et systèmes
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Réglages locaux des agents
+.claude/settings.local.json
