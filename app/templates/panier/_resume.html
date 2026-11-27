@@ -1,25 +1,48 @@
-{# Classement final des paniers (envoyé par SSE à la fin de la collecte). #}
+{# Verdict et classement des paniers (envoyés par SSE à la fin de la collecte). #}
 {% set complets = totaux | selectattr("complet") | list %}
-<h2>Classement</h2>
-<ol class="classement">
-  {% for t in totaux %}
-  <li class="{{ 'gagnant' if loop.first and t.complet }}">
-    <span class="badge {{ t.magasin.enseigne.value }}">{{ t.magasin.enseigne.nom }}</span>
-    {{ t.magasin.nom }} : <strong>{{ t.total_centimes | euros }}</strong>
-    {% if not t.complet %}
-    <small class="manquants">
-      {{ t.nb_manquants }} article{{ "s" if t.nb_manquants > 1 }} manquant{{ "s" if t.nb_manquants > 1 }}
-    </small>
+<div class="verdict" {% if complets %}data-gagnant="{{ complets[0].magasin.id }}"{% endif %}>
+  {% if complets %}
+  {% set g = complets[0] %}
+  {% set ecart = complets[-1].total_centimes - g.total_centimes %}
+  <div class="verdict-gagnant">
+    {% if complets | length >= 2 and ecart > 0 %}<span class="sticker" aria-hidden="true">−{{ ecart | euros }}</span>{% endif %}
+    <p class="surtitre">Panier complet le moins cher</p>
+    <span class="badge {{ g.magasin.enseigne.value }}">{{ g.magasin.enseigne.nom }}</span>
+    <p class="verdict-magasin">
+      {{ g.magasin.nom }}
+      {% if g.magasin.distance_km is not none %}
+      <span class="distance">· {{ ('%.1f' % g.magasin.distance_km).replace('.', ',') }} km</span>
+      {% endif %}
+    </p>
+    <p class="verdict-prix">{{ g.total_centimes | etiquette }}</p>
+    {% if complets | length >= 2 %}
+    <p class="verdict-ecart">
+      Soit <strong>{{ ecart | euros }} de moins</strong> que le plus cher ({{ complets[-1].magasin.nom }}).
+    </p>
     {% endif %}
-  </li>
-  {% endfor %}
-</ol>
-{% if complets | length >= 2 %}
-<p>
-  Panier complet le moins cher : <strong>{{ complets[0].magasin.nom }}</strong>, soit
-  <strong>{{ (complets[-1].total_centimes - complets[0].total_centimes) | euros }}</strong>
-  de moins que le plus cher ({{ complets[-1].magasin.nom }}).
-</p>
-{% elif not complets %}
-<p class="note">Aucun magasin n'a tous les articles : comparez les totaux avec les manquants.</p>
-{% endif %}
+  </div>
+  {% else %}
+  <div class="verdict-aucun">
+    <p>Aucun magasin n'a tous les articles : comparez les totaux en tenant compte des manquants.</p>
+  </div>
+  {% endif %}
+
+  <ol class="classement" aria-label="Classement des paniers">
+    {% for t in totaux %}
+    <li class="{{ 'premier' if loop.first and t.complet }}">
+      <span class="rang">{{ loop.index }}.</span>
+      <span class="qui">
+        <span class="badge {{ t.magasin.enseigne.value }}">{{ t.magasin.enseigne.nom }}</span>
+        <strong>{{ t.magasin.nom }}</strong>
+      </span>
+      <span class="points" aria-hidden="true"></span>
+      <span class="montant">
+        {{ t.total_centimes | euros }}
+        {% if not t.complet %}
+        <small>{{ t.nb_manquants }} manquant{{ "s" if t.nb_manquants > 1 }}</small>
+        {% endif %}
+      </span>
+    </li>
+    {% endfor %}
+  </ol>
+</div>

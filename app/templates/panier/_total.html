@@ -1,9 +1,11 @@
 {# Total d'un magasin, recalculé à chaque prix reçu (envoyé par SSE). #}
-<strong>{{ total.total_centimes | euros }}</strong>
-{% if total.nb_en_attente %}<small class="note">{{ total.nb_en_attente }} en attente…</small>{% endif %}
-{% if total.nb_manquants %}
-<small class="manquants">{{ total.nb_manquants }} manquant{{ "s" if total.nb_manquants > 1 }}</small>
-{% endif %}
-{% if total.economies_centimes %}
-<small class="economies">dont {{ total.economies_centimes | euros }} d'économies</small>
-{% endif %}
+<div class="total" data-centimes="{{ total.total_centimes }}" data-complet="{{ 1 if total.complet else 0 }}">
+  <span class="total-montant">{{ total.total_centimes | etiquette }}</span>
+  {% if total.nb_en_attente %}<span class="total-note">{{ total.nb_en_attente }} en attente…</span>{% endif %}
+  {% if total.nb_manquants %}
+  <span class="total-note manquants">{{ total.nb_manquants }} manquant{{ "s" if total.nb_manquants > 1 }}</span>
+  {% endif %}
+  {% if total.economies_centimes %}
+  <span class="total-note economies">dont {{ total.economies_centimes | euros }} de promos</span>
+  {% endif %}
+</div>

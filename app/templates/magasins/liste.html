@@ -1,47 +1,95 @@
 {% extends "base.html" %}
-{% block titre %}Magasins autour de {{ reponse.ville or reponse.code_postal }} · Comparateur de courses{% endblock %}
+{% from "_icones.html" import icone %}
+{% set lieu = reponse.ville or reponse.code_postal %}
+{% block titre %}Magasins autour de {{ lieu }} · Comparateur de courses{% endblock %}
+{% block tete %}
+<link rel="stylesheet" crossorigin="anonymous"
+      href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H">
+<script defer crossorigin="anonymous"
+        src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH"></script>
+{% endblock %}
 {% block contenu %}
-<h1>Magasins autour de {{ reponse.ville or reponse.code_postal }}</h1>
-<p class="note">
-  {% if reponse.rayon_km %}Tous les magasins à moins de {{ reponse.rayon_km|int }} km.
-  {% else %}Les plus proches de chaque enseigne.{% endif %}
-</p>
-{% set maison = request.session.get("maison") %}
-{% if request.session.get("utilisateur_id") %}
-  {% if maison and maison.code_postal == reponse.code_postal %}
-  <p class="note">🏠 C'est votre maison.</p>
-  {% else %}
-  <form action="/comptes/maison" method="post">
-    <input type="hidden" name="code_postal" value="{{ reponse.code_postal }}">
-    <input type="hidden" name="suivant" value="/magasins?code_postal={{ reponse.code_postal|urlencode }}">
-    <button type="submit" class="lien maison">🏠 Enregistrer comme maison</button>
-  </form>
+{% set nb = reponse.magasins | length %}
+<div class="entete-magasins">
+  <div>
+    <p class="surtitre">Étape 2 sur 3 · les magasins</p>
+    <h1>Autour de {{ lieu }}</h1>
+    <p>
+      {{ nb }} magasin{{ "s" if nb > 1 }}
+      {% if reponse.rayon_km %}à moins de {{ reponse.rayon_km|int }} km{% else %}: les plus proches de chaque enseigne{% endif %}.
+    </p>
+  </div>
+  {% set maison = request.session.get("maison") %}
+  {% if request.session.get("utilisateur_id") %}
+    {% if maison and maison.code_postal == reponse.code_postal %}
+    <p class="maison-statut">{{ icone("maison") }}<span>C'est votre maison.</span></p>
+    {% else %}
+    <form action="/comptes/maison" method="post" class="maison-form">
+      <input type="hidden" name="code_postal" value="{{ reponse.code_postal }}">
+      <input type="hidden" name="suivant" value="/magasins?code_postal={{ reponse.code_postal|urlencode }}">
+      <button type="submit" class="lien maison">{{ icone("maison") }}<span>Enregistrer comme maison</span></button>
+    </form>
+    {% endif %}
   {% endif %}
-{% endif %}
+</div>
+
 {% if reponse.magasins %}
-<ul class="magasins">
+<div class="magasins-grille">
+  <div>
+    <ol class="liste-magasins">
+      {% for m in reponse.magasins %}
+      <li class="{{ m.enseigne.value }}" data-numero="{{ loop.index }}">
+        <span class="numero" aria-hidden="true">{{ loop.index }}</span>
+        <span class="badge {{ m.enseigne.value }}">{{ m.enseigne.nom }}</span>
+        <span class="nom">{{ m.nom }}</span>
+        {% if m.adresse %}<span class="adresse">{{ m.adresse }}</span>{% endif %}
+        <span class="distance">{{ ('%.1f' % m.distance_km).replace('.', ',') }} km</span>
+      </li>
+      {% endfor %}
+    </ol>
+    {% if reponse.enseignes_sans_magasin %}
+    <p class="sans-magasin">
+      Pas de magasin trouvé pour :
+      {% for e in reponse.enseignes_sans_magasin %}{{ e.nom }}{% if not loop.last %}, {% endif %}{% endfor %}.
+      {% if reponse.rayon_km %}Essayez une distance plus grande.{% endif %}
+    </p>
+    {% endif %}
+  </div>
+
+  <div id="carte-magasins" class="carte-magasins" role="region" aria-label="Carte des magasins listés"></div>
+  {% set points = [] %}
   {% for m in reponse.magasins %}
-  <li>
-    <span class="badge {{ m.enseigne.value }}">{{ m.enseigne.nom }}</span>
-    <strong>{{ m.nom }}</strong>
-    <span class="note">{% if m.adresse %}{{ m.adresse }} · {% endif %}{{ ('%.1f' % m.distance_km).replace('.', ',') }} km</span>
-  </li>
+    {% set _ = points.append({"n": loop.index, "nom": m.nom, "enseigne": m.enseigne.value,
+                              "lat": m.position.lat, "lon": m.position.lon}) %}
   {% endfor %}
-</ul>
+  <script type="application/json" id="donnees-carte">
+    {{ {"centre": [reponse.position.lat, reponse.position.lon], "rayon_km": reponse.rayon_km, "magasins": points} | tojson }}
+  </script>
+</div>
 {% else %}
-<p class="note">Aucun magasin trouvé : essayez un rayon plus grand.</p>
+<div class="vide">
+  <p><strong>Aucun magasin trouvé ici.</strong></p>
+  {% if reponse.enseignes_sans_magasin %}
+  <p class="sans-magasin">
+    Pas de magasin trouvé pour :
+    {% for e in reponse.enseignes_sans_magasin %}{{ e.nom }}{% if not loop.last %}, {% endif %}{% endfor %}.
+  </p>
+  {% endif %}
+  <p>Essayez une distance plus grande ou une autre ville.</p>
+</div>
 {% endif %}
-{% if reponse.enseignes_sans_magasin %}
-<p class="note">
-  Pas de magasin trouvé pour :
-  {% for e in reponse.enseignes_sans_magasin %}{{ e.nom }}{% if not loop.last %}, {% endif %}{% endfor %}.
-</p>
-{% endif %}
-<p>
-  <a class="bouton principal" href="/panier">Composer ma liste</a>
-  <a class="bouton" href="/">Changer de lieu ou de rayon</a>
-</p>
+
+<div class="barre-suite">
+  {% if reponse.magasins %}
+  <a class="bouton principal" href="/panier">Composer ma liste {{ icone("fleche") }}</a>
+  {% endif %}
+  <a class="bouton" href="/">{{ icone("retour") }}<span>Changer de lieu</span></a>
+</div>
 {% if reponse.magasins and not reponse.magasins[0].est_fictif %}
-<p class="note">Magasins : © contributeurs <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> (ODbL).</p>
+<p class="attribution">
+  Magasins : © contributeurs <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> (ODbL).
+</p>
 {% endif %}
 {% endblock %}

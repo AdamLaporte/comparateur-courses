@@ -1,24 +1,33 @@
+{% from "_icones.html" import icone %}
 <div id="liste">
-  {% if erreur %}<p class="erreur">{{ erreur }}</p>{% endif %}
+  {% if erreur %}<p class="erreur" role="alert">{{ icone("alerte") }}<span>{{ erreur }}</span></p>{% endif %}
   {% if lignes %}
+  <p class="compteur">{{ lignes | length }} article{{ "s" if lignes | length > 1 }}</p>
   <ul class="lignes">
     {% for l in lignes %}
     <li>
-      <span class="quantite">{{ l.quantite }} ×</span>
-      <span class="libelle">{{ l.libelle }}</span>
-      <span class="mode {{ l.mode.value }}">
-        {{ "produit précis" if l.mode.value == "produit" else "le moins cher" }}
-      </span>
-      {% if request.session.get("utilisateur_id") %}
-      <button class="lien favori" hx-post="/comptes/favoris/depuis-ligne/{{ l.id }}" hx-swap="outerHTML"
-              title="Ajouter à mes favoris">☆ Favori</button>
-      {% endif %}
-      <button class="lien" hx-delete="/panier/lignes/{{ l.id }}" hx-target="#liste"
-              hx-swap="outerHTML">Retirer</button>
+      <span class="quantite">{{ l.quantite }}×</span>
+      <div class="ligne-corps">
+        <span class="libelle">{{ l.libelle }}</span>
+        <span class="ligne-meta">
+          <span class="mode {{ l.mode.value }}">
+            {{ "produit précis" if l.mode.value == "produit" else "le moins cher" }}
+          </span>
+          {% if request.session.get("utilisateur_id") %}
+          <button class="lien favori" hx-post="/comptes/favoris/depuis-ligne/{{ l.id }}" hx-swap="outerHTML"
+                  title="Ajouter à mes favoris">☆ Favori</button>
+          {% endif %}
+        </span>
+      </div>
+      <button class="bouton-icone" hx-delete="/panier/lignes/{{ l.id }}" hx-target="#liste"
+              hx-swap="outerHTML" aria-label="Retirer {{ l.libelle }}" title="Retirer">{{ icone("croix") }}</button>
     </li>
     {% endfor %}
   </ul>
   {% else %}
-  <p class="note">Votre liste est vide : cherchez un article ci-dessus.</p>
+  <div class="liste-vide">
+    {{ icone("panier") }}
+    <p>Votre liste est vide.<br>Cherchez un article pour commencer.</p>
+  </div>
   {% endif %}
 </div>

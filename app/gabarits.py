@@ -9,6 +9,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from fastapi.templating import Jinja2Templates
+from markupsafe import Markup
 
 PARIS = ZoneInfo("Europe/Paris")
 
@@ -36,8 +37,21 @@ def releve(moment: datetime | None) -> str:
     return local.strftime("%d/%m %H:%M")
 
 
+def etiquette(centimes: int | None) -> Markup:
+    """Grand prix façon étiquette de rayon : 1234 → 12 en gros, « ,34 € » en petit."""
+    if centimes is None:
+        return Markup("–")
+    signe = "-" if centimes < 0 else ""
+    centimes = abs(centimes)
+    return Markup(
+        f'<span class="etq">{signe}{centimes // 100}'
+        f'<span class="etq-c">,{centimes % 100:02d}&nbsp;€</span></span>'
+    )
+
+
 templates.env.filters["euros"] = euros
 templates.env.filters["releve"] = releve
+templates.env.filters["etiquette"] = etiquette
 
 
 def rendre(nom: str, **contexte: object) -> str:

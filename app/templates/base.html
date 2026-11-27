@@ -1,36 +1,69 @@
+{% from "_icones.html" import icone -%}
 <!doctype html>
 <html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f3ee">
   <title>{% block titre %}Comparateur de courses{% endblock %}</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" crossorigin="anonymous"
+        href="https://cdn.jsdelivr.net/npm/@fontsource-variable/archivo@5.3.0/wdth.css"
+        integrity="sha384-vjcJagy/QG7TVWEpv/BSGwmn+C7DviTSwDEGbRW7XomYit1xRqvEa1tOvwsdZUqe">
+  <link rel="stylesheet" crossorigin="anonymous"
+        href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5.3.0/400.css"
+        integrity="sha384-skmNCjNGr3vAP9enjEtv/Ifs9QVeKfEF6q4rnDaS7YqtsgrCVRjcB7LPcLnQyL9p">
+  <link rel="stylesheet" crossorigin="anonymous"
+        href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5.3.0/500.css"
+        integrity="sha384-Kc76rmz8/sN1crakstIAL9hO3G6GlkS7LXZxYz6aM3HgNHNuukjqpQ0xmqtD2X1B">
   <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
   <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/htmx-ext-sse@2.2.2/sse.js" defer></script>
+  {% block tete %}{% endblock %}
+  <script src="{{ url_for('static', path='site.js') }}" defer></script>
 </head>
 <body>
+  <a class="evitement" href="#contenu">Aller au contenu</a>
+  {% set chemin = request.url.path %}
   <header class="entete">
-    <a class="logo" href="/">Comparateur de courses</a>
-    <nav>
-      <a href="/">Code postal</a>
-      <a href="/panier">Ma liste</a>
-      {% if request.session.get("utilisateur_id") %}
-      <a href="/comptes">Mon compte</a>
-      {% else %}
-      <a href="/comptes/connexion">Se connecter</a>
-      {% endif %}
-    </nav>
+    <div class="entete-dedans">
+      <a class="marque" href="/" aria-label="Comparateur de courses, accueil">
+        <span class="marque-tag" aria-hidden="true">{{ icone("etiquette") }}</span>
+        <span class="marque-nom">Comparateur <span>de courses</span></span>
+      </a>
+      <nav class="menu" aria-label="Navigation principale">
+        <a href="/" {% if chemin == "/" or chemin.startswith("/magasins") %}aria-current="page"{% endif %}>
+          {{ icone("repere") }}<span>Magasins</span>
+        </a>
+        <a href="/panier" {% if chemin.startswith("/panier") %}aria-current="page"{% endif %}>
+          {{ icone("liste") }}<span>Ma liste</span>
+        </a>
+        {% if request.session.get("utilisateur_id") %}
+        <a href="/comptes" {% if chemin.startswith("/comptes") %}aria-current="page"{% endif %}>
+          {{ icone("compte") }}<span>Mon compte</span>
+        </a>
+        {% else %}
+        <a href="/comptes/connexion" {% if chemin.startswith("/comptes") %}aria-current="page"{% endif %}>
+          {{ icone("compte") }}<span>Se connecter</span>
+        </a>
+        {% endif %}
+      </nav>
+    </div>
   </header>
   {% if request.app.state.reglages.mode_fictif_actif %}
-  <div class="bandeau-fictif">
-    Mode démonstration : les prix marqués « Données fictives » sont inventés.
+  <div class="bandeau-fictif" role="note">
+    <span class="bandeau-pastille">Démo</span>
+    Les prix marqués « Données fictives » sont inventés pour la démonstration.
   </div>
   {% endif %}
-  <main class="contenu">
+  <main id="contenu" class="contenu {% block classe_contenu %}{% endblock %}">
     {% block contenu %}{% endblock %}
   </main>
   <footer class="pied">
-    Chaque prix indique sa source et l'heure du relevé · Hackathon ENSAI 2026
+    <div class="pied-dedans">
+      <p><strong>Comparateur de courses</strong> · hackathon ENSAI 2026</p>
+      <p>Chaque prix indique sa source et l'heure du relevé. Les promos fidélité ne sont pas déduites.</p>
+    </div>
   </footer>
 </body>
 </html>

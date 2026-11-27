@@ -1,4 +1,4 @@
 {# Réponse après ajout ou suppression : la liste, et on vide les suggestions et l'ancien tableau. #}
 {% include "panier/_liste.html" %}
-<div id="suggestions" hx-swap-oob="true"></div>
-<section id="resultats" hx-swap-oob="true"></section>
+<div id="suggestions" aria-live="polite" hx-swap-oob="true"></div>
+<section id="resultats" aria-label="Comparaison des prix" hx-swap-oob="true"></section>

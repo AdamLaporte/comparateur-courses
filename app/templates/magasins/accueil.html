@@ -1,60 +1,85 @@
 {% extends "base.html" %}
+{% from "_icones.html" import icone %}
+{% block titre %}Comparateur de courses · même liste, pas le même prix{% endblock %}
 {% block contenu %}
-<section class="carte">
-  <h1>Où faites-vous vos courses ?</h1>
-  <p>
-    Saisissez votre ville ou votre code postal, ou laissez le navigateur vous localiser : on cherche les
-    magasins Carrefour, Intermarché, Courses U et E.Leclerc autour de vous, puis on compare le prix de
-    votre liste de courses.
-  </p>
-  <form action="/magasins" method="get" id="form-lieu">
-    <div class="formulaire-ligne">
-      <label for="code_postal" class="masque">Ville ou code postal</label>
-      <input id="code_postal" name="code_postal" value="{{ code_postal }}" maxlength="80"
-             placeholder="Bruz ou 35170" required autofocus autocomplete="address-level2">
-      <button type="button" id="me-localiser">📍 Me localiser</button>
+{% set reglages = request.app.state.reglages %}
+<div class="accueil">
+  <section aria-labelledby="titre-accueil">
+    <p class="surtitre">Carrefour · Intermarché · Courses U · E.Leclerc</p>
+    <h1 id="titre-accueil" class="titre-geant">Même liste,<br><em>pas le même prix.</em></h1>
+    <p class="chapeau">
+      Dites-nous où vous faites vos courses. On relève le prix de votre liste dans les supermarchés
+      autour de vous, promos comprises, et on vous montre le ticket le moins cher.
+    </p>
+
+    <form action="/magasins" method="get" id="form-lieu" class="recherche-lieu">
+      <label for="code_postal">Ville ou code postal</label>
+      <div class="champ-lieu">
+        <input id="code_postal" name="code_postal" value="{{ code_postal }}" maxlength="80"
+               placeholder="Bruz, Rennes ou 35170" required autocomplete="address-level2"
+               aria-describedby="erreur-lieu">
+        <button type="button" id="me-localiser">{{ icone("localiser") }}<span>Me localiser</span></button>
+      </div>
+
+      <fieldset class="rayons">
+        <legend>Jusqu'où ?</legend>
+        <div class="puces">
+          <label class="puce">
+            <input type="radio" name="rayon_km" value="" {% if not rayon_km %}checked{% endif %}>
+            <span>Au plus près</span>
+          </label>
+          {% for r in rayons %}
+          <label class="puce">
+            <input type="radio" name="rayon_km" value="{{ r }}" {% if rayon_km == r %}checked{% endif %}>
+            <span>{{ r }} km</span>
+          </label>
+          {% endfor %}
+        </div>
+        <p class="aide">
+          « Au plus près » : les {{ reglages.max_magasins_par_enseigne }} magasins les plus proches de chaque
+          enseigne. Avec une distance : tous ceux du rayon, {{ reglages.max_magasins_par_enseigne_rayon }} au
+          plus par enseigne.
+        </p>
+      </fieldset>
+
+      <p class="erreur" id="erreur-lieu" role="alert" {% if not erreur %}hidden{% endif %}>
+        {{ icone("alerte") }}<span>{{ erreur or "" }}</span>
+      </p>
+      <button type="submit" class="principal">Voir les magasins {{ icone("fleche") }}</button>
+    </form>
+
+    {% set maison = request.session.get("maison") %}
+    {% if maison %}
+    <p class="raccourci-maison">
+      <a class="bouton maison" href="/magasins?code_postal={{ maison.code_postal|urlencode }}">
+        {{ icone("maison") }}<span>Maison · {{ maison.code_postal }} {{ maison.ville }}</span>
+      </a>
+    </p>
+    {% endif %}
+  </section>
+
+  <aside class="ticket" aria-label="Comment ça marche">
+    <div class="ticket-entete">
+      <strong>Comparateur de courses</strong>
+      <span>Mode d'emploi · ticket n° 0001</span>
     </div>
-    <div class="formulaire-ligne">
-      <label for="rayon_km">Magasins :</label>
-      <select id="rayon_km" name="rayon_km">
-        <option value="">les plus proches de chaque enseigne</option>
-        {% for r in rayons %}
-        <option value="{{ r }}" {% if rayon_km == r %}selected{% endif %}>dans un rayon de {{ r }} km</option>
-        {% endfor %}
-      </select>
-      <button type="submit" class="principal">Trouver les magasins</button>
-    </div>
-  </form>
-  <p class="erreur" id="erreur-lieu" {% if not erreur %}hidden{% endif %}>{{ erreur or "" }}</p>
-  {% set maison = request.session.get("maison") %}
-  {% if maison %}
-  <p class="actions">
-    <a class="bouton maison" href="/magasins?code_postal={{ maison.code_postal|urlencode }}">
-      🏠 Maison · {{ maison.code_postal }} {{ maison.ville }}
-    </a>
-  </p>
-  {% endif %}
-</section>
-<script>
-  document.getElementById("me-localiser").addEventListener("click", () => {
-    const erreur = document.getElementById("erreur-lieu");
-    if (!navigator.geolocation) {
-      erreur.textContent = "Votre navigateur ne permet pas la localisation : saisissez votre ville.";
-      erreur.hidden = false;
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (p) => {
-        document.getElementById("code_postal").value =
-          p.coords.latitude.toFixed(5) + "," + p.coords.longitude.toFixed(5);
-        document.getElementById("form-lieu").submit();
-      },
-      () => {
-        erreur.textContent = "Localisation refusée ou impossible : saisissez votre ville ou votre code postal.";
-        erreur.hidden = false;
-      },
-      { timeout: 10000 }
-    );
-  });
-</script>
+    <hr>
+    <ol>
+      <li class="ligne-ticket"><span>1 · Votre ville</span><span class="points"></span><span class="valeur">Bruz</span></li>
+      <li class="ligne-ticket"><span>2 · Votre liste</span><span class="points"></span><span class="valeur">pâtes, lait…</span></li>
+      <li class="ligne-ticket"><span>3 · Les prix</span><span class="points"></span><span class="valeur">relevés en direct</span></li>
+    </ol>
+    <hr>
+    <ul class="enseignes-ticket">
+      <li><span class="badge carrefour">Carrefour</span></li>
+      <li><span class="badge intermarche">Intermarché</span></li>
+      <li><span class="badge coursesu">Courses U</span></li>
+      <li><span class="badge leclerc">E.Leclerc</span></li>
+    </ul>
+    <hr>
+    <p class="ticket-total"><span>TOTAL LE PLUS BAS</span><span>→ votre magasin</span></p>
+    <p class="ticket-pied">Chaque prix est daté et sourcé.<br>Promos comprises, fidélité à part.</p>
+    <div class="code-barres" aria-hidden="true"></div>
+  </aside>
+</div>
 {% endblock %}

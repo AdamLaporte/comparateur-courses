@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icones.html" import icone %}
 {% block titre %}Compte · Comparateur de courses{% endblock %}
 {% block contenu %}
 <section class="carte">
@@ -18,7 +19,7 @@
     <li><a href="/comptes/favoris">Mes articles favoris</a></li>
     <li>Ma cagnotte d'économies : bientôt</li>
   </ul>
-  <h2>🏠 Ma maison</h2>
+  <h2>{{ icone("maison") }} Ma maison</h2>
   {% if maison %}
   <p>
     <strong>{{ maison.code_postal }} {{ maison.ville }}</strong> : proposée en un clic sur l'accueil,

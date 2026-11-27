@@ -294,26 +294,26 @@ def test_favoris_demandent_une_connexion(client):
 
 
 def test_maison(client):
-    assert "🏠 Maison" not in client.get("/").text
+    assert "Maison · " not in client.get("/").text
     _inscrire(client)
     page = client.post("/comptes/maison", data={"code_postal": "35170"})
     assert "Maison enregistrée" in page.text and "35170 Bruz" in page.text
 
     # Proposée sur l'accueil, et reconnue sur la page des magasins.
-    assert "🏠 Maison · 35170 Bruz" in client.get("/").text
+    assert "Maison · 35170 Bruz" in client.get("/").text
     assert "C'est votre maison" in client.get("/magasins", params={"code_postal": "35170"}).text
 
     # Reconnexion : la maison revient et sert de code postal par défaut.
     client.post("/comptes/deconnexion")
     client.cookies.clear()
     _connecter(client)
-    assert "🏠 Maison · 35170 Bruz" in client.get("/").text
+    assert "Maison · 35170 Bruz" in client.get("/").text
     assert (
         client.get("/panier", follow_redirects=False).status_code == 200
     )  # code postal déjà connu
 
     client.post("/comptes/maison/supprimer")
-    assert "🏠 Maison" not in client.get("/").text
+    assert "Maison · " not in client.get("/").text
 
 
 def test_maison_depuis_la_page_des_magasins(client):

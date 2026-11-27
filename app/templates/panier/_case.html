@@ -1,22 +1,25 @@
-{# Une case du tableau : prix d'une ligne dans un magasin (envoyée par SSE). #}
+{# Une case du tableau : prix d'une ligne dans un magasin (envoyée par SSE, rendue sans request). #}
 {% set p = resultat.prix %}
 {% if resultat.statut.value == "trouve" and p %}
-<div class="prix">
-  <strong>{{ resultat.sous_total_centimes | euros }}</strong>
-  {% if ligne.quantite > 1 %}<small>{{ ligne.quantite }} × {{ p.prix_centimes | euros }}</small>{% endif %}
-  {% if p.prix_barre_centimes %}<s>{{ p.prix_barre_centimes | euros }}</s>{% endif %}
+<div class="prix" {% if resultat.sous_total_centimes is not none %}data-centimes="{{ resultat.sous_total_centimes }}"{% endif %}>
+  <span class="prix-montant">{{ resultat.sous_total_centimes | euros }}</span>
+  {% if ligne.quantite > 1 %}<span class="prix-detail">{{ ligne.quantite }} × {{ p.prix_centimes | euros }}</span>{% endif %}
+  {% if p.prix_barre_centimes %}<s class="prix-barre">{{ p.prix_barre_centimes | euros }}</s>{% endif %}
+  {% if p.prix_unitaire_centimes and p.unite %}
+  <span class="prix-detail">{{ p.prix_unitaire_centimes | euros }} / {{ p.unite }}</span>
+  {% endif %}
   {% for promo in p.promotions %}
   <span class="promo {{ promo.type.value }}">{{ promo.libelle }}</span>
   {% endfor %}
   {% if ligne.mode.value == "equivalent" %}
-  <small class="produit">{{ p.produit.libelle }}{% if p.produit.marque %} · {{ p.produit.marque }}{% endif %}</small>
+  <span class="produit">{{ p.produit.libelle }}{% if p.produit.marque %} · {{ p.produit.marque }}{% endif %}</span>
   {% endif %}
-  <small class="source{% if p.est_fictif %} fictif{% endif %}">
+  <span class="source{% if p.est_fictif %} fictif{% endif %}">
     {{ p.source_detail }} · {{ p.releve_le | releve }}{% if resultat.remarque %} · {{ resultat.remarque }}{% endif %}
-  </small>
+  </span>
 </div>
 {% elif resultat.statut.value == "introuvable" %}
-<span class="absent">Absent</span>
+<span class="absent">Pas en rayon</span>
 {% else %}
 <span class="indisponible">{{ resultat.remarque or "Prix indisponible" }}</span>
 {% endif %}

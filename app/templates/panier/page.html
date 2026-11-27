@@ -1,28 +1,52 @@
 {% extends "base.html" %}
+{% from "_icones.html" import icone %}
 {% block titre %}Ma liste · Comparateur de courses{% endblock %}
 {% block contenu %}
-<h1>Ma liste de courses</h1>
-<p class="note">
-  Autour de {{ code_postal }} ·
-  <a href="/magasins?code_postal={{ code_postal|urlencode }}&rayon_km={{ request.session.get('rayon_km') or '' }}">voir les magasins</a> ·
-  <a href="/">changer de lieu</a>
-  {% if request.session.get("utilisateur_id") %} · <a href="/comptes/favoris">★ mes favoris</a>{% endif %}
-</p>
+{# Un lieu « 48.02516,-1.74836 » vient du bouton « Me localiser » : on ne montre pas les coordonnées. #}
+{% set est_position = code_postal.replace(",", "").replace(".", "").replace("-", "").replace(" ", "").isdigit() and "," in code_postal %}
+{% set rayon = request.session.get("rayon_km") %}
+<div class="titre-page">
+  <p class="surtitre">
+    Étape 3 sur 3 · autour de
+    <a href="/magasins?code_postal={{ code_postal|urlencode }}&rayon_km={{ rayon or '' }}">{{ "votre position" if est_position else code_postal }}</a>
+  </p>
+  <h1>Ma liste de courses</h1>
+  <p class="chapo">
+    Ajoutez vos articles puis lancez la comparaison : tous les magasins sont interrogés en même temps et
+    les prix s'affichent dès qu'ils arrivent.
+  </p>
+</div>
 
-<section class="carte">
-  <label for="q"><strong>Ajouter un article</strong></label>
-  <input id="q" name="q" type="search" autocomplete="off"
-         placeholder="ex. nutella, lait demi-écrémé, spaghetti"
-         hx-get="/produits/recherche" hx-trigger="input changed delay:300ms, search"
-         hx-target="#suggestions">
-  <div id="suggestions"></div>
-</section>
+<div class="panier-grille">
+  <section class="bloc" aria-labelledby="titre-ajout">
+    <div class="bloc-titre"><h2 id="titre-ajout">Ajouter un article</h2></div>
+    <label for="q" class="masque">Rechercher un article</label>
+    <div class="champ-recherche">
+      {{ icone("recherche") }}
+      <input id="q" name="q" type="search" autocomplete="off" enterkeyhint="search"
+             placeholder="nutella, lait demi-écrémé, spaghetti…"
+             hx-get="/produits/recherche" hx-trigger="input changed delay:300ms, search"
+             hx-target="#suggestions">
+    </div>
+    <p class="aide">
+      Prenez un produit précis, ou « le moins cher » : chaque magasin propose alors son article le moins
+      cher qui correspond.
+    </p>
+    <div id="suggestions" aria-live="polite"></div>
+  </section>
 
-<section class="carte">
-  <h2>Ma liste</h2>
-  {% include "panier/_liste.html" %}
-  <button class="principal" hx-get="/panier/resultats" hx-target="#resultats">Comparer les prix</button>
-</section>
+  <section class="bloc bloc-liste" aria-labelledby="titre-liste">
+    <div class="bloc-titre">
+      <h2 id="titre-liste">Ma liste</h2>
+      {% if request.session.get("utilisateur_id") %}<a class="lien-discret" href="/comptes/favoris">★ Mes favoris</a>{% endif %}
+    </div>
+    {% include "panier/_liste.html" %}
+    <button class="principal large" hx-get="/panier/resultats" hx-target="#resultats"
+            hx-swap="innerHTML show:#resultats:top">
+      {{ icone("ticket") }}<span>Comparer les prix</span>
+    </button>
+  </section>
+</div>
 
-<section id="resultats"></section>
+<section id="resultats" aria-label="Comparaison des prix"></section>
 {% endblock %}

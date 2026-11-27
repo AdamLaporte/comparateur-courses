@@ -1,0 +1,28 @@
+{# Icônes SVG au trait (dessins de Lucide, licence ISC). Usage :
+   {% from "_icones.html" import icone %} … {{ icone("recherche") }}
+   Décoratives par défaut (aria-hidden) : le texte voisin ou un aria-label porte le sens. #}
+{% macro icone(nom, classe="") -%}
+{%- set chemins = {
+  "localiser": '<line x1="2" x2="5" y1="12" y2="12"/><line x1="19" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="5"/><line x1="12" x2="12" y1="19" y2="22"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/>',
+  "maison": '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  "recherche": '<circle cx="11" cy="11" r="7.5"/><path d="m21 21-4.3-4.3"/>',
+  "etiquette": '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/>',
+  "panier": '<path d="m15 11-1 9"/><path d="m19 11-4-7"/><path d="M2 11h20"/><path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4"/><path d="M4.5 15.5h15"/><path d="m5 11 4-7"/><path d="m9 11 1 9"/>',
+  "plus": '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  "croix": '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  "fleche": '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  "retour": '<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>',
+  "repere": '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+  "compte": '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  "alerte": '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>',
+  "valide": '<path d="M20 6 9 17l-5-5"/>',
+  "liste": '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+  "ticket": '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6"/><path d="M16 12h-6"/><path d="M13 16h-3"/>',
+} -%}
+<svg class="icone {{ classe }}" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">{{ chemins[nom] | safe }}</svg>
+{%- endmacro %}
+
+{# Repère d'enseigne : carré de couleur + nom, lisible sans la couleur. #}
+{% macro enseigne(e) -%}
+<span class="badge {{ e.value }}">{{ e.nom }}</span>
+{%- endmacro %}

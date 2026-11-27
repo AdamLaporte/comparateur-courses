@@ -1,18 +1,28 @@
-{# Tableau articles × magasins, rempli case par case par le flux SSE /panier/prix/flux. #}
+{# Tableau articles × magasins, rempli case par case par le flux SSE /panier/prix/flux.
+   data-magasin sert à site.js pour mettre en avant le moins cher de chaque ligne et la colonne gagnante. #}
 {% if message %}
-<p class="note">{{ message }}</p>
+<div class="comparaison"><div class="vide"><p>{{ message }}</p></div></div>
 {% else %}
-<div class="tableau-prix" hx-ext="sse" sse-connect="/panier/prix/flux" sse-close="fin">
-  <div class="defilement">
-    <table>
+<div class="comparaison" hx-ext="sse" sse-connect="/panier/prix/flux" sse-close="fin">
+  <h2>Comparaison</h2>
+  <div class="resume" sse-swap="resume" aria-live="polite">
+    <div class="attente-resume">
+      <p>Relevé des prix dans {{ magasins | length }} magasins…</p>
+      <div class="barre-chargement" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div class="defilement" tabindex="0" role="region" aria-label="Tableau des prix par magasin">
+    <table class="tableau-prix">
       <thead>
         <tr>
-          <th scope="col">Article</th>
+          <th scope="col" class="col-article">Article</th>
           {% for m in magasins %}
-          <th scope="col">
-            <span class="badge {{ m.enseigne.value }}">{{ m.enseigne.nom }}</span><br>
-            {{ m.nom }}<br>
-            <small class="note">{{ ('%.1f' % m.distance_km).replace('.', ',') }} km</small>
+          <th scope="col" class="col-magasin {{ m.enseigne.value }}" data-magasin="{{ m.id }}">
+            <span class="badge {{ m.enseigne.value }}">{{ m.enseigne.nom }}</span>
+            <span class="nom-magasin">{{ m.nom }}</span>
+            {% if m.distance_km is not none %}
+            <span class="distance">{{ ('%.1f' % m.distance_km).replace('.', ',') }} km</span>
+            {% endif %}
           </th>
           {% endfor %}
         </tr>
@@ -20,9 +30,11 @@
       <tbody>
         {% for l in lignes %}
         <tr>
-          <th scope="row">{{ l.quantite }} × {{ l.libelle }}</th>
+          <th scope="row"><span class="quantite">{{ l.quantite }}×</span>{{ l.libelle }}</th>
           {% for m in magasins %}
-          <td class="case" sse-swap="prix-{{ l.id }}-{{ m.id }}"><span class="attente">…</span></td>
+          <td class="case" data-magasin="{{ m.id }}" sse-swap="prix-{{ l.id }}-{{ m.id }}">
+            <span class="attente" role="img" aria-label="Prix en cours de relevé"></span>
+          </td>
           {% endfor %}
         </tr>
         {% endfor %}
@@ -31,12 +43,17 @@
         <tr>
           <th scope="row">Total</th>
           {% for m in magasins %}
-          <td class="total" sse-swap="total-{{ m.id }}"><span class="attente">…</span></td>
+          <td data-magasin="{{ m.id }}" sse-swap="total-{{ m.id }}">
+            <span class="attente" role="img" aria-label="Total en cours de calcul"></span>
+          </td>
           {% endfor %}
         </tr>
       </tfoot>
     </table>
   </div>
-  <div class="resume" sse-swap="resume"><p class="note">Recherche des prix en cours…</p></div>
+  <p class="legende">
+    Promos immédiates et « 2e à −50 % » déduites ; promos fidélité affichées mais pas déduites.
+    Sous chaque prix : sa source et l'heure du relevé.
+  </p>
 </div>
 {% endif %}

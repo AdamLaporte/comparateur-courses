@@ -1,3 +1,4 @@
+{% from "_icones.html" import icone %}
 {% if q|length >= 2 %}
 <ul class="suggestions">
   <li class="suggestion equivalent">
@@ -5,9 +6,12 @@
       <input type="hidden" name="mode" value="equivalent">
       <input type="hidden" name="recherche" value="{{ q }}">
       <input type="hidden" name="libelle" value="{{ q }}">
-      <span><strong>Le moins cher</strong> pour « {{ q }} » dans chaque magasin</span>
-      <input type="number" name="quantite" value="1" min="1" max="99" aria-label="Quantité">
-      <button type="submit">Ajouter</button>
+      <span class="sugg-texte">
+        <span class="sugg-titre">{{ icone("etiquette") }}Le moins cher</span>
+        <span class="sugg-detail">« {{ q }} » : l'article le moins cher de chaque magasin</span>
+      </span>
+      <input type="number" name="quantite" value="1" min="1" max="99" aria-label="Quantité de « {{ q }} »">
+      <button type="submit">{{ icone("plus") }}<span>Ajouter</span></button>
     </form>
   </li>
   {% for p in produits %}
@@ -17,14 +21,19 @@
       <input type="hidden" name="ean" value="{{ p.ean }}">
       <input type="hidden" name="recherche" value="{{ q }}">
       <input type="hidden" name="libelle" value="{{ p.libelle }}{% if p.marque %} · {{ p.marque }}{% endif %}{% if p.quantite %} {{ p.quantite }}{% endif %}">
-      <span>{{ p.libelle }} <small class="note">{{ [p.marque, p.quantite]|select|join(" · ") }}</small></span>
-      <input type="number" name="quantite" value="1" min="1" max="99" aria-label="Quantité">
-      <button type="submit">Ajouter</button>
+      <span class="sugg-texte">
+        <span class="sugg-titre">{{ p.libelle }}</span>
+        {% set detail = [p.marque, p.quantite] | select | join(" · ") %}
+        {% if detail %}<span class="sugg-detail">{{ detail }}</span>
+        {% elif p.ean %}<span class="sugg-detail code">EAN {{ p.ean }}</span>{% endif %}
+      </span>
+      <input type="number" name="quantite" value="1" min="1" max="99" aria-label="Quantité de {{ p.libelle }}">
+      <button type="submit">{{ icone("plus") }}<span>Ajouter</span></button>
     </form>
   </li>
   {% endfor %}
   {% if not produits %}
-  <li class="note">Aucun produit précis trouvé : choisissez « le moins cher ».</li>
+  <li class="rien">Aucun produit précis trouvé : prenez « le moins cher ».</li>
   {% endif %}
 </ul>
 {% endif %}

@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% from "_icones.html" import icone %}
 {% block titre %}Oups · Comparateur de courses{% endblock %}
 {% block contenu %}
-<section class="carte">
-  <h1>Oups</h1>
+<section class="carte erreur-page">
+  <h1 class="gros">Oups</h1>
   <p>{{ message }}</p>
-  <p><a class="bouton" href="/">Retour à l'accueil</a></p>
+  <p class="actions"><a class="bouton principal" href="/">{{ icone("retour") }}<span>Retour à l'accueil</span></a></p>
 </section>
 {% endblock %}

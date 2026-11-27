@@ -76,6 +76,7 @@ aux mêmes fichiers. L'arborescence exacte et les commandes sont dans [`AGENTS.m
 | `app/panier/` | Liste de courses, flux SSE des prix, `calcul.py` (totaux, fonctions pures) | lot interface + cœur |
 | `app/comptes/` | Inscription, connexion, articles et adresses favoris | lot Intermarché et magasins |
 | `app/templates/` | `base.html`, `erreur.html` + un sous-dossier par fonctionnalité (`magasins/`, `produits/`, `panier/`, `comptes/`) | lot interface |
+| `app/static/` | `style.css` : charte « étiquette de rayon et ticket de caisse » (variables CSS en tête de fichier). `site.js` : bouton « Me localiser », carte Leaflet des magasins, mise en avant du prix le plus bas par ligne et de la colonne gagnante (le site reste utilisable sans) | lot interface |
 | `app/<fonctionnalite>/schema.sql` | Tables SQLite de la fonctionnalité, créées au démarrage | la fonctionnalité concernée |
 | `tests/` | Un fichier de test par fonctionnalité, jamais de réseau | chacun pour son lot |
 
