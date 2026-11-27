@@ -15,13 +15,13 @@ from collections import defaultdict
 from collections.abc import AsyncIterator
 
 from app.collecte import cache, repli
+from app.collecte.equivalence import choisir_equivalent
 from app.config import Reglages
 from app.contrats import (
     Enseigne,
     LigneListe,
     Magasin,
     ModeLigne,
-    Prix,
     ResultatLigne,
     StatutPrix,
     TypeSource,
@@ -29,18 +29,6 @@ from app.contrats import (
 from app.sources.base import SourceIndisponible, SourcePrix
 
 logger = logging.getLogger(__name__)
-
-
-def choisir_equivalent(offres: list[Prix]) -> Prix | None:
-    """Mode « équivalent » : l'offre la moins chère, au prix unitaire si toutes l'ont, sinon au prix.
-
-    Règle volontairement simple ; le lot 4 (règles d'équivalence, mode fin de mois) peut l'affiner.
-    """
-    if not offres:
-        return None
-    if all(o.prix_unitaire_centimes is not None for o in offres):
-        return min(offres, key=lambda o: (o.prix_unitaire_centimes, o.prix_centimes))
-    return min(offres, key=lambda o: o.prix_centimes)
 
 
 async def resoudre(
@@ -120,11 +108,15 @@ async def collecter(
                         reglages.timeout_enseigne_s,
                         len(restantes),
                     )
-            # Tout ce qui n'a pas abouti (délai, source absente) passe au repli.
-            for cle_tache, (ligne, magasin) in list(restantes.items()):
-                del restantes[cle_tache]
-                raison = "délai dépassé" if source else "aucune source configurée"
+            # Tout ce qui n'a pas abouti (délai, source absente) passe au repli, en parallèle.
+            raison = "délai dépassé" if source else "aucune source configurée"
+            en_retard = list(restantes.values())
+            restantes.clear()
+
+            async def secourir(ligne: LigneListe, magasin: Magasin) -> None:
                 await file.put(await repli.prix_de_secours(ligne, magasin, reglages, raison))
+
+            await asyncio.gather(*(secourir(lg, m) for lg, m in en_retard))
         finally:
             await file.put(None)  # cette enseigne a fini
 

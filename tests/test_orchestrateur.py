@@ -133,3 +133,23 @@ async def test_source_fictive_toujours_marquee(reglages):
         if resultat.prix is not None:
             assert resultat.prix.est_fictif
             assert resultat.prix.source == TypeSource.FICTIVE
+
+
+async def test_repli_des_lignes_en_retard_en_parallele(reglages, monkeypatch):
+    from app.collecte import repli
+
+    vrai_repli = repli.prix_de_secours
+
+    async def repli_lent(ligne, magasin, reglages, raison):
+        await asyncio.sleep(0.2)
+        return await vrai_repli(ligne, magasin, reglages, raison)
+
+    monkeypatch.setattr(repli, "prix_de_secours", repli_lent)
+    reglages.timeout_enseigne_s = 0.1
+    magasins = await _magasins(Enseigne.CARREFOUR)
+    sources = {Enseigne.CARREFOUR: SourceLente(Enseigne.CARREFOUR)}
+
+    debut = time.monotonic()
+    resultats = await _tout_collecter(_lignes(10), magasins, sources, reglages)
+    assert len(resultats) == 20
+    assert time.monotonic() - debut < 1  # 20 replis de 0,2 s : en série, ce serait 4 s

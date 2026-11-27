@@ -2,13 +2,15 @@
 
 Ordre : 1) dernier prix en cache, même périmé, avec sa date ; 2) Open Prices ; 3) « prix indisponible ».
 L'utilisateur ne voit jamais l'erreur brute : la raison technique va seulement dans les journaux.
-Les niveaux 1 et 2 sont des bouchons tant que le lot 4 n'a pas branché le cache et Open Prices.
+Le niveau 2 n'envoie aucune requête si OPEN_PRICES_ACTIF=false (il utilise alors seulement les
+réponses Open Prices déjà enregistrées, par exemple par le préchauffage).
 """
 
 import asyncio
 import logging
 
 from app.collecte import cache
+from app.collecte.equivalence import choisir_equivalent
 from app.config import Reglages
 from app.contrats import LigneListe, Magasin, ModeLigne, ResultatLigne, StatutPrix
 from app.sources.base import SourceIndisponible
@@ -41,7 +43,7 @@ async def prix_de_secours(
                 prix = await open_prices.obtenir_prix(magasin, ligne.ean)
             else:
                 offres = await open_prices.chercher_produits(magasin, ligne.recherche)
-                prix = min(offres, key=lambda p: p.prix_centimes) if offres else None
+                prix = choisir_equivalent(offres)
     except (SourceIndisponible, TimeoutError):
         prix = None
     except Exception:
