@@ -55,7 +55,9 @@ async def resoudre(
         if ligne.mode == ModeLigne.PRODUIT and ligne.ean:
             prix = await source.obtenir_prix(magasin, ligne.ean)
         else:
-            prix = choisir_equivalent(await source.chercher_produits(magasin, ligne.recherche))
+            prix = choisir_equivalent(
+                await source.chercher_produits(magasin, ligne.recherche), ligne.recherche
+            )
     except SourceIndisponible as erreur:
         return await repli.prix_de_secours(ligne, magasin, reglages, raison=str(erreur))
     except Exception as erreur:

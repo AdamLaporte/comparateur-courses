@@ -99,6 +99,7 @@ def test_le_moins_cher_parmi_les_resultats_concordants():
     # Pas le fromage à 0,99 € (autre produit), et le bon format (200 g) avant le moins cher.
     assert _choisir_concordant(ligne, produits, offres).prix_centimes == 250
     sans_format = ligne.model_copy(update={"recherche": "carré frais"})
-    assert _choisir_concordant(sans_format, produits, offres).prix_centimes == 160
+    # Sans format : le moins cher à l'unité (2,50 € les 200 g = 1,25 € les 100 g, contre 1,60 €).
+    assert _choisir_concordant(sans_format, produits, offres).prix_centimes == 250
     inconnu = ligne.model_copy(update={"recherche": "xyz"})
     assert _choisir_concordant(inconnu, produits, offres).prix_centimes == 99  # le premier résultat

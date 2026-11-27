@@ -14,6 +14,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import ValidationError
 
+from app.collecte.equivalence import quantite_comparable
 from app.collecte.orchestrateur import collecter
 from app.comptes import cagnotte
 from app.config import Reglages, ReglagesDep
@@ -24,6 +25,7 @@ from app.contrats import (
     Magasin,
     ModeLigne,
     ResultatLigne,
+    StatutPrix,
     TotauxReponse,
 )
 from app.gabarits import rendre, templates
@@ -74,8 +76,17 @@ async def comparer(
     suivre_edge: bool = False,
     drives_par_edge: bool = True,
 ) -> AsyncIterator[ResultatLigne]:
-    """Résultats complétés (sous-totaux), dans l'ordre d'arrivée."""
+    """Résultats complétés (sous-totaux), dans l'ordre d'arrivée.
+
+    Lignes « le moins cher » : tous les magasins sont comparés pour une même quantité, celle tapée dans la
+    recherche (« oeufs x12 », « lait 1 L ») ou sinon le format du premier prix trouvé (calcul.completer)."""
     par_id = {ligne.id: ligne for ligne in lignes}
+    references: dict[int, tuple[float, str]] = {
+        ligne.id: quantite
+        for ligne in lignes
+        if ligne.mode == ModeLigne.EQUIVALENT
+        and (quantite := quantite_comparable(ligne.recherche)) is not None
+    }
     async for resultat in collecter(
         lignes,
         magasins,
@@ -84,7 +95,19 @@ async def comparer(
         suivre_edge=suivre_edge,
         drives_par_edge=drives_par_edge,
     ):
-        yield calcul.completer(par_id[resultat.ligne_id], resultat)
+        ligne = par_id[resultat.ligne_id]
+        if (
+            ligne.mode == ModeLigne.EQUIVALENT
+            and resultat.prix is not None
+            and resultat.statut == StatutPrix.TROUVE
+            and ligne.id not in references
+        ):
+            quantite = quantite_comparable(
+                f"{resultat.prix.produit.quantite or ''} {resultat.prix.produit.libelle}"
+            )
+            if quantite is not None:
+                references[ligne.id] = quantite
+        yield calcul.completer(ligne, resultat, reference=references.get(ligne.id))
 
 
 def _liste_maj(

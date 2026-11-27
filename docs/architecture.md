@@ -268,6 +268,11 @@ Fonctions pures, sans réseau, testées à part.
   indisponibles, et `complet = (nb_manquants == 0)`.
 - Classement : d'abord les paniers complets du moins cher au plus cher, puis les incomplets par nombre de manquants.
 
+Lignes « le moins cher » (`app/collecte/equivalence.py`, utilisé par l'orchestrateur, le repli et les drives) :
+produit dont la recherche est le sujet, puis le moins cher à l'unité. `panier/routes.comparer` fixe pour chaque
+ligne une quantité de référence (tapée, sinon le format du premier prix trouvé) et `calcul.completer` y ramène
+les prix des autres formats (« prix ramené à 12 unités »).
+
 ## 10. Modèle de données (SQLite)
 
 Chaque fonctionnalité déclare ses tables (`CREATE TABLE IF NOT EXISTS`) dans son propre fichier

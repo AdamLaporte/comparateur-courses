@@ -43,7 +43,7 @@ async def prix_de_secours(
                 prix = await open_prices.obtenir_prix(magasin, ligne.ean)
             else:
                 offres = await open_prices.chercher_produits(magasin, ligne.recherche)
-                prix = choisir_equivalent(offres)
+                prix = choisir_equivalent(offres, ligne.recherche)
     except (SourceIndisponible, TimeoutError):
         prix = None
     except Exception:

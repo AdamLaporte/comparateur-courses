@@ -12,10 +12,12 @@ Règles (docs/architecture.md §9) :
 
 from collections.abc import Iterable
 
+from app.collecte.equivalence import quantite_comparable
 from app.contrats import (
     Enseigne,
     LigneListe,
     Magasin,
+    ModeLigne,
     Prix,
     ResultatLigne,
     StatutPrix,
@@ -38,16 +40,48 @@ def sous_total(ligne: LigneListe, prix: Prix, avec_carte: bool = False) -> tuple
     return max(0, brut - remise), economies
 
 
+def ecrire_reference(reference: tuple[float, str]) -> str:
+    """(12, "piece") → « 12 unités », (1000, "ml") → « 1 L », (500, "g") → « 500 g »."""
+    valeur, famille = reference
+    nombre = f"{valeur:g}".replace(".", ",")
+    if famille == "piece":
+        return f"{nombre} unité{'s' if valeur > 1 else ''}"
+    if valeur >= 1000:
+        return f"{valeur / 1000:g}".replace(".", ",") + (" kg" if famille == "g" else " L")
+    return f"{nombre} {famille}"
+
+
 def completer(
-    ligne: LigneListe, resultat: ResultatLigne, cartes: frozenset[Enseigne] = frozenset()
+    ligne: LigneListe,
+    resultat: ResultatLigne,
+    cartes: frozenset[Enseigne] = frozenset(),
+    reference: tuple[float, str] | None = None,
 ) -> ResultatLigne:
-    """Ajoute le sous-total et les économies à un résultat trouvé."""
+    """Ajoute le sous-total et les économies à un résultat trouvé.
+
+    `reference` (ligne « le moins cher ») : quantité commune à tous les magasins, ex. (12, "piece"). Si
+    l'offre choisie a un autre format de même nature (boîte de 6), son prix est ramené à cette quantité
+    (× 2) pour comparer les magasins à égalité ; la case l'indique (« prix ramené à 12 unités »)."""
     if resultat.prix is None:
         return resultat
     enseigne = resultat.magasin_id.split("-", 1)[0]
     total, economies = sous_total(ligne, resultat.prix, avec_carte=enseigne in cartes)
+    remarque = resultat.remarque
+    if reference is not None and ligne.mode == ModeLigne.EQUIVALENT:
+        quantite = quantite_comparable(
+            f"{resultat.prix.produit.quantite or ''} {resultat.prix.produit.libelle}"
+        )
+        if (
+            quantite
+            and quantite[1] == reference[1]
+            and abs(quantite[0] - reference[0]) > 0.01 * reference[0]
+        ):
+            facteur = reference[0] / quantite[0]
+            total, economies = round(total * facteur), round(economies * facteur)
+            mention = f"prix ramené à {ecrire_reference(reference)}"
+            remarque = f"{remarque} · {mention}" if remarque else mention
     return resultat.model_copy(
-        update={"sous_total_centimes": total, "economies_centimes": economies}
+        update={"sous_total_centimes": total, "economies_centimes": economies, "remarque": remarque}
     )
 
 

@@ -127,7 +127,10 @@ def _choisir_concordant(ligne: LigneListe, produits: list[dict], offres: list[Pr
             in normaliser(f"{o.produit.libelle} {o.produit.quantite or ''}").replace(" ", "")
         ]
         concordants = au_format or concordants
-    return choisir_equivalent(concordants) if concordants else offres[0]
+    if not concordants:
+        return offres[0]
+    # Sujet du produit (« lait » écarte « Gâteau au chocolat au lait ») et prix à l'unité (œuf, litre…).
+    return choisir_equivalent(concordants, terme_simplifie(ligne.recherche))
 
 
 def _resultat(ligne: LigneListe, drive: DriveId, vue: dict, *, hors_ligne: bool) -> ResultatLigne:
