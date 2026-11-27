@@ -45,9 +45,21 @@ async def _api_adresse(chemin: str, params: dict, reglages: Reglages) -> list[di
         return []
 
 
+async def adresse_proche(position: Position, reglages: Reglages) -> str | None:
+    """Adresse postale la plus proche d'une position (« 9 Place du Docteur Joly 35170 Bruz »)."""
+    for precision in ("housenumber", "street", None):
+        params = {"lat": position.lat, "lon": position.lon, "limit": 1}
+        if precision:
+            params["type"] = precision
+        trouves = await _api_adresse("reverse", params, reglages)
+        if trouves:
+            return trouves[0]["properties"].get("label")
+    return None
+
+
 async def geocoder(lieu: str, reglages: Reglages, *, adresse: bool = False) -> tuple[str, Position]:
     lieu = " ".join(lieu.split())
-    if not lieu or len(lieu) > (160 if adresse else 80):
+    if not lieu or len(lieu) > 160:
         raise CodePostalInvalide(lieu)
     if lieu in CODES_POSTAUX_CONNUS:
         return CODES_POSTAUX_CONNUS[lieu]
@@ -74,7 +86,9 @@ async def geocoder(lieu: str, reglages: Reglages, *, adresse: bool = False) -> t
         raise CodePostalInvalide(lieu)
     else:
         params = {"q": lieu, "limit": 1}
-        if not adresse:
+        # Une adresse complète (« 9 Place du Docteur Joly 35170 Bruz », venue de « Me localiser ») est
+        # cherchée telle quelle ; un nom seul (« Rennes ») est cherché parmi les communes.
+        if not adresse and not re.match(r"\d+\s*(bis|ter)?\s+\D", lieu, re.I):
             params["type"] = "municipality"
     trouves = await _api_adresse("search", params, reglages)
     if not trouves:

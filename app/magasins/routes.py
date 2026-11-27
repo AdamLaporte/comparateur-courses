@@ -7,7 +7,7 @@ from app.comptes import lieux
 from app.config import ReglagesDep
 from app.contrats import Enseigne, MagasinsReponse, Position
 from app.gabarits import templates
-from app.magasins.geocodage import CodePostalInconnu, CodePostalInvalide
+from app.magasins.geocodage import CodePostalInconnu, CodePostalInvalide, adresse_proche
 from app.magasins.service import magasins_proches
 from app.magasins.trajets import MODES, estimer
 from app.panier import service as panier
@@ -165,3 +165,15 @@ async def api_magasins(code_postal: str, reglages: ReglagesDep, rayon_km: float 
         raise HTTPException(422, MESSAGE_INVALIDE) from erreur
     except CodePostalInconnu as erreur:
         raise HTTPException(404, MESSAGE_INCONNU) from erreur
+
+
+@router.get("/api/adresse-proche")
+async def api_adresse_proche(lat: float, lon: float, reglages: ReglagesDep):
+    """Bouton « Me localiser » : l'adresse la plus proche de la position du navigateur, pour l'afficher
+    dans le champ à la place des coordonnées. 404 si aucune adresse n'est trouvée."""
+    if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+        raise HTTPException(422, "Position invalide.")
+    adresse = await adresse_proche(Position(lat=lat, lon=lon), reglages)
+    if not adresse:
+        raise HTTPException(404, "Aucune adresse trouvée près de cette position.")
+    return {"adresse": adresse}

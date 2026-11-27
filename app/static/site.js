@@ -210,8 +210,18 @@
       boutonLocaliser.classList.add("localise");
       if (libelle) libelle.textContent = "Localisation…";
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          champ.value = `${position.coords.latitude.toFixed(5)},${position.coords.longitude.toFixed(5)}`;
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          // L'adresse la plus proche plutôt que des coordonnées ; les coordonnées seulement en secours.
+          let lieu = `${latitude.toFixed(5)},${longitude.toFixed(5)}`;
+          if (libelle) libelle.textContent = "Recherche de l'adresse…";
+          try {
+            const reponse = await fetch(`/api/adresse-proche?lat=${latitude.toFixed(6)}&lon=${longitude.toFixed(6)}`);
+            if (reponse.ok) lieu = (await reponse.json()).adresse || lieu;
+          } catch {
+            // hors ligne : on garde les coordonnées
+          }
+          champ.value = lieu;
           champ.dispatchEvent(new Event("input"));
           if (libelle) libelle.textContent = "Recherche des magasins…";
           champ.form.submit();

@@ -91,11 +91,57 @@ async def test_cache_et_table_produit(reglages_off):
     assert produit_par_ean(reglages_off, produits[0].ean) == produits[0]
 
 
-async def test_panne_catalogue_fictif(reglages_off):
+async def test_panne_jamais_de_catalogue_fictif(reglages_off):
+    """Que du réel : Open Food Facts en panne et rien en base → aucune suggestion (le Nutella fictif ne
+    sort plus) ; dès qu'une extension a relevé le produit sur un drive, il est proposé."""
+    from datetime import UTC, datetime
+    from decimal import Decimal
+
+    from app import db
+    from app.drives.modeles import ProduitObserve
+    from app.drives.service import observer
+
     faux = FauxOFF(statut=503)
-    produits = await _chercher("nutella", reglages_off, faux)
-    assert len(faux.requetes) == 2  # les deux recherches échouent
-    assert produits and produits[0].ean == "3017620422003"  # Nutella du catalogue fictif
+    assert await _chercher("nutella", reglages_off, faux) == []
+
+    with db.connexion(reglages_off.db_path) as cnx:
+        releve = ProduitObserve(
+            produit="Pâte à tartiner Nutella",
+            marque="Nutella",
+            format="400 g",
+            prix_eur=Decimal("3.49"),
+            ean="3017620422003",
+            url="https://www.intermarche.com/produit/nutella/3017620422003",
+        )
+        observer(cnx, "intermarche-05052", releve, datetime.now(UTC).isoformat(), "Edge")
+    produits = await _chercher("nutella", reglages_off, FauxOFF(statut=503))
+    assert [(p.ean, p.quantite) for p in produits] == [("3017620422003", "400 g")]
+
+
+async def test_un_produit_releve_sur_un_drive_passe_en_premier(reglages_off):
+    from datetime import UTC, datetime
+    from decimal import Decimal
+
+    from app import db
+    from app.drives.modeles import ProduitObserve
+    from app.drives.service import observer
+
+    with db.connexion(reglages_off.db_path) as cnx:
+        releve = ProduitObserve(
+            produit="Nutella pot",
+            prix_eur=Decimal("2.99"),
+            ean="8000500037560",
+            url="https://www.coursesu.com/p/nutella",
+        )
+        observer(cnx, "coursesu-33315", releve, datetime.now(UTC).isoformat(), "Edge")
+        source = cnx.execute("SELECT source FROM produit WHERE ean='8000500037560'").fetchone()[0]
+    assert source == "drive:coursesu-33315"
+    produits = await _chercher("nutella", reglages_off, FauxOFF())
+    assert produits[0].ean == "8000500037560" and len(produits) > 1
+    # Une recherche Open Food Facts n'écrase pas la fiche relevée sur le drive.
+    with db.connexion(reglages_off.db_path) as cnx:
+        source = cnx.execute("SELECT source FROM produit WHERE ean='8000500037560'").fetchone()[0]
+    assert source == "drive:coursesu-33315"
 
 
 async def test_panne_apres_une_reponse_enregistree(reglages_off, monkeypatch):
