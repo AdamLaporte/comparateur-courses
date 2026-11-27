@@ -153,3 +153,17 @@ async def test_repli_des_lignes_en_retard_en_parallele(reglages, monkeypatch):
     resultats = await _tout_collecter(_lignes(10), magasins, sources, reglages)
     assert len(resultats) == 20
     assert time.monotonic() - debut < 1  # 20 replis de 0,2 s : en série, ce serait 4 s
+
+
+async def test_prechauffage_sans_reseau(reglages, capsys):
+    from app.collecte.prechauffer import lignes_depuis, prechauffer
+
+    lignes = lignes_depuis(["nutella", "3017620422003"])
+    assert lignes[0].mode == ModeLigne.EQUIVALENT
+    assert lignes[1].mode == ModeLigne.PRODUIT and lignes[1].ean == "3017620422003"
+
+    assert await prechauffer(["nutella", "lait"], "35170", reglages) == 0
+    sortie = capsys.readouterr().out
+    assert "Bilan par magasin" in sortie
+    assert "0 prix réels mis en cache" in sortie  # données fictives : jamais en cache
+    assert await prechauffer(["lait"], "123", reglages) == 2  # code postal refusé

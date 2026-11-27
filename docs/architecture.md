@@ -162,7 +162,14 @@ L'orchestrateur (`app/collecte/orchestrateur.py`) reçoit les lignes de la liste
 - **Repli** (`app/collecte/repli.py`), dans cet ordre : dernier prix en cache, même périmé, avec sa date, puis
   Open Prices, puis « prix indisponible ». L'utilisateur ne voit jamais d'erreur brute.
 - **Préchauffage** : `app/collecte/prechauffer.py` remplit le cache à l'avance à partir de `data/demo/recherches.txt`,
-  pour préparer la démo.
+  pour préparer la démo (prix réels dans `cache_prix`, réponses Open Prices et Open Food Facts dans `cache_reponse`).
+- **Open Prices** (`app/sources/open_prices.py`) : le magasin correspond au lieu OpenStreetMap de même enseigne le
+  plus proche, à moins de 2 km (enseigne lue dans `osm_brand`, sinon dans `osm_name`). On garde le relevé le plus
+  récent de chaque EAN, de moins de 2 ans. Réponses gardées 24 h en cache, et réutilisées même anciennes si le
+  service ne répond plus ou si `OPEN_PRICES_ACTIF=false`.
+- **Référentiel produits** (`app/produits/service.py`) : recherche sur `search.openfoodfacts.org` (la recherche
+  classique renvoie 503), reclassée sur place (tous les mots, EAN français d'abord, popularité), un appel par seconde
+  au plus, réponses gardées 7 jours, catalogue fictif en secours. Produits enregistrés dans la table `produit`.
 - **Respect des sites** : requêtes modérées, en-têtes de navigateur normaux, JSON chargé par le site plutôt que
   HTML, Playwright seulement si indispensable. **On ne contourne jamais une protection anti-robots.**
 
@@ -174,7 +181,7 @@ L'orchestrateur (`app/collecte/orchestrateur.py`) reçoit les lignes de la liste
 | Carrefour (collecte) | curl → 403 Cloudflare `cf-mitigated: challenge`. Le JSON `routeData` se lit bien dans une page normale | Collecte à écrire plus tard (Codex). Si 403 : repli |
 | Courses U (collecte) | curl → 403 Cloudflare | Idem |
 | E.Leclerc Drive (collecte) | curl → 403 DataDome | Idem |
-| Open Prices | Répond, mais données éparses (quelques dizaines de prix par magasin à Rennes) | Source de secours |
+| Open Prices | Répond, mais données éparses et anciennes : autour de Rennes, presque aucun relevé de moins de 2 ans (Intermarché Super : 2 sur 787, E.Leclerc Cleunay : 57, surtout des biscuits) | Source de secours, peu de trous comblés. Relevés de moins de 2 ans, date complète affichée |
 | Fictive | Toujours disponible | Développement, tests, démo de secours, toujours marquée |
 
 ## 8. Parcours principal
@@ -265,7 +272,8 @@ Chaque fonctionnalité déclare ses tables (`CREATE TABLE IF NOT EXISTS`) dans s
 `app/<fonctionnalite>/schema.sql`. Au démarrage, `app/db.py` exécute tous ces fichiers : ajouter une table ne demande
 jamais de modifier un fichier partagé. Pas d'ORM, module `sqlite3` de Python. Au squelette : `panier/schema.sql`
 (`ligne_liste`), `comptes/schema.sql` (`utilisateur`, `adresse_favorite`, `article_favori`) et `collecte/schema.sql`
-(`cache_prix`). `MAGASIN`, `PRODUIT` et `PROFIL` viendront avec leurs lots.
+(`cache_prix`, et `cache_reponse` pour les réponses brutes d'Open Prices et d'Open Food Facts). `produits/schema.sql`
+déclare `produit` (lot 4). `MAGASIN` et `PROFIL` viendront avec leurs lots.
 
 ```mermaid
 erDiagram
@@ -386,16 +394,18 @@ Modèle dans `.env.example`.
 | `INTERMARCHE_API_KEY` | vide | Clé de l'API Intermarché. Vide = aucune requête |
 | `SECRET_KEY` | valeur de développement | Signature du cookie de session |
 | `DB_PATH` | `data/app.db` | Fichier SQLite (ignoré par Git) |
+| `SOURCE_PRODUITS` | `open_food_facts` | Référentiel produits : `open_food_facts` ou `fictive` (sans réseau) |
+| `OPEN_PRICES_ACTIF` | `true` | Open Prices en secours. `false` = aucune requête (réponses déjà enregistrées seulement) |
+| `OPEN_FOOD_FACTS_RECHERCHE_URL` | `https://search.openfoodfacts.org` | Service de recherche texte d'Open Food Facts |
 
 ## 14. Limites connues du squelette
 
 - La page des résultats et le flux SSE appellent chacun `magasins_proches`. Avec la source fictive, les magasins sont
   identiques. Avec de vraies sources, il faudra mettre la liste des magasins en cache (table `MAGASIN`, lot 2 ou 4)
   pour que le tableau et le flux voient exactement les mêmes magasins.
-- Le cache, Open Prices, la recherche Open Food Facts, les comptes et le préchauffage sont des modules vides
-  documentés (« BOUCHON » en tête de fichier).
-- Le repli après un délai dépassé traite les lignes restantes une par une. Quand Open Prices sera branché, le lot 4
-  pourra les traiter en parallèle.
+- Les comptes et les sources réelles (Intermarché, collecte) sont des modules vides documentés (« BOUCHON » en tête
+  de fichier). Le cache, Open Prices, la recherche Open Food Facts et le préchauffage sont faits (lot 4, 27/11).
+- Le repli après un délai dépassé traite les lignes restantes en parallèle (lot 4).
 - Le Dockerfile n'a pas pu être testé sur la machine du squelette (pas d'accès au démon Docker).
 
 ## Annexe : notes techniques sur les sources (relevées le 27/11/2026)

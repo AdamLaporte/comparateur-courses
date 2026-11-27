@@ -43,7 +43,7 @@
 | 1. Interface et parcours | à attribuer | à faire |
 | 2. Intermarché, magasins et comptes | à attribuer | à faire |
 | 3. Collecte web : 3a Carrefour, 3b E.Leclerc Drive, 3c Courses U (avec Codex) | à attribuer | à faire |
-| 4. Données et fiabilité | à attribuer | à faire |
+| 4. Données et fiabilité | Claude Code (piloté par : à compléter) | en cours : 1 à 5 faits, 6 (jeu de démo) à faire avec le lot 1 |
 
 ### Lot 1 : Interface et parcours
 
@@ -175,6 +175,6 @@ Fin :
 |---|---|---|---|
 | Clé API Intermarché pas encore approuvée. Produits v1 est marquée « Deprecated », l'accès peut ne jamais être accordé | Pas de prix Intermarché en direct | Vérifier le statut sur le portail ou écrire à ld_red_services@mousquetaires.com. En attendant : aucune requête sans clé, repli (cache, Open Prices) | titulaire du compte du portail (lot 2) |
 | Collecte Carrefour, E.Leclerc Drive et Courses U bloquée (403 Cloudflare / DataDome au 27/11) | Pas de prix en direct pour ces enseignes depuis notre serveur | Parseurs testés sur des pages enregistrées, collecte sans contournement, repli sur le cache et Open Prices, préchauffage avant la démo | lots 3 et 4 |
-| Open Prices peu fourni autour de Rennes et Bruz | Beaucoup de « prix indisponible » | Choisir pour la démo des articles et des magasins bien couverts. Données fictives marquées en dernier recours | lot 4 |
+| Open Prices peu fourni autour de Rennes et Bruz. Constaté le 27/11 : presque aucun relevé de moins de 2 ans, aucun lieu à Bruz | Beaucoup de « prix indisponible » quand une enseigne échoue | Le cache des prix réels (préchauffage samedi matin) est le vrai filet. Données fictives marquées en dernier recours. Option : ajouter nous-mêmes des relevés sur Open Prices (application Open Prices, tickets de caisse) | lot 4 |
 | Open Food Facts limite les recherches (503) | Recherche d'articles vide | Espacer les appels, cache, catalogue fictif en secours | lot 4 |
 | Conflits Git sur les fichiers partagés | Perte de temps à l'intégration | Respecter le tableau des fichiers, petites fusions fréquentes via Adam | tous |
