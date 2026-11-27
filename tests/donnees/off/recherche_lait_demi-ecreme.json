@@ -1,0 +1,502 @@
+{
+ "hits": [
+  {
+   "code": "5400134371109",
+   "brands": [
+    "xx:cora"
+   ],
+   "quantity": "1 L",
+   "unique_scans_n": 1,
+   "product_name": "Lait Demi Ecremé",
+   "product_name_fr": "Lait Demi Ecremé",
+   "_score": 16.470123
+  },
+  {
+   "code": "5400141033472",
+   "brands": [
+    "xx:boni"
+   ],
+   "quantity": "500 ml",
+   "unique_scans_n": 1,
+   "product_name": "",
+   "product_name_fr": "Lait Demi Ecreme",
+   "_score": 16.470123
+  },
+  {
+   "code": "5410438000209",
+   "brands": [
+    "xx:Campina"
+   ],
+   "quantity": "1 L",
+   "unique_scans_n": 4,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "5400247010674",
+   "brands": [
+    "xx:winny"
+   ],
+   "quantity": "1L",
+   "unique_scans_n": 1,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3496080002206",
+   "brands": [
+    "xx:les-eleveurs-de-bretagne"
+   ],
+   "quantity": "50 cl",
+   "unique_scans_n": 1,
+   "product_name": "Lait Demi Écrémé",
+   "product_name_fr": "Lait Demi Écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3564707122689",
+   "brands": [
+    "xx:bio-village",
+    "xx:marque-repere"
+   ],
+   "unique_scans_n": 1,
+   "product_name": "Lait Demi-écrémé",
+   "product_name_fr": "Lait Demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3596710405329",
+   "brands": [
+    "xx:auchan"
+   ],
+   "quantity": "3 l",
+   "unique_scans_n": 3,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3564700596272",
+   "brands": [
+    "xx:delisse",
+    "xx:marque-repere"
+   ],
+   "product_name": "Lait demi-ecreme",
+   "product_name_fr": "Lait demi-ecreme",
+   "_score": 16.470123
+  },
+  {
+   "code": "9400135466572",
+   "product_name": "Lait demi écrémé",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "4056489032175",
+   "brands": [
+    "xx:Envia"
+   ],
+   "quantity": "1 L",
+   "unique_scans_n": 1,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "5410441100545",
+   "brands": [
+    "xx:inex"
+   ],
+   "unique_scans_n": 1,
+   "product_name": "Lait demi écrémé",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3596710465149",
+   "brands": [
+    "xx:auchan"
+   ],
+   "quantity": "8 l",
+   "unique_scans_n": 1,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "20296162",
+   "unique_scans_n": 1,
+   "product_name": "Lait demi écrémé",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3701002403444",
+   "unique_scans_n": 1,
+   "product_name": "Lait demi écrémé",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "9400135434793",
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3596710462209",
+   "brands": [
+    "xx:auchan"
+   ],
+   "quantity": "6 l",
+   "unique_scans_n": 1,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "8480013350507",
+   "brands": [
+    "xx:spar"
+   ],
+   "unique_scans_n": 3,
+   "product_name": "Leche semidesnatada",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "4056489010869",
+   "brands": [
+    "xx:ENVIA"
+   ],
+   "quantity": "50 cl",
+   "unique_scans_n": 16,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "5400141269512",
+   "brands": [
+    "xx:Boni"
+   ],
+   "quantity": "50 cl",
+   "unique_scans_n": 4,
+   "product_name": "Halfvolle melk",
+   "product_name_fr": "lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "5420053207297",
+   "product_name": "Lait demi écrémé",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "15890311",
+   "brands": [
+    "xx:cora"
+   ],
+   "unique_scans_n": 1,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3520830006432",
+   "unique_scans_n": 1,
+   "product_name": "Lait demi ecreme",
+   "product_name_fr": "Lait demi ecreme",
+   "_score": 16.470123
+  },
+  {
+   "code": "3286151800509",
+   "brands": [
+    "xx:Etrez"
+   ],
+   "unique_scans_n": 1,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "6234637353312",
+   "brands": [
+    "xx:paturages"
+   ],
+   "product_name": "Lait demi ecreme",
+   "product_name_fr": "Lait demi ecreme",
+   "_score": 16.470123
+  },
+  {
+   "code": "3564707010146",
+   "brands": [
+    "xx:bio-village"
+   ],
+   "product_name": "Lait demi écrémé",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3560071411107",
+   "brands": [
+    "xx:carrefour"
+   ],
+   "unique_scans_n": 2,
+   "product_name": "LAIT DEMI ECREMÉ",
+   "product_name_fr": "LAIT DEMI ECREMÉ",
+   "_score": 16.470123
+  },
+  {
+   "code": "5400111069982",
+   "brands": [
+    "xx:delhaize"
+   ],
+   "unique_scans_n": 1,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3038350333261",
+   "brands": [
+    "xx:cora"
+   ],
+   "product_name": "Lait demi écrémé",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3428272170059",
+   "brands": [
+    "xx:Lactel"
+   ],
+   "quantity": "1 L",
+   "unique_scans_n": 3,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3428274110060",
+   "unique_scans_n": 3,
+   "product_name": "lait demi ecreme",
+   "product_name_fr": "lait demi ecreme",
+   "_score": 16.470123
+  },
+  {
+   "code": "3483130008233",
+   "brands": [
+    "xx:beillevaire"
+   ],
+   "quantity": "1 L",
+   "product_name": "Lait demi écrémé",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3533630089109",
+   "unique_scans_n": 1,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3564700611630",
+   "brands": [
+    "xx:delisse",
+    "xx:marque-repere"
+   ],
+   "quantity": "1033 g",
+   "unique_scans_n": 7,
+   "product_name": "Lait Demi Écrémé",
+   "product_name_fr": "Lait Demi Écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3564700077443",
+   "brands": [
+    "xx:delisse",
+    "xx:marque-repere",
+    "xx:Scamark (Filiale E. Leclerc)"
+   ],
+   "quantity": "6 x 1 L",
+   "unique_scans_n": 9,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3265776903253",
+   "brands": [
+    "xx:bourg-fleuri"
+   ],
+   "quantity": "1 L",
+   "unique_scans_n": 3,
+   "product_name": "Lait demi écrémé",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3297560337500",
+   "brands": [
+    "xx:jumbo"
+   ],
+   "unique_scans_n": 4,
+   "product_name": "Lait Demi écrémé",
+   "product_name_fr": "Lait Demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3350033307537",
+   "brands": [
+    "xx:Monoprix bio"
+   ],
+   "quantity": "500 ml",
+   "unique_scans_n": 4,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3350033191105",
+   "brands": [
+    "xx:La Marque du Consommateur",
+    "xx:Monoprix"
+   ],
+   "quantity": "150 cl (6*25 cl)",
+   "unique_scans_n": 1,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3350033209442",
+   "brands": [
+    "xx:Monoprix"
+   ],
+   "quantity": "3 L (6x50cl)",
+   "unique_scans_n": 2,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3043933232701",
+   "brands": [
+    "xx:Régilait"
+   ],
+   "quantity": "300g",
+   "unique_scans_n": 100,
+   "product_name": "Lait demi écrémé",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3428271940103",
+   "brands": [
+    "xx:Lactel"
+   ],
+   "quantity": "50 cl",
+   "unique_scans_n": 16,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3533631836009",
+   "brands": [
+    "xx:Candia"
+   ],
+   "quantity": "6 L (6 x 1 L)",
+   "unique_scans_n": 3,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3273220107508",
+   "unique_scans_n": 1,
+   "product_name": "Lait demi écrémé",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3838800061795",
+   "unique_scans_n": 2,
+   "product_name": "Lait demi écrémé",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3596710465187",
+   "brands": [
+    "xx:auchan"
+   ],
+   "quantity": "0.5 l",
+   "unique_scans_n": 5,
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "5400102020299",
+   "brands": [
+    "xx:carrefour"
+   ],
+   "quantity": "6 x 25 cl",
+   "product_name": "Lait demi-écrémé",
+   "product_name_fr": "Lait demi-écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3043931403707",
+   "brands": [
+    "xx:regilait"
+   ],
+   "unique_scans_n": 1,
+   "product_name": "Lait demi-écremé",
+   "product_name_fr": "Lait demi-écremé",
+   "_score": 16.470123
+  },
+  {
+   "code": "5400111089980",
+   "brands": [
+    "xx:delhaize"
+   ],
+   "quantity": "6",
+   "unique_scans_n": 1,
+   "product_name": "Lait demi écrémé",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "3561869385181",
+   "brands": [
+    "xx:candia"
+   ],
+   "product_name": "Lait demi écrémé",
+   "product_name_fr": "Lait demi écrémé",
+   "_score": 16.470123
+  },
+  {
+   "code": "5420053200861",
+   "product_name": "Lait demi-ecreme",
+   "product_name_fr": "Lait demi-ecreme",
+   "_score": 16.470123
+  }
+ ],
+ "aggregations": null,
+ "facets": {},
+ "charts": {},
+ "page": 1,
+ "page_size": 50,
+ "page_count": 42,
+ "took": 33,
+ "timed_out": false,
+ "count": 2068,
+ "is_count_exact": true,
+ "warnings": null
+}

@@ -1,0 +1,460 @@
+{
+ "hits": [
+  {
+   "code": "5400141402803",
+   "brands": [
+    "xx:boni"
+   ],
+   "product_name": "Oeuff",
+   "product_name_fr": "Oeuff",
+   "_score": 7.617616
+  },
+  {
+   "code": "7610807125832",
+   "brands": [
+    "xx:coop"
+   ],
+   "quantity": "10pcs",
+   "unique_scans_n": 6,
+   "product_name": "oeufs",
+   "product_name_fr": "oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "5400208005190",
+   "quantity": "6 pcs",
+   "unique_scans_n": 2,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3760139470422",
+   "brands": [
+    "xx:avibresse"
+   ],
+   "quantity": "9 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "3760155080032",
+   "brands": [
+    "xx:La Ferme Mont St-Père"
+   ],
+   "quantity": "9 pcs",
+   "unique_scans_n": 2,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3301632910123",
+   "quantity": "12 pcs",
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "3770005410018",
+   "quantity": "12 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "5410946000623",
+   "brands": [
+    "xx:columbus"
+   ],
+   "unique_scans_n": 2,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "5400134364958",
+   "brands": [
+    "xx:cora"
+   ],
+   "quantity": "6 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "3332930013124",
+   "unique_scans_n": 1,
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "0634438099376",
+   "quantity": "12 pcs",
+   "unique_scans_n": 1,
+   "product_name": "oeuf",
+   "product_name_fr": "oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "4007807000093",
+   "quantity": "30 pcs",
+   "unique_scans_n": 2,
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "3760166981045",
+   "quantity": "4 pcs",
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3273050239837",
+   "brands": [
+    "xx:cocorette"
+   ],
+   "quantity": "4 pcs",
+   "unique_scans_n": 2,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3017600520187",
+   "brands": [
+    "xx:GIE Qualite"
+   ],
+   "quantity": "6 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "3175153525001",
+   "quantity": "20 pcs",
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3701002403789",
+   "quantity": "20 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3760115761124",
+   "quantity": "12 pcs",
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "0029263878980",
+   "quantity": "12 pcs",
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3760283850583",
+   "brands": [
+    "xx:Baby Coque",
+    "xx:Les Œufs de chez Nous"
+   ],
+   "quantity": "6",
+   "unique_scans_n": 1,
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "3760133730010",
+   "quantity": "30 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "3275094000091",
+   "quantity": "20 pcs",
+   "unique_scans_n": 3,
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "3367190000089",
+   "brands": [
+    "xx:ma poule"
+   ],
+   "quantity": "6",
+   "unique_scans_n": 1,
+   "product_name": "oeuf",
+   "product_name_fr": "oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "5400208005121",
+   "unique_scans_n": 1,
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "3770013038020",
+   "quantity": "6 pcs",
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "5412038397574",
+   "quantity": "112 g",
+   "product_name": "Les oeufs",
+   "product_name_fr": "Les oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3265546450109",
+   "quantity": "6 pcs",
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "3770009531016",
+   "brands": [
+    "xx:notre-basse-cour"
+   ],
+   "quantity": "6 pcs",
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3760139471580",
+   "brands": [
+    "xx:AviBresse",
+    "xx:Les Producteurs de l'Ain"
+   ],
+   "quantity": "12",
+   "unique_scans_n": 1,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "2118003000007",
+   "quantity": "6 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3500063300002",
+   "quantity": "30 pcs",
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "3266191060347",
+   "brands": [
+    "xx:la-vie-claire"
+   ],
+   "quantity": "6 pcs",
+   "product_name": "Oeufs d’ici",
+   "product_name_fr": "Oeufs d’ici",
+   "_score": 7.617616
+  },
+  {
+   "code": "5414121002259",
+   "quantity": "6 pcs",
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3283324001541",
+   "quantity": "6 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3251320795023",
+   "brands": [
+    "xx:le-gaulois"
+   ],
+   "quantity": "8 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "3332930010321",
+   "brands": [
+    "xx:pleine-forme"
+   ],
+   "quantity": "12 pcs",
+   "unique_scans_n": 2,
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "3332930720008",
+   "brands": [
+    "xx:pleine-forme"
+   ],
+   "quantity": "20 pcs",
+   "unique_scans_n": 2,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3304790120090",
+   "quantity": "20 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3332930010284",
+   "brands": [
+    "xx:Pleine Forme"
+   ],
+   "quantity": "15 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3448600665705",
+   "brands": [
+    "xx:Lorraine ponte"
+   ],
+   "quantity": "6 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3446891254646",
+   "quantity": "12 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeuf",
+   "product_name_fr": "Oeuf",
+   "_score": 7.617616
+  },
+  {
+   "code": "3275092011006",
+   "brands": [
+    "xx:L'oeuf comtois"
+   ],
+   "quantity": "30 pcs",
+   "unique_scans_n": 2,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3332930010277",
+   "quantity": "12 pcs",
+   "unique_scans_n": 6,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3367200516029",
+   "quantity": "30 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3369760000147",
+   "brands": [
+    "xx:joubin-oeufs"
+   ],
+   "quantity": "12 pcs",
+   "unique_scans_n": 2,
+   "product_name": "oeufs",
+   "product_name_fr": "oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3356820302006",
+   "brands": [
+    "xx:La Ferme Du Mesnil"
+   ],
+   "quantity": "54 pcs",
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3337960000120",
+   "quantity": "12 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3479433370009",
+   "quantity": "8 pcs",
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3760171890622",
+   "quantity": "6 pcs",
+   "unique_scans_n": 1,
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  },
+  {
+   "code": "3273050820141",
+   "quantity": "6 pcs",
+   "product_name": "Oeufs",
+   "product_name_fr": "Oeufs",
+   "_score": 7.617616
+  }
+ ],
+ "aggregations": null,
+ "facets": {},
+ "charts": {},
+ "page": 1,
+ "page_size": 50,
+ "page_count": 125,
+ "took": 24,
+ "timed_out": false,
+ "count": 6243,
+ "is_count_exact": true,
+ "warnings": null
+}

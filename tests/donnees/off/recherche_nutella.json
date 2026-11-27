@@ -1,0 +1,481 @@
+{
+ "hits": [
+  {
+   "code": "9416470242016",
+   "brands": [
+    "xx:ferrero",
+    "xx:nutella"
+   ],
+   "quantity": "750 g",
+   "unique_scans_n": 2,
+   "product_name": "Pâte à tartiner aux noisettes et au cacao",
+   "product_name_fr": "Pâte à tartiner aux noisettes et au cacao",
+   "_score": 13.942546
+  },
+  {
+   "code": "8000500179864",
+   "brands": [
+    "xx:Ferrero"
+   ],
+   "quantity": "600g",
+   "unique_scans_n": 247,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 12.5351925
+  },
+  {
+   "code": "80050698",
+   "brands": [
+    "xx:nutella",
+    "xx:ferrero"
+   ],
+   "quantity": "200g",
+   "unique_scans_n": 3,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.800497
+  },
+  {
+   "code": "3017620422027",
+   "brands": [
+    "xx:ferrero"
+   ],
+   "unique_scans_n": 4,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.800497
+  },
+  {
+   "code": "59032823",
+   "brands": [
+    "xx:nutella",
+    "xx:Ferrero",
+    "xx:Nutellagg"
+   ],
+   "quantity": "630 g",
+   "unique_scans_n": 4,
+   "product_name": "nutella",
+   "product_name_fr": "nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "8000500345887",
+   "brands": [
+    "xx:ferrero",
+    "xx:nutella"
+   ],
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "3017620730702",
+   "brands": [
+    "xx:nutella"
+   ],
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "2011616480702",
+   "brands": [
+    "xx:nutella"
+   ],
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "8000500357729",
+   "brands": [
+    "xx:Ferrero"
+   ],
+   "quantity": "900g",
+   "unique_scans_n": 1,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "0062020003843",
+   "brands": [
+    "xx:Nutella"
+   ],
+   "quantity": "1 kg",
+   "unique_scans_n": 15,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "3017620429484",
+   "brands": [
+    "xx:nutella",
+    "xx:Ferrero"
+   ],
+   "quantity": "825 g",
+   "unique_scans_n": 459,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "3017620420009",
+   "brands": [
+    "xx:nutella",
+    "xx:Ferrero"
+   ],
+   "quantity": "950 g",
+   "unique_scans_n": 1,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "3017624047813",
+   "brands": [
+    "xx:Ferrero"
+   ],
+   "quantity": "780 g",
+   "unique_scans_n": 2,
+   "product_name": "",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "8000500179673",
+   "brands": [
+    "xx:Ferrero"
+   ],
+   "quantity": "1 kg",
+   "unique_scans_n": 11,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "9300698500181",
+   "brands": [
+    "xx:Ferrero"
+   ],
+   "quantity": "900g",
+   "unique_scans_n": 1,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "80760702",
+   "brands": [
+    "xx:ferrero"
+   ],
+   "quantity": "800g",
+   "unique_scans_n": 1,
+   "product_name": "nutella",
+   "product_name_fr": "nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "5203069043321",
+   "unique_scans_n": 1,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "8000500274415",
+   "brands": [
+    "xx:nutella"
+   ],
+   "unique_scans_n": 2,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "8000500150245",
+   "brands": [
+    "xx:nutella"
+   ],
+   "quantity": "350 g",
+   "unique_scans_n": 21,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "06157173",
+   "brands": [
+    "xx:nutella"
+   ],
+   "quantity": "350g",
+   "unique_scans_n": 3,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "49804294",
+   "brands": [
+    "xx:nutella"
+   ],
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "17762717",
+   "brands": [
+    "xx:Ferrero"
+   ],
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "8000500201886",
+   "brands": [
+    "xx:nutella"
+   ],
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "03523322",
+   "brands": [
+    "xx:nutella"
+   ],
+   "product_name": "nutella",
+   "product_name_fr": "nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "15557322",
+   "product_name": "nutela",
+   "product_name_fr": "nutela",
+   "_score": 11.202286
+  },
+  {
+   "code": "6333616633565",
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "2017676425035",
+   "unique_scans_n": 5,
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "9782501076227",
+   "unique_scans_n": 2,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "3017620222009",
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "12815487",
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "0067311255994",
+   "unique_scans_n": 1,
+   "product_name_fr": "nutella",
+   "_score": 11.202286
+  },
+  {
+   "code": "22108203",
+   "brands": [
+    "ferrero",
+    "nutella"
+   ],
+   "quantity": "375g",
+   "unique_scans_n": 1,
+   "product_name": "Nutella",
+   "_score": 11.079489
+  },
+  {
+   "code": "7709665301769",
+   "brands": [
+    "nutella",
+    "ferrero"
+   ],
+   "unique_scans_n": 2,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.079489
+  },
+  {
+   "code": "15002686",
+   "brands": [
+    "ferrero",
+    "nutella"
+   ],
+   "product_name": "Nutella",
+   "_score": 11.079489
+  },
+  {
+   "code": "01729809",
+   "brands": [
+    "nutella"
+   ],
+   "unique_scans_n": 1,
+   "_score": 11.079489
+  },
+  {
+   "code": "14224140",
+   "brands": [
+    "nutella",
+    "ferrero"
+   ],
+   "unique_scans_n": 1,
+   "product_name": "Wird geladen …",
+   "_score": 11.079489
+  },
+  {
+   "code": "48052016",
+   "brands": [
+    "nutella"
+   ],
+   "product_name": "B-ready",
+   "_score": 11.079489
+  },
+  {
+   "code": "75192533",
+   "brands": [
+    "nutella"
+   ],
+   "unique_scans_n": 1,
+   "_score": 11.079489
+  },
+  {
+   "code": "18138823",
+   "brands": [
+    "nutella"
+   ],
+   "product_name": "Nutella",
+   "_score": 11.079489
+  },
+  {
+   "code": "95397566",
+   "brands": [
+    "nutella",
+    "ferrero"
+   ],
+   "product_name": "Nutella",
+   "_score": 11.079489
+  },
+  {
+   "code": "42339748",
+   "brands": [
+    "nutella"
+   ],
+   "product_name": "Nutella",
+   "_score": 11.079489
+  },
+  {
+   "code": "13763349",
+   "brands": [
+    "nutella"
+   ],
+   "product_name": "Nutella",
+   "_score": 11.079489
+  },
+  {
+   "code": "19371934",
+   "brands": [
+    "nutella"
+   ],
+   "product_name": "Hazelnut spread",
+   "_score": 11.079489
+  },
+  {
+   "code": "57651453",
+   "brands": [
+    "nutella"
+   ],
+   "product_name": "Nutella",
+   "_score": 11.079489
+  },
+  {
+   "code": "0009800844494",
+   "brands": [
+    "nutella"
+   ],
+   "product_name": "snack",
+   "_score": 11.079489
+  },
+  {
+   "code": "0042285009330",
+   "brands": [
+    "nutella"
+   ],
+   "product_name": "Nutella",
+   "_score": 11.079489
+  },
+  {
+   "code": "6300998001473",
+   "brands": [
+    "nutella"
+   ],
+   "unique_scans_n": 1,
+   "_score": 11.079489
+  },
+  {
+   "code": "8000500166819",
+   "brands": [
+    "xx:ferrero"
+   ],
+   "quantity": "1000g",
+   "unique_scans_n": 1,
+   "product_name": "Nutella ",
+   "product_name_fr": "Nutella ",
+   "_score": 10.98069
+  },
+  {
+   "code": "8000500193389",
+   "brands": [
+    "xx:nutella",
+    "xx:Ferrero"
+   ],
+   "quantity": "1 kg",
+   "unique_scans_n": 4,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 10.98069
+  },
+  {
+   "code": "3017620423468",
+   "brands": [
+    "xx:ferrero"
+   ],
+   "quantity": "1000g",
+   "unique_scans_n": 2,
+   "product_name": "nutella",
+   "product_name_fr": "nutella",
+   "_score": 10.98069
+  }
+ ],
+ "aggregations": null,
+ "facets": {},
+ "charts": {},
+ "page": 1,
+ "page_size": 50,
+ "page_count": 11,
+ "took": 20,
+ "timed_out": false,
+ "count": 532,
+ "is_count_exact": true,
+ "warnings": null
+}
