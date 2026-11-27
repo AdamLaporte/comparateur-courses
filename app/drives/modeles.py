@@ -46,6 +46,30 @@ Montant = Annotated[Decimal, Field(ge=0, max_digits=10, decimal_places=4)]
 Erreur = Literal["mauvais_drive", "page_inattendue", "reseau", "delai", "403", "429", "defi", "404"]
 
 
+_FORMAT = re.compile(
+    r"\b\d+(?:[.,]\d+)?\s*(?:x|×|\*)?\s*\d*(?:[.,]\d+)?\s*"
+    r"(?:kg|gr|g|mg|cl|ml|l|litres?|pi[eè]ces?|pcs|tranches?|rouleaux|sachets?|capsules?|dosettes?|%)?(?=\s|$|[*x×/])",
+    re.I,
+)
+_BRUIT = re.compile(
+    r"[*×/+·|()\[\]]|\b(?:x\d+|\d+x|lot de|pack de|lot|pack|le|la|les|de|du|des)\b", re.I
+)
+
+
+def terme_simplifie(texte: str, mots_max: int = 4) -> str:
+    """Texte tapé dans la recherche d'un drive : seulement les mots du produit, sans quantités ni
+    symboles, que les moteurs des drives ne comprennent pas. « carré frais 200gr*8 0% » → « carré frais »,
+    « lait demi-écrémé 1 l » → « lait demi-écrémé ». Un EAN est gardé tel quel."""
+    texte = " ".join((texte or "").split())
+    if re.fullmatch(r"\d{8,14}", texte):
+        return texte
+    texte = re.sub(r"\bn\s*°\s*\d*|\bno\s*\d+\b", " ", texte, flags=re.I)  # « n°5 »
+    texte = _FORMAT.sub(" ", texte)
+    texte = _BRUIT.sub(" ", texte)
+    mots = [m for m in texte.split() if len(m) > 1 and not any(c.isdigit() for c in m)]
+    return " ".join(mots[:mots_max])
+
+
 def normaliser(texte: str) -> str:
     texte = "".join(
         c for c in unicodedata.normalize("NFKD", texte.casefold()) if not unicodedata.combining(c)

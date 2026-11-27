@@ -452,6 +452,20 @@ FastAPI sur le PC hôte. SQLite reste sur le disque du PC hôte. Chaque navigate
 panier dans sa session. Les extensions autorisées prennent leurs tâches dans la même file
 et déposent leurs observations dans cette base. Un bail est lié au jeton qui a pris la tâche.
 
+## 17. Mode des données : démo ou réelles
+
+Chaque visiteur choisit le mode dans le bandeau du site (`app/mode_donnees.py`, clé de session `mode_donnees` ;
+défaut : `MODE_DONNEES_DEFAUT`, « demo »).
+
+| | Démo | Données réelles |
+|---|---|---|
+| Magasins (`magasins_proches(..., seulement_drives=...)`) | tous (OpenStreetMap), drives compris | seulement les drives répertoriés (`points_retrait.json`) |
+| Prix (`collecter(..., drives_par_edge=...)`) | source de l'enseigne (fictive, marquée), drives compris | relevés des extensions Edge, rien de fictif |
+| Requêtes aux extensions Edge | aucune | oui (`suivre_edge=True`) |
+
+La page des magasins, le tableau des résultats et le flux SSE lisent le même mode : ils voient les mêmes
+magasins. L'API JSON sans session (`/api/panier/totaux`, `/api/magasins`) reste en mode démo.
+
 ## Annexe : notes techniques sur les sources (relevées le 27/11/2026)
 
 **Intermarché**, portail `developers.intermarche.com` (spécifications OpenAPI téléchargeables, bouton

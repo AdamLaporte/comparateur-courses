@@ -37,6 +37,7 @@ def configurer(reglages):
             "secret_key": "cle-de-session-unique-pour-le-site-partage-de-test",
             "magasins_osm": True,
             "drives_attente_s": 0,
+            "mode_donnees_defaut": "reel",  # relevés Edge : mode « données réelles »
         }
     )
 

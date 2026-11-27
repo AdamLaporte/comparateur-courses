@@ -83,8 +83,12 @@ async def collecter(
     reglages: Reglages,
     *,
     suivre_edge: bool = False,
+    drives_par_edge: bool = True,
 ) -> AsyncIterator[ResultatLigne]:
-    """Rend les prix et les changements d'état Edge dans l'ordre d'arrivée."""
+    """Rend les prix et les changements d'état Edge dans l'ordre d'arrivée.
+
+    `drives_par_edge=False` (mode démo) : les drives sont traités comme les autres magasins, par la source
+    de leur enseigne (fictive), et aucune requête n'est faite aux extensions Edge."""
     if not lignes or not magasins:
         return
 
@@ -92,7 +96,7 @@ async def collecter(
     magasins_par_enseigne: dict[Enseigne, list[Magasin]] = defaultdict(list)
     drives: list[DriveId] = []
     for magasin in magasins:
-        if magasin.id in DRIVES:
+        if drives_par_edge and magasin.id in DRIVES:
             drives.append(magasin.id)
         else:
             magasins_par_enseigne[magasin.enseigne].append(magasin)

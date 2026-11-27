@@ -1,6 +1,8 @@
 """Projection des observations Edge dans les lignes de comparaison du panier."""
 
 import asyncio
+import html
+import re
 from collections.abc import AsyncIterator
 from datetime import date, datetime
 from decimal import Decimal
@@ -9,7 +11,14 @@ from time import monotonic
 from app.collecte.equivalence import choisir_equivalent
 from app.config import Reglages
 from app.contrats import LigneListe, ModeLigne, Prix, Produit, ResultatLigne, StatutPrix, TypeSource
-from app.drives.modeles import DriveId, Recherche, date_tri, ean_valide, normaliser
+from app.drives.modeles import (
+    DriveId,
+    Recherche,
+    date_tri,
+    ean_valide,
+    normaliser,
+    terme_simplifie,
+)
 from app.drives.navigateur import reveiller_edge
 from app.drives.service import rechercher_pour_panier
 
@@ -25,6 +34,47 @@ MESSAGES = {
     "defi": "Le site marchand demande une vérification.",
     "404": "La page de recherche est introuvable.",
 }
+
+
+CAMPAGNE = re.compile(
+    r"\d+\s*%|\d+\s*€|offert|gratuit|remise|\d+\s*(?:e|è|ème|eme)\b|lot|carte", re.I
+)
+
+
+def nettoyer_promo(texte: str) -> str:
+    """Texte de promo d'un drive, lisible : sans HTML et sans le code interne de la campagne.
+
+    « TRAFIC S47-48 - LOT 2 RDG NUTELLA 1 - Le 2 ème à -50% en remise immédiate <br><i>pour un retrait
+    jusqu'au 29/11</i> » → « Le 2 ème à -50% en remise immédiate · pour un retrait jusqu'au 29/11 »."""
+    texte = re.sub(r"<br\s*/?>", " · ", texte or "", flags=re.I)
+    texte = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", texte)).split())
+    morceaux = [m.strip() for m in re.split(r"\s+-\s+", texte) if m.strip()]
+    # Le code de campagne (« TRAFIC S47-48 », « LOT 2 RDG NUTELLA 1 ») précède le texte client :
+    # on garde à partir du dernier morceau qui parle d'une remise.
+    utiles = [i for i, m in enumerate(morceaux) if CAMPAGNE.search(m) and not m.isupper()]
+    if len(morceaux) > 1 and utiles:
+        texte = " - ".join(morceaux[utiles[-1] :])
+    return texte.strip(" ·")
+
+
+def _meme_produit_par_nom(reglages: Reglages, drive: DriveId, ligne: LigneListe) -> dict | None:
+    """Produit précis dont le code-barres n'est pas celui du drive (plusieurs EAN existent pour un même
+    produit) : même nom et même format parmi les relevés déjà faits, sans lancer de nouveau relevé."""
+    texte = " ".join((ligne.recherche or ligne.libelle).split())[:160]
+    if not normaliser(texte):
+        return None
+    vue = rechercher_pour_panier(
+        reglages, drive, Recherche(q=texte, drives=[drive]), creer=False, terme_marchand=None
+    )
+    format_voulu = re.search(r"(\d+(?:[.,]\d+)?)\s*(kg|g|l|cl|ml)\b", ligne.libelle.lower())
+    if not format_voulu:  # sans format, trop risqué : on garde « aucun produit correspondant »
+        return None
+    voulu = format_voulu[1].replace(",", ".") + format_voulu[2]
+    for produit in vue["produits"]:
+        texte_produit = normaliser(f"{produit['produit']} {produit['format']}").replace(" ", "")
+        if ean_valide(produit.get("ean") or "") and voulu in texte_produit:
+            return {**produit, "source": f"{produit['source']} · même produit, autre code-barres"}
+    return None
 
 
 def _prix(drive: DriveId, observation: dict) -> Prix:
@@ -48,13 +98,44 @@ def _prix(drive: DriveId, observation: dict) -> Prix:
         source_detail=("Dernier prix connu · " if ancien else "") + observation["source"],
         releve_le=datetime.fromisoformat(date_tri(releve)),
         date_releve_source=date.fromisoformat(releve) if len(releve) == 10 else None,
-        conditions_affichees=observation["promos"],
+        conditions_affichees=nettoyer_promo(observation["promos"]),
     )
+
+
+def _choisir_concordant(ligne: LigneListe, produits: list[dict], offres: list[Prix]) -> Prix | None:
+    """« Le moins cher » d'une recherche simplifiée (« carré frais ») : parmi les résultats qui contiennent
+    tous les mots du produit — et le bon format s'il est donné (« 200 g ») —, le moins cher ; sinon le
+    premier résultat du drive."""
+    if not offres:
+        return None
+    mots = normaliser(terme_simplifie(ligne.recherche)).split()
+
+    def contient(produit: dict) -> bool:
+        texte = normaliser(f"{produit['produit']} {produit['marque']} {produit['format']}").split()
+        return all(any(t.startswith(m.rstrip("sx") or m) for t in texte) for m in mots)
+
+    concordants = [
+        offre for offre, produit in zip(offres, produits, strict=True) if contient(produit)
+    ]
+    format_voulu = re.search(r"(\d+(?:[.,]\d+)?)\s*(kg|gr?|cl|ml|l)\b", ligne.recherche.lower())
+    if format_voulu and concordants:
+        voulu = format_voulu[1].replace(",", ".") + format_voulu[2].replace("gr", "g")
+        au_format = [
+            o
+            for o in concordants
+            if voulu
+            in normaliser(f"{o.produit.libelle} {o.produit.quantite or ''}").replace(" ", "")
+        ]
+        concordants = au_format or concordants
+    return choisir_equivalent(concordants) if concordants else offres[0]
 
 
 def _resultat(ligne: LigneListe, drive: DriveId, vue: dict, *, hors_ligne: bool) -> ResultatLigne:
     offres = [_prix(drive, o) for o in vue["produits"]]
-    prix = offres[0] if offres and ligne.mode == ModeLigne.PRODUIT else choisir_equivalent(offres)
+    if ligne.mode == ModeLigne.PRODUIT:
+        prix = offres[0] if offres else None
+    else:
+        prix = _choisir_concordant(ligne, vue["produits"], offres)
     etat = vue["etat"]
     remarque = None
     if hors_ligne:
@@ -119,6 +200,10 @@ async def relever_ligne(
             terme_marchand=terme_marchand,
         )
         creer = False
+        if exact and vue["etat"] == "sans_correspondance" and not vue["produits"]:
+            secours = await asyncio.to_thread(_meme_produit_par_nom, reglages, drive, ligne)
+            if secours:
+                vue = {**vue, "etat": "recent", "produits": [secours]}
         hors_ligne = False
         if suivre and vue["tache_id"] and not vue["connecte"]:
             if deconnecte_depuis is None:

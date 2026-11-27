@@ -1283,3 +1283,14 @@ body.avec-barre { padding-bottom: 76px; }
 .carte-choix-ecart { font-size: 0.82rem; color: var(--encre-3); }
 .carte-choix-ecart.gain { color: var(--vert); font-weight: 650; }
 .carte-choix-ecart.perte { color: var(--rouge); }
+
+/* Interrupteur du mode des données (démo / réelles), dans le bandeau */
+.bandeau-fictif { flex-wrap: wrap; }
+.bandeau-reel { background: var(--papier); }
+.bandeau-reel .bandeau-pastille { background: var(--principal); color: #fff; }
+.mode-donnees { display: inline; margin: 0; }
+.mode-donnees-bouton {
+  font: inherit; font-size: 0.8rem; padding: 3px 10px; cursor: pointer;
+  border: 1px solid var(--encre-3); border-radius: 999px; background: transparent; color: var(--encre);
+}
+.mode-donnees-bouton:hover { background: var(--encre); color: var(--papier); }

@@ -22,6 +22,7 @@ from app.config import Reglages
 from app.drives.routes import router as routes_drives
 from app.gabarits import templates
 from app.magasins import routes as routes_magasins
+from app.mode_donnees import router as routes_mode_donnees
 from app.panier import routes as routes_panier
 from app.panier.service import migrer as migrer_panier
 from app.produits import routes as routes_produits
@@ -64,6 +65,7 @@ def creer_app(reglages: Reglages | None = None) -> FastAPI:
         app.include_router(module.router)
 
     app.include_router(routes_drives)
+    app.include_router(routes_mode_donnees)
 
     # Jamais d'erreur brute à l'utilisateur : page d'erreur lisible pour le HTML, message court en JSON.
     @app.exception_handler(StarletteHTTPException)

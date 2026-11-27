@@ -44,12 +44,29 @@
       </nav>
     </div>
   </header>
-  {% if request.app.state.reglages.mode_fictif_actif %}
-  <div class="bandeau-fictif" role="note">
-    <span class="bandeau-pastille">Démo</span>
-    Les prix marqués « Données fictives » sont inventés pour la démonstration.
-  </div>
+  {% set reglages_site = request.app.state.reglages %}
+  {% set mode_choisi = request.session.get("mode_donnees") %}
+  {% if mode_choisi not in ("demo", "reel") %}
+    {% set mode_choisi = reglages_site.mode_donnees_defaut if reglages_site.mode_donnees_defaut in ("demo", "reel") else "demo" %}
   {% endif %}
+  <div class="bandeau-fictif {{ 'bandeau-reel' if mode_choisi == 'reel' }}" role="note">
+    {% if mode_choisi == "reel" %}
+    <span class="bandeau-pastille">Réel</span>
+    <span>Données réelles : seulement les drives répertoriés, prix relevés par les extensions Edge.
+      {% if not reglages_site.collecte_drives_active %}<strong>Collecte Edge non configurée (DRIVES_JETON).</strong>{% endif %}
+    </span>
+    {% else %}
+    <span class="bandeau-pastille">Démo</span>
+    <span>Les prix marqués « Données fictives » sont inventés pour la démonstration.</span>
+    {% endif %}
+    <form action="/mode-donnees" method="post" class="mode-donnees">
+      <input type="hidden" name="suivant" value="{{ request.url.path }}{{ '?' ~ request.url.query if request.url.query }}">
+      <input type="hidden" name="mode" value="{{ 'demo' if mode_choisi == 'reel' else 'reel' }}">
+      <button type="submit" class="mode-donnees-bouton">
+        {{ "Passer en démo (prix fictifs)" if mode_choisi == "reel" else "Passer aux données réelles" }}
+      </button>
+    </form>
+  </div>
   <main id="contenu" class="contenu {% block classe_contenu %}{% endblock %}">
     {% block contenu %}{% endblock %}
   </main>

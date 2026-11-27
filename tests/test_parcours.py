@@ -36,7 +36,7 @@ def test_localisation_des_colonnes_du_comparatif(client, monkeypatch):
         for i, (ville, adresse) in enumerate(lieux)
     ]
 
-    async def proches(*args):
+    async def proches(*args, **options):
         return MagasinsReponse(
             code_postal="35170", ville="Bruz", position=position, magasins=magasins
         )

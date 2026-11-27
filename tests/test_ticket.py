@@ -61,9 +61,10 @@ def test_article_inexistant_cherche_sur_le_drive(client, reglages):
     from app.drives.service import observer
 
     reglages.drives_jeton = "j" * 32
+    reglages.mode_donnees_defaut = "reel"  # relevés Edge : mode « données réelles »
     reglages.drives_attente_s = 0
     reglages.magasins_osm = True
-    client.get("/magasins", params={"code_postal": "35170"})
+    client.get("/magasins", params={"code_postal": "35170", "rayon_km": "5"})  # drives de Bruz
     client.post(
         "/panier/ticket/ajouter",
         data={"recherche": ["xyzqwertyu"], "quantite": ["1"], "choix": ["inexistant"]},
@@ -121,9 +122,10 @@ def test_sans_releve_une_recherche_est_demandee_a_l_extension(client, reglages):
     from app import db
 
     reglages.drives_jeton = "j" * 32
+    reglages.mode_donnees_defaut = "reel"  # relevés Edge : mode « données réelles »
     reglages.drives_attente_s = 0  # l'extension ne répond pas à temps : la case retombe proprement
     reglages.magasins_osm = True
-    client.get("/magasins", params={"code_postal": "35170"})
+    client.get("/magasins", params={"code_postal": "35170", "rayon_km": "5"})  # drives de Bruz
     client.post(
         "/panier/ticket/ajouter",
         data={"recherche": ["xyzqwertyu"], "quantite": ["1"], "choix": ["inexistant"]},

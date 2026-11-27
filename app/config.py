@@ -32,6 +32,10 @@ class Reglages(BaseSettings):
     source_coursesu: str = "fictive"
     source_leclerc: str = "fictive"
 
+    # Mode des données par défaut, que chaque visiteur peut changer sur le site (app/mode_donnees.py) :
+    # "demo" (tous les magasins, prix fictifs, aucune requête Edge) ou "reel" (drives seulement, relevés Edge).
+    mode_donnees_defaut: str = "demo"
+
     # Magasins interrogés autour du code postal.
     rayon_km: float = 10.0
     max_magasins_par_enseigne: int = 2
