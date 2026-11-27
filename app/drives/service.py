@@ -16,6 +16,7 @@ from app.drives.modeles import (
     date_tri,
     ean_valide,
     normaliser,
+    terme_simplifie,
     url_marchande,
 )
 
@@ -213,7 +214,8 @@ def _vue_drive(
             (
                 drive,
                 recherche.cle,
-                terme_marchand or recherche.q,
+                # Le drive ne comprend pas « 200gr*8 0% » : on lui envoie seulement les mots du produit.
+                terme_simplifie(terme_marchand or recherche.q) or terme_marchand or recherche.q,
                 horodater(instant + duree),
             ),
         ).fetchone()["id"]

@@ -51,3 +51,54 @@ def test_meme_produit_retrouve_par_nom_et_format(reglages):
         )
         is None
     )
+
+
+def test_texte_envoye_au_drive_sans_quantites_ni_symboles():
+    from app.drives.modeles import terme_simplifie
+
+    assert terme_simplifie("carré frais 200gr*8 0%") == "carré frais"
+    assert terme_simplifie("lait demi-écrémé 1 l") == "lait demi-écrémé"
+    assert terme_simplifie("pâtes spaghetti n°5 500g") == "pâtes spaghetti"
+    assert terme_simplifie("yaourt nature 4x125g") == "yaourt nature"
+    assert terme_simplifie("3017620422003") == "3017620422003"  # un EAN reste un EAN
+
+
+def test_la_tache_de_l_extension_porte_le_texte_simplifie(reglages):
+    from app.drives.modeles import Recherche
+    from app.drives.service import rechercher_pour_panier
+
+    reglages.drives_jeton = "j" * 32
+    db.initialiser(reglages.db_path)
+    recherche = Recherche(q="carré frais 200gr*8 0%", drives=["intermarche-05052"])
+    rechercher_pour_panier(
+        reglages, "intermarche-05052", recherche, creer=True, terme_marchand=None
+    )
+    with db.connexion(reglages.db_path) as cnx:
+        assert cnx.execute("SELECT requete FROM drive_tache").fetchone()[0] == "carré frais"
+
+
+def test_le_moins_cher_parmi_les_resultats_concordants():
+    from app.drives.comparaison import _choisir_concordant, _prix
+
+    def produit(nom, centimes, format_=""):
+        return {
+            "produit": nom, "marque": "", "format": format_, "ean": "", "prix_centimes": centimes,
+            "prix_par_unite_eur": None, "unite": "", "source": "Edge", "ancien": False,
+            "releve_le": "2026-11-28T10:00:00+00:00", "promos": "",
+        }  # fmt: skip
+
+    produits = [
+        produit("Fromage frais nature", 99),
+        produit("Carré frais 0% 200g", 250, "200g"),
+        produit("Carré frais 0% 100g", 160, "100g"),
+    ]
+    offres = [_prix("intermarche-05052", p) for p in produits]
+    ligne = LigneListe(
+        id=1, mode=ModeLigne.EQUIVALENT, recherche="carré frais 200gr*8 0%", libelle="carré frais"
+    )
+    # Pas le fromage à 0,99 € (autre produit), et le bon format (200 g) avant le moins cher.
+    assert _choisir_concordant(ligne, produits, offres).prix_centimes == 250
+    sans_format = ligne.model_copy(update={"recherche": "carré frais"})
+    assert _choisir_concordant(sans_format, produits, offres).prix_centimes == 160
+    inconnu = ligne.model_copy(update={"recherche": "xyz"})
+    assert _choisir_concordant(inconnu, produits, offres).prix_centimes == 99  # le premier résultat

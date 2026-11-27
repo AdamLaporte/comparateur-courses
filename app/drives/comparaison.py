@@ -11,7 +11,14 @@ from time import monotonic
 from app.collecte.equivalence import choisir_equivalent
 from app.config import Reglages
 from app.contrats import LigneListe, ModeLigne, Prix, Produit, ResultatLigne, StatutPrix, TypeSource
-from app.drives.modeles import DriveId, Recherche, date_tri, ean_valide, normaliser
+from app.drives.modeles import (
+    DriveId,
+    Recherche,
+    date_tri,
+    ean_valide,
+    normaliser,
+    terme_simplifie,
+)
 from app.drives.navigateur import reveiller_edge
 from app.drives.service import rechercher_pour_panier
 
@@ -95,9 +102,40 @@ def _prix(drive: DriveId, observation: dict) -> Prix:
     )
 
 
+def _choisir_concordant(ligne: LigneListe, produits: list[dict], offres: list[Prix]) -> Prix | None:
+    """« Le moins cher » d'une recherche simplifiée (« carré frais ») : parmi les résultats qui contiennent
+    tous les mots du produit — et le bon format s'il est donné (« 200 g ») —, le moins cher ; sinon le
+    premier résultat du drive."""
+    if not offres:
+        return None
+    mots = normaliser(terme_simplifie(ligne.recherche)).split()
+
+    def contient(produit: dict) -> bool:
+        texte = normaliser(f"{produit['produit']} {produit['marque']} {produit['format']}").split()
+        return all(any(t.startswith(m.rstrip("sx") or m) for t in texte) for m in mots)
+
+    concordants = [
+        offre for offre, produit in zip(offres, produits, strict=True) if contient(produit)
+    ]
+    format_voulu = re.search(r"(\d+(?:[.,]\d+)?)\s*(kg|gr?|cl|ml|l)\b", ligne.recherche.lower())
+    if format_voulu and concordants:
+        voulu = format_voulu[1].replace(",", ".") + format_voulu[2].replace("gr", "g")
+        au_format = [
+            o
+            for o in concordants
+            if voulu
+            in normaliser(f"{o.produit.libelle} {o.produit.quantite or ''}").replace(" ", "")
+        ]
+        concordants = au_format or concordants
+    return choisir_equivalent(concordants) if concordants else offres[0]
+
+
 def _resultat(ligne: LigneListe, drive: DriveId, vue: dict, *, hors_ligne: bool) -> ResultatLigne:
     offres = [_prix(drive, o) for o in vue["produits"]]
-    prix = offres[0] if offres and ligne.mode == ModeLigne.PRODUIT else choisir_equivalent(offres)
+    if ligne.mode == ModeLigne.PRODUIT:
+        prix = offres[0] if offres else None
+    else:
+        prix = _choisir_concordant(ligne, vue["produits"], offres)
     etat = vue["etat"]
     remarque = None
     if hors_ligne:
