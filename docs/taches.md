@@ -16,11 +16,11 @@
 
 1. `git clone https://github.com/AdamLaporte/comparateur-courses.git`, puis `uv sync` et
    `uv run uvicorn app.main:app --reload` → http://localhost:8000. Lire `AGENTS.md` et ce fichier.
-2. Une branche par tâche, partie de `main` à jour : `feat/<lot>-<sujet>` (ex. `feat/carrefour-parseur`).
+2. Tout le monde travaille sur `main` (pas de branches) : `git switch main` puis `git pull --rebase` avant de commencer.
 3. **Ne modifier que les fichiers de son lot** (tableau ci-dessous). Les fichiers partagés ne reçoivent que des ajouts,
    annoncés dans `docs/decisions.md`.
-4. Avant de demander une fusion : `uv run pytest`, `uv run ruff format .` et `uv run ruff check .`, statut mis à jour
-   ici, journal écrit dans `docs/journal/`. Adam fusionne dans `main` et pousse.
+4. Avant de pousser : `uv run pytest`, `uv run ruff format .` et `uv run ruff check .`, statut mis à jour ici, journal
+   écrit dans `docs/journal/`. Puis `git pull --rebase` et `git push`. Jamais de `--force`.
 5. **Tout marche toujours avec les données fictives.** On active une vraie source dans son `.env`
    (`SOURCE_CARREFOUR=collecte`, etc.) seulement quand elle est prête. Personne n'attend personne.
 
@@ -177,4 +177,4 @@ Fin :
 | Collecte Carrefour, E.Leclerc Drive et Courses U bloquée (403 Cloudflare / DataDome au 27/11) | Pas de prix en direct pour ces enseignes depuis notre serveur | Parseurs testés sur des pages enregistrées, collecte sans contournement, repli sur le cache et Open Prices, préchauffage avant la démo | lots 3 et 4 |
 | Open Prices peu fourni autour de Rennes et Bruz. Constaté le 27/11 : presque aucun relevé de moins de 2 ans, aucun lieu à Bruz | Beaucoup de « prix indisponible » quand une enseigne échoue | Le cache des prix réels (préchauffage samedi matin) est le vrai filet. Données fictives marquées en dernier recours. Option : ajouter nous-mêmes des relevés sur Open Prices (application Open Prices, tickets de caisse) | lot 4 |
 | Open Food Facts limite les recherches (503) | Recherche d'articles vide | Espacer les appels, cache, catalogue fictif en secours | lot 4 |
-| Conflits Git sur les fichiers partagés | Perte de temps à l'intégration | Respecter le tableau des fichiers, petites fusions fréquentes via Adam | tous |
+| Conflits Git sur les fichiers partagés, et `main` cassée par un push | Perte de temps, démo cassée | Respecter le tableau des fichiers, petits push fréquents, tests verts avant chaque push, `git pull --rebase` avant de pousser | tous |

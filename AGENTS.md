@@ -8,7 +8,7 @@
 **Tout agent lit `AGENTS.md` et `docs/taches.md` avant de commencer, et écrit son fichier de journal avant de
 terminer sa session.**
 
-Le journal est un nouveau fichier `docs/journal/AAAA-MM-JJ-HHhMM-prenom-sujet.md`. Il indique la branche, ce qui a
+Le journal est un nouveau fichier `docs/journal/AAAA-MM-JJ-HHhMM-prenom-sujet.md`. Il indique la branche (`main`), ce qui a
 été fait, les fichiers modifiés et ce qui reste à faire. Modèle :
 [`docs/journal/MODELE.md`](docs/journal/MODELE.md). `prenom` est le prénom de la personne qui pilote l'agent, ou
 `claude` / `codex` s'il n'est pas connu. Un fichier par session évite les conflits Git.
@@ -106,7 +106,7 @@ uv run python -m app.collecte.prechauffer data/demo/recherches.txt --code-postal
 # Parcours de démo : http://localhost:8000 → 35170 → « Composer ma liste » → « nutella », « lait » → « Comparer »
 ```
 
-Avant chaque fusion dans `main` : `uv run pytest` vert, `uv run ruff format --check .` et `uv run ruff check .`
+Avant chaque `push` sur `main` : `uv run pytest` vert, `uv run ruff format --check .` et `uv run ruff check .`
 propres.
 
 ## Conventions
@@ -128,15 +128,19 @@ propres.
 ## Git
 
 - **Responsable du dépôt : Adam** (compte GitHub `AdamLaporte`). Il crée le dépôt distant, ajoute les autres
-  participants et gère les fusions dans `main` et les envois (`push`).
+  participants et règle leurs accès.
 - Chacun configure sa propre identité Git sur sa machine (`git config --global user.name "Prénom Nom"` et
   `git config --global user.email "..."`, idéalement l'adresse « noreply » de son compte GitHub).
-- `main` reste **toujours fonctionnelle**. On travaille sur une branche par fonctionnalité : `feat/<nom>`
-  (ex. `feat/collecte-carrefour`), `fix/<nom>` ou `docs/<nom>`.
+- **Une seule branche : `main`.** Tout le monde travaille et pousse directement dessus (décision du 27/11). Elle doit
+  donc rester **toujours fonctionnelle**.
+- Avant de commencer : `git switch main` puis `git pull --rebase`. Pour envoyer : tests et ruff verts, `git pull --rebase`
+  (récupère le travail des autres), puis `git push`. **Jamais de `git push --force`** sur `main`.
+- En cas de conflit pendant `git pull --rebase` : ne rien forcer, demander de l'aide (`git rebase --abort` annule).
 - Petits commits, messages clairs en français : `type : description`, où `type` vaut `feat`, `fix`, `docs`, `test`,
   `refactor` ou `chore` (ex. `feat : lecture du JSON routeData de Carrefour`).
-- On fusionne dans `main` seulement si les tests et ruff passent.
-- **Les agents ne poussent jamais et ne créent pas de dépôt distant** : les humains s'en occupent.
+- On pousse sur `main` seulement si les tests et ruff passent.
+- **Les agents ne poussent sur `main` que si la personne qui les pilote le demande**, après tests et ruff verts. Ils ne
+  forcent jamais un push et ne créent pas de dépôt distant.
 
 ## Règles pour les agents
 
