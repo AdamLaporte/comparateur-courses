@@ -1,8 +1,8 @@
 {% from "_icones.html" import icone %}
 {% if q|length >= 2 %}
 <ul class="suggestions">
-  <li class="suggestion equivalent">
-    <form hx-post="/panier/lignes" hx-target="#liste" hx-swap="outerHTML">
+  <li class="suggestion equivalent" style="--i: 0">
+    <form hx-post="/panier/lignes" hx-target="#liste" hx-swap="outerHTML transition:true">
       <input type="hidden" name="mode" value="equivalent">
       <input type="hidden" name="recherche" value="{{ q }}">
       <input type="hidden" name="libelle" value="{{ q }}">
@@ -15,8 +15,8 @@
     </form>
   </li>
   {% for p in produits %}
-  <li class="suggestion">
-    <form hx-post="/panier/lignes" hx-target="#liste" hx-swap="outerHTML">
+  <li class="suggestion" style="--i: {{ loop.index }}">
+    <form hx-post="/panier/lignes" hx-target="#liste" hx-swap="outerHTML transition:true">
       <input type="hidden" name="mode" value="produit">
       <input type="hidden" name="ean" value="{{ p.ean }}">
       <input type="hidden" name="recherche" value="{{ q }}">

@@ -80,10 +80,10 @@ def test_ajouter_des_articles_avant_de_choisir_sa_ville(client):
 
 
 def test_listes_nommees_separees_et_conservees_a_l_inscription(client):
-    client.post("/panier/lignes", data={"mode": "equivalent", "recherche": "bananes"})
+    client.post("/panier/lignes", data={"mode": "equivalent", "recherche": "lentilles corail"})
     nouvelle = client.post("/panier/listes", data={"nom": "Soirée pizza"})
     assert 'id="titre-liste">Soirée pizza' in nouvelle.text
-    assert "bananes" not in nouvelle.text
+    assert "lentilles corail" not in nouvelle.text
     client.post("/panier/lignes", data={"mode": "equivalent", "recherche": "mozzarella"})
     renommee = client.post("/panier/listes/nom", data={"nom": "Samedi soir"})
     assert 'id="titre-liste">Samedi soir' in renommee.text
@@ -102,7 +102,7 @@ def test_listes_nommees_separees_et_conservees_a_l_inscription(client):
     )
     assert "mozzarella" in client.get("/panier").text
     principale = client.post("/panier/listes/selection", data={"liste": "principale"})
-    assert "bananes" in principale.text
+    assert "lentilles corail" in principale.text
     assert "mozzarella" not in principale.text
     assert "Samedi soir" in principale.text
 

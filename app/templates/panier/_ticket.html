@@ -5,7 +5,7 @@
 {% if erreur %}
 <p class="erreur" role="alert">{{ icone("alerte") }}<span>{{ erreur }}</span></p>
 {% else %}
-<form hx-post="/panier/ticket/ajouter" hx-target="#liste" hx-swap="outerHTML" class="ticket-lu">
+<form hx-post="/panier/ticket/ajouter" hx-target="#liste" hx-swap="outerHTML transition:true" class="ticket-lu">
   <p class="aide">
     {{ articles | length }} article(s) lu(s). Vérifiez le produit associé à chacun : un article
     « inexistant en magasins » reste dans la liste mais n'est pas comparé.
@@ -13,7 +13,7 @@
   <ul>
     {% for recherche, quantite, produits in articles %}
     {% set n = loop.index %}
-    <li>
+    <li style="--i: {{ loop.index0 }}">
       <label class="masque" for="ticket-q-{{ n }}">Quantité</label>
       <input id="ticket-q-{{ n }}" name="quantite" type="number" min="1" max="99" value="{{ quantite }}">
       <div class="ticket-article">

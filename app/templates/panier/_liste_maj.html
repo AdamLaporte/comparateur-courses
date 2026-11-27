@@ -1,5 +1,6 @@
-{# Réponse après ajout ou suppression : la liste, et on vide les suggestions et l'ancien tableau. #}
+{# Réponse après un changement de la liste. Les prix déjà affichés restent : site.js les marque
+   « à mettre à jour ». Après un ajout, on vide les suggestions ; après un ticket, on le referme. #}
 {% include "panier/_liste.html" %}
-<div id="suggestions" aria-live="polite" hx-swap-oob="true"></div>
-<section id="resultats" aria-label="Comparaison des prix" hx-swap-oob="true"></section>
+{% if vider_suggestions %}<div id="suggestions" aria-live="polite" hx-swap-oob="true"></div>{% endif %}
 {% if ticket_fini %}<div id="ticket-lu" hx-swap-oob="true"></div>{% endif %}
+{% if toast %}{% include "panier/_toast.html" %}{% endif %}

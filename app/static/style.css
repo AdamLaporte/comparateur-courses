@@ -324,7 +324,7 @@ span.erreur { display: inline-flex; margin: 0; padding: 4px 8px; }
 }
 .titre-geant em {
   font-style: normal;
-  background: linear-gradient(transparent 60%, var(--jaune) 60%, var(--jaune) 90%, transparent 90%);
+  background: linear-gradient(transparent 60%, var(--jaune) 60%, var(--jaune) 90%, transparent 90%) no-repeat 0 0 / 100% 100%;
   padding: 0 0.04em;
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
 }
@@ -434,8 +434,11 @@ form.maison-form { margin: 0; }
 }
 .liste-magasins .nom { font-weight: 700; font-size: 1.02rem; overflow-wrap: anywhere; }
 .liste-magasins .adresse { grid-column: 2; font-size: 0.875rem; color: var(--encre-3); overflow-wrap: anywhere; }
-.liste-magasins .distance {
+.liste-magasins .cote {
   grid-column: 3; grid-row: 1 / span 3; align-self: center;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+}
+.liste-magasins .distance {
   font-family: var(--police-mono); font-size: 0.9rem; font-weight: 500; font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -517,11 +520,12 @@ form.maison-form { margin: 0; }
 }
 .lignes { list-style: none; margin: 0 0 18px; padding: 0; }
 .lignes li {
-  display: grid; grid-template-columns: 2.2rem minmax(0, 1fr) auto; align-items: start; gap: 4px 10px;
-  padding: 12px 0;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 4px 10px;
+  padding: 12px 6px;
+  margin: 0 -6px;
   border-bottom: 1.5px dashed var(--trait);
+  border-radius: 6px;
 }
-.lignes .quantite { padding-top: 1px; font-family: var(--police-mono); font-weight: 500; color: var(--encre-2); font-variant-numeric: tabular-nums; }
 .ligne-corps { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .ligne-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
 .lignes .libelle { font-weight: 650; line-height: 1.3; overflow-wrap: anywhere; }
@@ -899,3 +903,272 @@ span.favori { font-size: 0.85rem; font-weight: 600; color: #8a5a00; }
 .bascule-option.equivalent[aria-pressed="true"] { background: var(--jaune); }
 .bascule-option:active { transform: none; }
 .recherche-ligne { margin-top: -4px; font-size: 0.8rem; color: var(--encre-3); }
+
+/* ==========================================================================================
+   Mouvements et confort d'usage
+   Chaque animation dit quelque chose : un changement de page, un article ajouté ou retiré, un prix
+   qui arrive, un total qui bouge, le verdict. Entrées qui décélèrent, sorties plus courtes, jamais plus
+   d'environ 8 éléments en cascade, transform et opacity seulement (sauf le surligneur du titre).
+   ========================================================================================== */
+
+:root {
+  --entree: cubic-bezier(0.16, 1, 0.3, 1);
+  --sortie: cubic-bezier(0.4, 0, 1, 1);
+  --rebond: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes monte { from { opacity: 0; transform: translateY(8px); } }
+@keyframes tourne { to { transform: rotate(360deg); } }
+
+/* --- Navigation entre les pages (View Transitions, Chrome, Edge, Safari ; ailleurs : rien ne change) --- */
+@view-transition { navigation: auto; types: page; }
+.entete { view-transition-name: entete; }
+.bandeau-fictif { view-transition-name: bandeau; }
+.contenu { view-transition-name: contenu; }
+.pied { view-transition-name: pied; }
+::view-transition-group(*) { animation-duration: 260ms; animation-timing-function: var(--entree); }
+html:active-view-transition-type(page)::view-transition-old(contenu) { animation: 150ms var(--sortie) both page-part; }
+html:active-view-transition-type(page)::view-transition-new(contenu) { animation: 300ms var(--entree) both page-arrive; }
+@keyframes page-part { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes page-arrive { from { opacity: 0; transform: translateY(12px); } }
+
+/* --- La liste : chaque ligne et l'option choisie de sa bascule bougent seules pendant un changement --- */
+.lignes > li { view-transition-class: ligne; }
+.bascule-option[aria-pressed="true"] { view-transition-class: choix; }
+::view-transition-group(*.ligne) { animation-duration: 280ms; }
+::view-transition-new(*.ligne):only-child { animation: 320ms var(--entree) both ligne-arrive; }
+::view-transition-old(*.ligne):only-child { animation: 180ms var(--sortie) both ligne-part; }
+::view-transition-group(*.choix) { animation-duration: 260ms; animation-timing-function: var(--entree); }
+@keyframes ligne-arrive { from { opacity: 0; transform: translateX(-14px) scale(0.98); } }
+@keyframes ligne-part { to { opacity: 0; transform: translateX(28px); } }
+
+.lignes > li.nouveau { animation: surligne 1.6s var(--entree); }
+@keyframes surligne { 0%, 35% { background-color: var(--jaune-pale); } 100% { background-color: transparent; } }
+
+/* Quantité : − 2× + */
+.quantite-ctrl {
+  display: inline-flex; align-items: center;
+  background: var(--blanc); border: 1px solid var(--trait-fort); border-radius: 999px;
+}
+.quantite-ctrl .pas {
+  min-height: 30px; min-width: 30px; padding: 0;
+  color: var(--encre-2); background: transparent; border: 0; border-radius: 999px; box-shadow: none;
+}
+.quantite-ctrl .pas:hover:not(:disabled) { background: var(--jaune-pale); color: var(--encre); }
+.quantite-ctrl .pas:disabled { opacity: 0.3; cursor: default; }
+.quantite-ctrl .pas .icone { width: 14px; height: 14px; }
+.quantite-ctrl .quantite {
+  min-width: 2.1rem; text-align: center;
+  font-family: var(--police-mono); font-size: 0.85rem; font-weight: 500; font-variant-numeric: tabular-nums;
+}
+@media (hover: none) { .quantite-ctrl .pas { min-height: 36px; min-width: 36px; } }
+
+.barre-liste-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.lien.vider { gap: 5px; font-size: 0.85rem; text-decoration: none; color: var(--encre-3); }
+.lien.vider:hover { color: var(--rouge); }
+.lien.vider .icone { width: 15px; height: 15px; }
+
+/* Liste vide : des idées en un clic */
+.liste-vide p { margin-bottom: 4px; }
+.idees { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.idees li { animation: monte 300ms var(--entree) backwards; animation-delay: calc(min(var(--i, 0), 8) * 35ms); }
+.idee {
+  min-height: 36px; padding: 0 12px; gap: 6px;
+  font-size: 0.9rem; font-weight: 600; color: var(--encre-2);
+  background: var(--blanc); border: 1.5px dashed var(--trait-fort); border-radius: 999px;
+}
+.idee:hover { color: var(--encre); background: var(--jaune-pale); border-style: solid; border-color: var(--encre); }
+.idee .icone { width: 14px; height: 14px; }
+
+/* --- Recherche d'articles : indicateur de chargement, cascade des suggestions, aide clavier --- */
+.recherche-encours {
+  position: absolute; left: 14px; top: 50%;
+  width: 18px; height: 18px; margin-top: -9px;
+  border: 2px solid var(--trait); border-top-color: var(--encre); border-radius: 50%;
+  opacity: 0; pointer-events: none;
+}
+.champ-recherche.htmx-request .recherche-encours { opacity: 1; animation: tourne 0.7s linear infinite; }
+.champ-recherche.htmx-request > .icone { opacity: 0; }
+.suggestion { animation: monte 240ms var(--entree) backwards; animation-delay: calc(min(var(--i, 0), 8) * 30ms); }
+.aide-clavier { display: block; margin-top: 4px; }
+kbd {
+  display: inline-block; padding: 0 5px;
+  font-family: var(--police-mono); font-size: 0.75rem; line-height: 1.5;
+  background: var(--blanc); border: 1px solid var(--trait-fort); border-bottom-width: 2px; border-radius: 4px;
+}
+@media (hover: none) { .aide-clavier { display: none; } }
+.ticket-lu li { animation: monte 260ms var(--entree) backwards; animation-delay: calc(min(var(--i, 0), 8) * 40ms); }
+
+/* --- Messages brefs (toasts), avec « Annuler » --- */
+.toasts {
+  position: fixed; z-index: 60; left: 50%; bottom: 16px; transform: translateX(-50%);
+  width: min(460px, calc(100vw - 24px));
+  display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+body.avec-barre .toasts { bottom: 86px; }
+.toast {
+  position: relative; overflow: hidden; pointer-events: auto;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 8px 8px 14px;
+  color: var(--blanc); background: var(--encre);
+  border-radius: 10px;
+  box-shadow: 0 14px 30px -14px rgb(0 0 0 / 0.55);
+  animation: toast-arrive 280ms var(--entree) both;
+}
+.toast.part { animation: toast-part 160ms var(--sortie) both; }
+@keyframes toast-arrive { from { opacity: 0; transform: translateY(14px) scale(0.97); } }
+@keyframes toast-part { to { opacity: 0; transform: translateY(8px) scale(0.98); } }
+.toast-icone { display: grid; color: var(--jaune); }
+.toast-texte {
+  flex: 1; min-width: 0; margin: 0; font-size: 0.92rem; line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.toast-action {
+  min-height: 36px; padding: 0 12px; gap: 6px;
+  color: var(--encre); background: var(--jaune); border: 0; font-weight: 750; white-space: nowrap;
+}
+.toast-action:hover { background: var(--jaune-fonce); }
+.toast-action .icone { width: 16px; height: 16px; }
+.toast-fermer { min-height: 36px; min-width: 36px; padding: 0; color: #cfcabc; background: transparent; border: 0; }
+.toast-fermer:hover { color: var(--blanc); background: rgb(255 255 255 / 0.1); }
+.toast-minuteur {
+  position: absolute; left: 0; bottom: 0; width: 100%; height: 3px;
+  background: var(--jaune); transform-origin: left;
+  animation: minuteur var(--duree-toast, 4s) linear forwards;
+}
+.toast.en-pause .toast-minuteur { animation-play-state: paused; }
+@keyframes minuteur { to { transform: scaleX(0); } }
+
+/* --- Prix périmés après un changement de la liste --- */
+.avis-perime {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px;
+  margin-bottom: 16px; padding: 12px 16px;
+  background: var(--jaune-pale); border: 1.5px solid var(--encre); border-radius: var(--rayon-bloc);
+  animation: monte 260ms var(--entree) backwards;
+}
+.avis-perime p { margin: 0; font-weight: 600; }
+.comparaison.perimee .verdict, .comparaison.perimee .defilement { opacity: 0.45; filter: grayscale(0.5); transition: opacity 240ms, filter 240ms; }
+
+/* --- Comparaison : progression réelle, totaux qui bougent, verdict --- */
+.barre-chargement .barre-remplie { display: none; }
+.barre-chargement.determinee::after { display: none; }
+.barre-chargement.determinee .barre-remplie {
+  display: block; height: 100%; width: 100%;
+  background: var(--jaune-fonce); border-radius: 2px;
+  transform-origin: left; transform: scaleX(var(--progression, 0));
+  transition: transform 300ms var(--entree);
+}
+.progression-compte { margin-left: 6px; font-family: var(--police-mono); font-size: 0.8rem; font-weight: 500; color: var(--encre-3); }
+td.case { transition: background-color 300ms var(--entree); }
+.tableau-prix .gagnant { transition: background-color 500ms var(--entree); }
+.tableau-prix tfoot td.maj { animation: total-bouge 650ms var(--entree); }
+@keyframes total-bouge { from { box-shadow: inset 0 0 0 999px rgb(255 210 63 / 0.45); } to { box-shadow: inset 0 0 0 999px rgb(255 210 63 / 0); } }
+
+.verdict-gagnant { animation: verdict-arrive 420ms var(--entree) backwards; }
+@keyframes verdict-arrive { from { opacity: 0; transform: translateY(12px) scale(0.98); } }
+.sticker { animation: sticker-pose 560ms var(--rebond) 380ms backwards; }
+@keyframes sticker-pose { from { opacity: 0; transform: rotate(-14deg) scale(1.9); } }
+.classement li { animation: monte 280ms var(--entree) backwards; animation-delay: calc(160ms + min(var(--i, 0), 8) * 45ms); }
+
+.itineraire {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.8rem; font-weight: 600; color: var(--encre-2); text-decoration: none; white-space: nowrap;
+}
+.itineraire:hover { color: var(--encre); text-decoration: underline; }
+.itineraire .icone { width: 14px; height: 14px; }
+.verdict-gagnant .itineraire { margin-top: 14px; font-size: 0.875rem; }
+
+/* --- Accueil : le titre monte ligne à ligne, le surligneur passe, le ticket s'imprime --- */
+.titre-geant .ligne-titre { display: block; animation: monte-titre 600ms var(--entree) backwards; }
+.titre-geant .ligne-titre + .ligne-titre { animation-delay: 110ms; }
+@keyframes monte-titre { from { opacity: 0; transform: translateY(0.3em); } }
+.titre-geant em { animation: surligneur 700ms var(--entree) 520ms backwards; }
+@keyframes surligneur { from { background-size: 0% 100%; } }
+.chapeau, .recherche-lieu { animation: monte 480ms var(--entree) backwards; }
+.chapeau { animation-delay: 180ms; }
+.recherche-lieu { animation-delay: 260ms; }
+@media (min-width: 960px) {
+  .ticket { animation: impression 1s steps(16, end) 450ms backwards; }
+}
+@keyframes impression { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+
+.reprendre {
+  display: flex; align-items: center; gap: 14px;
+  max-width: 34rem; margin: 0 0 18px; padding: 14px 16px;
+  color: var(--encre); text-decoration: none;
+  background: var(--blanc); border: 1.5px solid var(--encre); border-radius: var(--rayon-bloc);
+  box-shadow: 0 3px 0 var(--encre);
+  animation: monte 480ms var(--entree) 220ms backwards;
+  transition: transform var(--duree) var(--entree), box-shadow var(--duree) var(--entree);
+}
+.reprendre:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--encre); }
+.reprendre:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--encre); }
+.reprendre-icone { display: grid; place-items: center; flex: none; width: 42px; height: 42px; background: var(--jaune-pale); border-radius: 8px; }
+.reprendre-texte { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.reprendre-texte span { font-size: 0.9rem; color: var(--encre-3); }
+.reprendre-action { display: inline-flex; align-items: center; gap: 6px; font-weight: 750; white-space: nowrap; }
+
+/* --- Magasins : la liste et les repères de la carte arrivent dans l'ordre --- */
+.liste-magasins li { animation: monte 320ms var(--entree) backwards; animation-delay: calc(min(var(--i, 0), 8) * 40ms); }
+.repere span { animation: repere-pose 420ms var(--rebond) backwards; animation-delay: calc(250ms + min(var(--i, 0), 12) * 45ms); }
+@keyframes repere-pose { from { opacity: 0; transform: translateY(-16px) scale(0.6); } }
+
+/* --- Attente : boutons qui envoient, localisation en cours --- */
+button.envoi, .bouton.envoi { pointer-events: none; }
+button.envoi::before, .bouton.envoi::before, #bouton-comparer.htmx-request::before {
+  content: ""; flex: none; width: 16px; height: 16px;
+  border: 2px solid rgb(22 21 15 / 0.25); border-top-color: var(--encre); border-radius: 50%;
+  animation: tourne 0.7s linear infinite;
+}
+#me-localiser.localise .icone { animation: vise 0.9s ease-in-out infinite; }
+@keyframes vise { 50% { transform: scale(0.7); opacity: 0.5; } }
+
+/* --- Téléphone : « Comparer » toujours à portée de pouce --- */
+.barre-comparer {
+  position: fixed; z-index: 40; left: 0; right: 0; bottom: 0;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: var(--papier); border-top: 1px solid var(--trait);
+  box-shadow: 0 -8px 20px -16px rgb(22 21 15 / 0.5);
+}
+.barre-comparer:not([hidden]) { animation: barre-monte 260ms var(--entree) both; }
+@keyframes barre-monte { from { transform: translateY(100%); } }
+.barre-comparer .principal { width: 100%; min-height: 50px; }
+.barre-comparer-nb { font-family: var(--police-mono); font-weight: 500; }
+body.avec-barre { padding-bottom: 76px; }
+@media (min-width: 960px) { .barre-comparer { display: none !important; } }
+
+/* --- Mot de passe : afficher / masquer (bouton ajouté par site.js) --- */
+.champ-mdp { position: relative; display: block; }
+.champ-mdp input { display: block; width: 100%; padding-right: 92px; }
+.voir-mdp {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  min-height: 34px; padding: 0 10px;
+  font-size: 0.8rem; color: var(--encre-2); background: transparent; border-color: transparent;
+}
+.voir-mdp:hover { background: var(--papier); }
+.voir-mdp:active { transform: translateY(-50%); }
+
+/* --- Moins de mouvement demandé : tout s'affiche directement, sans transition de page --- */
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  .toast-minuteur { display: none; }
+}
+
+/* Verdict sans panier complet : même carte, filet pointillé et manquants en rouge. */
+.verdict-gagnant.incomplet { border-style: dashed; box-shadow: none; }
+.verdict-ecart .manque { color: var(--rouge); }
+.comparaison.gagnant-incomplet .tableau-prix thead th.gagnant::before { content: "Le plus complet"; }
+@media (max-width: 639px) {
+  .bascule-option { padding: 0 8px; letter-spacing: 0.03em; }
+  .quantite-ctrl .quantite { min-width: 1.8rem; }
+  .ligne-meta { column-gap: 8px; }
+}
+.bascule-option .court { display: none; }
+@media (max-width: 639px) {
+  .bascule-option .long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .bascule-option .court { display: inline; }
+}
+/* Le bouton « Afficher » n'hérite pas de la marge du bouton d'envoi des formulaires de compte. */
+.champ-mdp .voir-mdp { margin: 0; }

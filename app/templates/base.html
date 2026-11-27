@@ -9,11 +9,11 @@
   {# Tout est servi par le site lui-même (app/static/vendor/) : la démo marche sans Internet. #}
   <link rel="preload" href="{{ url_for('static', path='vendor/polices/archivo-latin-wdth-normal.woff2') }}"
         as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v={{ version_statique('style.css') }}">
   <script src="{{ url_for('static', path='vendor/htmx-2.0.4.min.js') }}" defer></script>
   <script src="{{ url_for('static', path='vendor/htmx-ext-sse-2.2.2.js') }}" defer></script>
   {% block tete %}{% endblock %}
-  <script src="{{ url_for('static', path='site.js') }}" defer></script>
+  <script src="{{ url_for('static', path='site.js') }}?v={{ version_statique('site.js') }}" defer></script>
 </head>
 <body>
   <a class="evitement" href="#contenu">Aller au contenu</a>
@@ -55,6 +55,8 @@
   <main id="contenu" class="contenu {% block classe_contenu %}{% endblock %}">
     {% block contenu %}{% endblock %}
   </main>
+  {# Messages brefs (ajouté, retiré + « Annuler »…), remplis par le serveur ou par site.js. #}
+  <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
   <footer class="pied">
     <div class="pied-dedans">
       <p><strong>GrignotePrix</strong> · hackathon ENSAI 2026</p>

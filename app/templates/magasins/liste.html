@@ -36,12 +36,17 @@
   <div>
     <ol class="liste-magasins">
       {% for m in reponse.magasins %}
-      <li class="{{ m.enseigne.value }}" data-numero="{{ loop.index }}">
+      <li class="{{ m.enseigne.value }}" data-numero="{{ loop.index }}" style="--i: {{ loop.index0 }}">
         <span class="numero" aria-hidden="true">{{ loop.index }}</span>
         <span class="badge {{ m.enseigne.value }}">{{ m.enseigne.nom }}</span>
         <span class="nom">{{ m.nom }}</span>
         {% if m.adresse %}<span class="adresse">{{ m.adresse }}</span>{% endif %}
-        <span class="distance">{{ ('%.1f' % m.distance_km).replace('.', ',') }} km</span>
+        <span class="cote">
+          <span class="distance">{{ ('%.1f' % m.distance_km).replace('.', ',') }} km</span>
+          <a class="itineraire" target="_blank" rel="noopener"
+             href="https://www.google.com/maps/dir/?api=1&amp;destination={{ m.position.lat }},{{ m.position.lon }}"
+             aria-label="Itinéraire vers {{ m.nom }} (nouvel onglet)">{{ icone("itineraire") }}<span>Itinéraire</span></a>
+        </span>
       </li>
       {% endfor %}
     </ol>
@@ -78,10 +83,15 @@
 {% endif %}
 
 <div class="barre-suite">
-  <a class="bouton" href="/drives">Comparer les prix des drives de Bruz</a>
-  {% if reponse.magasins %}
+  {% if reponse.magasins and nb_articles %}
+  <a class="bouton principal" href="/panier?comparer=1">
+    Comparer ma liste ici ({{ nb_articles }} article{{ "s" if nb_articles > 1 }}) {{ icone("fleche") }}
+  </a>
+  <a class="bouton" href="/panier">{{ icone("liste") }}<span>Modifier ma liste</span></a>
+  {% elif reponse.magasins %}
   <a class="bouton principal" href="/panier">Composer ma liste {{ icone("fleche") }}</a>
   {% endif %}
+  <a class="bouton" href="/drives">Comparer les prix des drives de Bruz</a>
   <a class="bouton" href="/">{{ icone("retour") }}<span>Changer de lieu</span></a>
 </div>
 {% if reponse.magasins and not reponse.magasins[0].est_fictif %}

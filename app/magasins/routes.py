@@ -8,6 +8,7 @@ from app.contrats import MagasinsReponse
 from app.gabarits import templates
 from app.magasins.geocodage import CodePostalInconnu, CodePostalInvalide
 from app.magasins.service import magasins_proches
+from app.panier import service as panier
 
 router = APIRouter(tags=["magasins"])
 
@@ -25,8 +26,13 @@ def lire_rayon(texte: str | float | None) -> float | None:
     return rayon if 0 < rayon <= 50 else None
 
 
+def nb_articles(request: Request, reglages) -> int:
+    """Taille de la liste en cours (0 sans session) : pour proposer de la reprendre."""
+    return len(panier.lister(reglages, panier.proprietaire(request, creer=False)))
+
+
 @router.get("/", response_class=HTMLResponse)
-async def accueil(request: Request):
+async def accueil(request: Request, reglages: ReglagesDep):
     return templates.TemplateResponse(
         request,
         "magasins/accueil.html",
@@ -34,6 +40,7 @@ async def accueil(request: Request):
             "code_postal": request.session.get("code_postal", ""),
             "rayon_km": request.session.get("rayon_km"),
             "rayons": RAYONS_KM,
+            "nb_articles": nb_articles(request, reglages),
         },
     )
 
@@ -56,7 +63,11 @@ async def page_magasins(
         return templates.TemplateResponse(request, "magasins/accueil.html", contexte)
     request.session["code_postal"] = reponse.code_postal
     request.session["rayon_km"] = rayon
-    return templates.TemplateResponse(request, "magasins/liste.html", {"reponse": reponse})
+    return templates.TemplateResponse(
+        request,
+        "magasins/liste.html",
+        {"reponse": reponse, "nb_articles": nb_articles(request, reglages)},
+    )
 
 
 @router.get("/api/magasins", response_model=MagasinsReponse)

@@ -7,8 +7,8 @@
   <h2>Comparaison</h2>
   <div class="resume" sse-swap="resume" aria-live="polite">
     <div class="attente-resume">
-      <p>Relevé des prix dans {{ magasins | length }} magasins…</p>
-      <div class="barre-chargement" aria-hidden="true"></div>
+      <p>Relevé des prix dans {{ magasins | length }} magasins… <span class="progression-compte"></span></p>
+      <div class="barre-chargement" aria-hidden="true"><span class="barre-remplie"></span></div>
     </div>
   </div>
   <div class="defilement" tabindex="0" role="region" aria-label="Tableau des prix par magasin">
