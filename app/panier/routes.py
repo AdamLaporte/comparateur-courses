@@ -5,6 +5,7 @@ import asyncio
 import json
 import logging
 import re
+from collections import Counter
 from collections.abc import AsyncIterable, AsyncIterator
 from typing import Annotated
 
@@ -370,6 +371,23 @@ async def changer_quantite(
     return _liste_maj(request, reglages)
 
 
+def localisations_colonnes(magasins: list[Magasin]) -> dict[str, str]:
+    villes = {m.id: " ".join(m.ville.split()) for m in magasins}
+    frequences = Counter(ville.casefold() for ville in villes.values() if ville)
+    localisations = {}
+    for magasin in magasins:
+        ville = villes[magasin.id]
+        if ville and frequences[ville.casefold()] == 1:
+            localisations[magasin.id] = ville
+            continue
+        adresse = " ".join(magasin.adresse.split()).strip(" ,")
+        rue = re.sub(r"(?:^|[,\s])\d{5}(?:\s|,|$).*$", "", adresse).rstrip(" ,")
+        if ville:
+            rue = re.sub(rf",\s*{re.escape(ville)}$", "", rue, flags=re.IGNORECASE)
+        localisations[magasin.id] = rue or ville or adresse
+    return localisations
+
+
 @router.get("/panier/resultats", response_class=HTMLResponse)
 async def tableau_resultats(request: Request, reglages: ReglagesDep):
     """Tableau vide (articles × magasins) qui se remplit ensuite par le flux SSE."""
@@ -392,6 +410,7 @@ async def tableau_resultats(request: Request, reglages: ReglagesDep):
             contexte["message"] = "Choisissez d'abord votre code postal."
         if not contexte["magasins"] and not contexte["message"]:
             contexte["message"] = "Aucun magasin trouvé autour de ce code postal."
+    contexte["localisations"] = localisations_colonnes(contexte["magasins"])
     return templates.TemplateResponse(request, "panier/_resultats.html", contexte)
 
 

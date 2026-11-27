@@ -24,6 +24,9 @@
             {% if m.distance_km is not none %}
             <span class="distance">{{ ('%.1f' % m.distance_km).replace('.', ',') }} km</span>
             {% endif %}
+            {% if localisations[m.id] %}
+            <span class="localisation-magasin">{{ localisations[m.id] }}</span>
+            {% endif %}
           </th>
           {% endfor %}
         </tr>

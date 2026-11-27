@@ -3,9 +3,56 @@ code postal → magasins → liste de courses → prix et total par magasin."""
 
 import re
 
-from app.contrats import Enseigne, StatutPrix, TotauxReponse
+from app.contrats import Enseigne, Magasin, MagasinsReponse, Position, StatutPrix, TotauxReponse
+from app.panier import routes
 
 NUTELLA = "3017620422003"
+
+
+def test_localisation_des_colonnes_du_comparatif(client, monkeypatch):
+    client.get("/magasins", params={"code_postal": "35170"})
+    client.post("/panier/lignes", data={"mode": "equivalent", "recherche": "lait"})
+    position = Position(lat=48, lon=-1.7)
+    lieux = [
+        ("Blain", "12 rue de la Gare, 44130, Blain"),
+        (" blain ", "8 rue du Marché, 44130 Blain"),
+        ("Blain", ""),
+        ("Nantes", "1 rue du Commerce"),
+        ("", "5 rue de la Paix"),
+        ("", ""),
+    ]
+    magasins = [
+        Magasin(
+            id=f"carrefour-{i}",
+            id_enseigne=str(i),
+            enseigne=Enseigne.CARREFOUR,
+            nom=f"Magasin {i}",
+            ville=ville,
+            adresse=adresse,
+            position=position,
+            distance_km=1.1,
+        )
+        for i, (ville, adresse) in enumerate(lieux)
+    ]
+
+    async def proches(*args):
+        return MagasinsReponse(
+            code_postal="35170", ville="Bruz", position=position, magasins=magasins
+        )
+
+    monkeypatch.setattr(routes, "magasins_proches", proches)
+    page = client.get("/panier/resultats")
+    assert page.status_code == 200
+    assert re.findall(r'class="localisation-magasin">([^<]+)', page.text) == [
+        "12 rue de la Gare",
+        "8 rue du Marché",
+        "Blain",
+        "Nantes",
+        "5 rue de la Paix",
+    ]
+    assert re.search(
+        r'class="distance">1,1 km</span>\s*<span class="localisation-magasin">', page.text
+    )
 
 
 def test_magasins_proches_json(client):
