@@ -37,3 +37,4 @@ est aussi notée ici.
 | 2026-11-27 | Données fictives : 5 vrais EAN (Nutella, Coca-Cola, Uncle Ben's, Carte Noire, lait Carrefour Classic') et des EAN fictifs commençant par 2 (plage réservée à l'usage interne), avec des marques inventées | Pas de fausses associations entre un vrai code-barres et un faux produit |
 | 2026-11-27 | La source fictive donne un prix générique à tout EAN hors catalogue | Le parcours marche aussi avec des produits venus d'Open Food Facts quand le lot 4 les branchera |
 | 2026-11-27 | Événement SSE `fin` + `sse-close="fin"` côté HTMX | Sans cela, le navigateur se reconnecte et relance toute la collecte |
+| 2026-11-27 | Répartition en 4 lots (interface et parcours ; Intermarché, magasins et comptes ; collecte web en 3 sous-lots ; données et fiabilité) avec un tableau de propriété des fichiers dans `docs/taches.md` | Travail en parallèle sans conflits. Chaque vraie source s'active seule dans `.env`, les autres restent fictives |
