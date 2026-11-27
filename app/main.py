@@ -16,6 +16,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 
 from app import db
+from app.acces_partage import AccesPartage
 from app.comptes import routes as routes_comptes
 from app.config import Reglages
 from app.drives.routes import router as routes_drives
@@ -49,8 +50,14 @@ def creer_app(reglages: Reglages | None = None) -> FastAPI:
     )
     app.state.reglages = reglages
     app.add_middleware(
-        SessionMiddleware, secret_key=reglages.secret_key, same_site="lax", max_age=30 * 24 * 3600
+        SessionMiddleware,
+        secret_key=reglages.secret_key,
+        same_site="lax",
+        max_age=30 * 24 * 3600,
+        https_only=bool(reglages.site_partage_origine),
     )
+    if reglages.site_partage_origine:
+        app.add_middleware(AccesPartage, reglages=reglages)
     app.mount("/static", StaticFiles(directory=DOSSIER_APP / "static"), name="static")
 
     for module in (routes_magasins, routes_produits, routes_panier, routes_comptes):
