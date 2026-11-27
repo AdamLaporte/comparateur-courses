@@ -23,6 +23,7 @@ FICHIERS = {
     "lait demi-écrémé": "recherche_lait_demi-ecreme.json",
     "oeufs": "recherche_oeufs.json",
     "(nutella) AND quantity:(400*)": "recherche_nutella_quantite_400.json",
+    "spag*": "recherche_spag_prefixe.json",
 }
 
 
@@ -82,14 +83,16 @@ async def test_cache_et_table_produit(reglages_off):
     faux = FauxOFF()
     produits = await _chercher("nutella", reglages_off, faux)
     await _chercher("  Nutella ", reglages_off, faux)
-    assert len(faux.requetes) == 1  # deuxième recherche servie par le cache
+    assert (
+        len(faux.requetes) == 2
+    )  # « nutella* » et « nutella » ; la deuxième fois, tout vient du cache
     assert produit_par_ean(reglages_off, produits[0].ean) == produits[0]
 
 
 async def test_panne_catalogue_fictif(reglages_off):
     faux = FauxOFF(statut=503)
     produits = await _chercher("nutella", reglages_off, faux)
-    assert len(faux.requetes) == 1
+    assert len(faux.requetes) == 2  # les deux recherches échouent
     assert produits and produits[0].ean == "3017620422003"  # Nutella du catalogue fictif
 
 
@@ -150,9 +153,10 @@ async def test_nutella_400_g_en_tete(reglages_off):
     assert produits, "la quantité ne doit pas vider la recherche"
     assert lire_quantite(produits[0].quantite) == (400, "g")
     assert produits[0].ean == "3017620422003"  # Nutella 400 g vendu en France
-    # Recherche ciblée (7 résultats) complétée par la recherche générale.
+    # Recherche ciblée (7 résultats), puis début de mot (rien ici), puis recherche classique.
     assert [r.url.params["q"] for r in faux.requetes] == [
         "(nutella) AND quantity:(400*)",
+        "nutella*",
         "nutella",
     ]
     assert len(produits) == 8
@@ -164,7 +168,33 @@ async def test_quantite_ecrite_autrement(reglages_off):
     assert lire_quantite(produits[0].quantite) == (1000, "g")
 
 
-async def test_sans_quantite_rien_ne_change(reglages_off):
+async def test_sans_quantite_pas_de_recherche_ciblee(reglages_off):
     faux = FauxOFF()
     await _chercher("nutella", reglages_off, faux)
-    assert [r.url.params["q"] for r in faux.requetes] == ["nutella"]
+    # Début de mot (rien dans les réponses enregistrées), puis recherche classique.
+    assert [r.url.params["q"] for r in faux.requetes] == ["nutella*", "nutella"]
+
+
+# --- Recherche pendant la frappe (« spag ») ---
+
+
+def test_requete_prefixe():
+    assert service.requete_prefixe("spag") == "spag*"
+    assert service.requete_prefixe("pain de mi") == "pain AND de AND mi*"
+    assert service.requete_prefixe("lait demi-écrémé") == "lait AND demi AND écrémé*"
+    assert service.requete_prefixe("x") is None
+
+
+def test_ligature_oe():
+    assert service.normaliser("6 Gros Œufs") == "6 gros oeufs"
+
+
+async def test_debut_de_mot_trouve_les_spaghetti(reglages_off):
+    faux = FauxOFF()
+    produits = await _chercher("spag", reglages_off, faux)
+    assert faux.requetes[0].url.params["q"] == "spag*"
+    assert faux.requetes[0].url.params["sort_by"] == "-unique_scans_n"
+    assert len(faux.requetes) == 1  # assez de produits : pas de recherche classique en plus
+    assert all(service.normaliser(p.libelle).startswith("spaghetti") for p in produits[:3])
+    # Nom simple d'abord : pas de sauce ni de plat préparé en tête.
+    assert "sauce" not in service.normaliser(produits[0].libelle)
