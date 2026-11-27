@@ -801,3 +801,29 @@ span.favori { font-size: 0.85rem; font-weight: 600; color: #8a5a00; }
 .tableau-prix td.inexistant { color: var(--encre-3); font-style: italic; background: repeating-linear-gradient(-45deg, transparent 0 8px, rgb(22 21 15 / 0.03) 8px 16px); }
 /* Le texte reste visible quand on fait défiler le tableau horizontalement. */
 .tableau-prix td.inexistant span { position: sticky; left: 11.5rem; }
+
+/* Ma liste : bascule « produit précis / le moins cher » et action sur toute la liste. */
+.barre-liste { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.barre-liste .compteur { margin: 0; }
+.bouton-tout {
+  min-height: 36px; padding: 0.35rem 0.75rem;
+  font-size: 0.85rem; font-weight: 700;
+  background: var(--jaune-pale); border: 1.5px solid var(--encre); border-radius: 999px;
+}
+.bouton-tout:hover { background: var(--jaune); }
+.bouton-tout.retour { background: var(--blanc); }
+.bouton-tout .icone { width: 16px; height: 16px; }
+.bascule {
+  display: inline-flex; padding: 2px;
+  background: var(--papier); border: 1px solid var(--trait-fort); border-radius: 999px;
+}
+.bascule-option {
+  min-height: 28px; padding: 0 10px;
+  font-size: 0.68rem; font-weight: 750; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--encre-3); background: transparent; border: 0; border-radius: 999px; box-shadow: none;
+}
+.bascule-option:hover { background: var(--blanc); color: var(--encre); }
+.bascule-option[aria-pressed="true"] { cursor: default; color: var(--encre); background: var(--blanc); box-shadow: 0 1px 2px rgb(22 21 15 / 0.15); }
+.bascule-option.equivalent[aria-pressed="true"] { background: var(--jaune); }
+.bascule-option:active { transform: none; }
+.recherche-ligne { margin-top: -4px; font-size: 0.8rem; color: var(--encre-3); }

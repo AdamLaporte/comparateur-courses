@@ -189,6 +189,26 @@ async def ajouter_ticket(
     return _liste_maj(request, reglages, erreur=erreur, ticket_fini=True)
 
 
+@router.post("/panier/lignes/mode", response_class=HTMLResponse)
+async def changer_mode_liste(
+    request: Request, reglages: ReglagesDep, mode: Annotated[str, Form()] = ""
+):
+    """Toute la liste en « le moins cher » (mode=equivalent), ou retour aux produits choisis."""
+    if mode in (ModeLigne.PRODUIT, ModeLigne.EQUIVALENT):
+        service.changer_mode_tout(reglages, service.proprietaire(request), ModeLigne(mode))
+    return _liste_maj(request, reglages)
+
+
+@router.post("/panier/lignes/{ligne_id}/mode", response_class=HTMLResponse)
+async def changer_mode_ligne(
+    request: Request, ligne_id: int, reglages: ReglagesDep, mode: Annotated[str, Form()] = ""
+):
+    """Un article : « produit précis » ↔ « le moins cher »."""
+    if mode in (ModeLigne.PRODUIT, ModeLigne.EQUIVALENT):
+        service.changer_mode(reglages, service.proprietaire(request), ligne_id, ModeLigne(mode))
+    return _liste_maj(request, reglages)
+
+
 @router.delete("/panier/lignes/{ligne_id}", response_class=HTMLResponse)
 async def supprimer_ligne(request: Request, ligne_id: int, reglages: ReglagesDep):
     service.supprimer(reglages, service.proprietaire(request), ligne_id)

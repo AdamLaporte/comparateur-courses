@@ -11,7 +11,7 @@ from fastapi import Request
 
 from app import db
 from app.config import Reglages
-from app.contrats import AjoutLigne, LigneListe
+from app.contrats import AjoutLigne, LigneListe, ModeLigne
 
 
 def proprietaire(request: Request, creer: bool = True) -> str | None:
@@ -87,4 +87,27 @@ def supprimer(reglages: Reglages, proprietaire: str, ligne_id: int) -> None:
     with db.connexion(reglages.db_path) as cnx:
         cnx.execute(
             "DELETE FROM ligne_liste WHERE id = ? AND proprietaire = ?", (ligne_id, proprietaire)
+        )
+
+
+def changer_mode(reglages: Reglages, proprietaire: str, ligne_id: int, mode: ModeLigne) -> None:
+    """Bascule une ligne entre « produit précis » et « le moins cher ». L'EAN est gardé en passant au
+    moins cher, pour pouvoir revenir au produit choisi ; une ligne sans EAN ne peut pas devenir précise."""
+    if mode not in (ModeLigne.PRODUIT, ModeLigne.EQUIVALENT):
+        return
+    with db.connexion(reglages.db_path) as cnx:
+        cnx.execute(
+            "UPDATE ligne_liste SET mode = ? WHERE id = ? AND proprietaire = ? "
+            "AND mode != 'inexistant' AND (? = 'equivalent' OR ean IS NOT NULL)",
+            (mode.value, ligne_id, proprietaire, mode.value),
+        )
+
+
+def changer_mode_tout(reglages: Reglages, proprietaire: str, mode: ModeLigne) -> None:
+    """Toute la liste au moins cher, ou retour aux produits choisis (lignes qui ont un EAN)."""
+    depart = ModeLigne.PRODUIT if mode == ModeLigne.EQUIVALENT else ModeLigne.EQUIVALENT
+    with db.connexion(reglages.db_path) as cnx:
+        cnx.execute(
+            "UPDATE ligne_liste SET mode = ? WHERE proprietaire = ? AND mode = ? AND ean IS NOT NULL",
+            (mode.value, proprietaire, depart.value),
         )

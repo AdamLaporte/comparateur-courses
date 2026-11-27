@@ -1,6 +1,8 @@
 """Parcours principal avec les données fictives :
 code postal → magasins → liste de courses → prix et total par magasin."""
 
+import re
+
 from app.contrats import Enseigne, StatutPrix, TotauxReponse
 
 NUTELLA = "3017620422003"
@@ -135,3 +137,39 @@ def test_sources_reelles_pas_encore_branchees(reglages, monkeypatch):
         assert set(donnees["enseignes_sans_magasin"]) == {"carrefour", "intermarche"}
         page = client.get("/magasins", params={"code_postal": "35170"})
         assert "Pas de magasin trouvé pour" in page.text
+
+
+def test_basculer_un_article_et_toute_la_liste_au_moins_cher(client):
+    client.get("/magasins", params={"code_postal": "35170"})
+    client.post(
+        "/panier/lignes",
+        data={
+            "mode": "produit",
+            "ean": NUTELLA,
+            "recherche": "nutella",
+            "libelle": "Nutella 400 g",
+        },
+    )
+    client.post("/panier/lignes", data={"mode": "equivalent", "recherche": "riz"})
+    page = client.get("/panier").text
+    nutella_id = re.search(r"/panier/lignes/(\d+)/mode", page)[1]
+    assert "Tout passer au moins cher" in page
+
+    # Un article au moins cher : il garde son EAN pour pouvoir revenir au produit choisi.
+    page = client.post(f"/panier/lignes/{nutella_id}/mode", data={"mode": "equivalent"}).text
+    assert "Le moins cher pour « nutella »" in page and "Revenir aux produits choisis" in page
+    page = client.post(f"/panier/lignes/{nutella_id}/mode", data={"mode": "produit"}).text
+    assert "Le moins cher pour « nutella »" not in page
+
+    # Toute la liste, puis retour.
+    page = client.post("/panier/lignes/mode", data={"mode": "equivalent"}).text
+    assert "Tout passer au moins cher" not in page and "Revenir aux produits choisis" in page
+    page = client.post("/panier/lignes/mode", data={"mode": "produit"}).text
+    assert "Tout passer au moins cher" in page
+
+    # Le riz n'a pas d'EAN : il ne peut pas devenir « produit précis ».
+    riz_id = int(nutella_id) + 1
+    page = client.post(f"/panier/lignes/{riz_id}/mode", data={"mode": "produit"}).text
+    assert (
+        f"/panier/lignes/{riz_id}/mode" not in page and "Article ajouté sans produit précis" in page
+    )
