@@ -35,9 +35,19 @@ export function lirePage(adaptateur, requete, soumettre, point) {
       }
     }
     if (refs.size === 1) retrait = [...refs][0];
-  } else if (!intermarche && !livraison && entete.some((element) =>
-    element.innerText.split("\n").some((ligne) => libellesAttendus.includes(normalise(ligne))))) {
-    retrait = point.id;
+  } else if (!intermarche && !livraison) {
+    // Courses U ne dessine le nom du magasin dans l'en-tête qu'une fois l'onglet affiché : dans l'onglet
+    // de collecte, ouvert en arrière-plan, il manque. Le numéro du magasin choisi est, lui, déjà dans la
+    // page envoyée par le serveur (window.COOPU.storeID = 33315), lisible même en arrière-plan.
+    const parEntete = entete.some((element) =>
+      element.innerText.split("\n").some((ligne) => libellesAttendus.includes(normalise(ligne))));
+    const choisis = new Set();
+    for (const script of document.scripts) {
+      for (const choix of script.textContent.matchAll(/COOPU\.storeID\s*=\s*["']?(\d+)/g)) {
+        choisis.add(choix[1]);
+      }
+    }
+    if (parEntete || (choisis.size === 1 && choisis.has(point.id))) retrait = point.id;
   }
 
   if (soumettre) {

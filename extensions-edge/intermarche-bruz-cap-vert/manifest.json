@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Prix – Intermarché",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Relève les prix des fiches produits ouvertes et exporte un CSV local.",
   "permissions": [
     "activeTab",
