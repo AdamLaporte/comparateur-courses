@@ -3,7 +3,10 @@
 - SOURCE_PRODUITS=open_food_facts (défaut) : recherche texte sur search.openfoodfacts.org
   (search-a-licious ; la recherche classique `cgi/search.pl` renvoie souvent 503).
 - Les résultats sont reclassés sur place : d'abord ceux dont le nom ou la marque contient tous les
-  mots, les EAN français (préfixe 3) en tête, puis les plus scannés.
+  mots, puis ceux qui ont la quantité demandée, les EAN français (préfixe 3) en tête, puis les plus scannés.
+- Quantité dans la recherche (« nutella 400 g », « lait 1 L », « coca 6 x 1,5 L ») : elle est retirée des mots
+  cherchés (sinon Open Food Facts ne renvoie rien) et sert à une recherche ciblée sur le champ `quantity`,
+  complétée par la recherche générale. 1 kg = 1000 g, 1 L = 100 cl = 1000 ml.
 - Appels espacés d'au moins INTERVALLE_MIN_S secondes, réponses gardées DUREE_REPONSE_MIN minutes
   dans le cache SQLite (et réutilisées, même anciennes, si le service ne répond plus).
 - Si Open Food Facts ne donne rien (panne, 503, délai), on cherche dans le catalogue fictif.
@@ -51,6 +54,82 @@ def normaliser(texte: str | None) -> str:
     return " ".join(re.sub(r"[^a-z0-9]+", " ", sans_accents).split())
 
 
+# Quantité : « 400 g », « 1,5 L », « 6 x 1 L », « 6*25 cl »… Unités ramenées au gramme ou au millilitre.
+UNITES = {
+    "mg": (0.001, "g"),
+    "g": (1, "g"),
+    "gr": (1, "g"),
+    "gramme": (1, "g"),
+    "grammes": (1, "g"),
+    "kg": (1000, "g"),
+    "kilo": (1000, "g"),
+    "kilos": (1000, "g"),
+    "ml": (1, "ml"),
+    "cl": (10, "ml"),
+    "dl": (100, "ml"),
+    "l": (1000, "ml"),
+    "lt": (1000, "ml"),
+    "lts": (1000, "ml"),
+    "litre": (1000, "ml"),
+    "litres": (1000, "ml"),
+}
+MOTIF_QUANTITE = re.compile(
+    r"(?:(\d+)\s*[x×*]\s*)?(\d+(?:[.,]\d+)?)\s*("
+    + "|".join(sorted(UNITES, key=len, reverse=True))
+    + r")(?![a-z])",
+    re.IGNORECASE,
+)
+
+
+def _sans_accents(texte: str) -> str:
+    return "".join(
+        c for c in unicodedata.normalize("NFD", texte.lower()) if not unicodedata.combining(c)
+    )
+
+
+def lire_quantite(texte: str | None) -> tuple[float, str] | None:
+    """Quantité totale en grammes ou millilitres : « 6 x 1 L » → (6000, "ml"), « 400 g e » → (400, "g")."""
+    trouve = MOTIF_QUANTITE.search(_sans_accents(texte or ""))
+    if trouve is None:
+        return None
+    nombre = int(trouve[1]) if trouve[1] else 1
+    valeur = float(trouve[2].replace(",", "."))
+    facteur, unite = UNITES[trouve[3].lower()]
+    return nombre * valeur * facteur, unite
+
+
+def separer_quantite(texte: str) -> tuple[str, tuple[float, str] | None]:
+    """(« nutella », (400, "g")) pour « nutella 400 g ». Texte inchangé s'il n'y a pas de quantité."""
+    sans_accents = _sans_accents(texte)
+    trouve = MOTIF_QUANTITE.search(sans_accents)
+    if trouve is None:
+        return texte, None
+    reste = " ".join((texte[: trouve.start()] + " " + texte[trouve.end() :]).split())
+    return reste, lire_quantite(sans_accents)
+
+
+def meme_quantite(a: tuple[float, str] | None, b: tuple[float, str] | None) -> bool:
+    return a is not None and b is not None and a[1] == b[1] and abs(a[0] - b[0]) <= 0.01 * a[0]
+
+
+def _nombre(valeur: float) -> str:
+    return str(int(valeur)) if valeur == int(valeur) else f"{valeur:g}"
+
+
+def requete_ciblee(texte: str, quantite: tuple[float, str]) -> str:
+    """« (nutella) AND quantity:(400*) » ; plusieurs écritures pour 1 kg (1*, 1000*) ou 1 L (1*, 100*, 1000*)."""
+    valeur, unite = quantite
+    ecritures = {_nombre(valeur)}
+    if valeur >= 1000:
+        ecritures.add(_nombre(valeur / 1000))  # kg ou L
+    if unite == "ml" and valeur >= 10:
+        ecritures.add(_nombre(valeur / 10))  # cl
+    ecritures |= {
+        e.replace(".", ",") for e in ecritures if "." in e
+    }  # « 1,5 L » s'écrit aussi « 1.5 L »
+    return f"({texte}) AND quantity:({' OR '.join(sorted(e + '*' for e in ecritures))})"
+
+
 def mots_recherche(texte: str) -> list[str]:
     """Mots utiles, au singulier approximatif (« oeufs » trouve « Oeuf »)."""
     mots = []
@@ -75,6 +154,7 @@ def _marque(marques: list[str] | str | None) -> str | None:
 
 def produits_depuis_reponse(contenu: dict, texte: str) -> list[Produit]:
     """Produits d'une réponse search-a-licious, reclassés pour la recherche `texte`."""
+    texte, quantite_voulue = separer_quantite(texte)
     mots = mots_recherche(texte)
     candidats = []
     vus: set[str] = set()
@@ -94,6 +174,7 @@ def produits_depuis_reponse(contenu: dict, texte: str) -> list[Produit]:
         correspond = all(mot in texte_produit for mot in mots)
         cle = (
             not correspond,
+            not meme_quantite(quantite_voulue, lire_quantite(produit.quantite)),
             not ean.startswith("3"),
             produit.quantite is None,
             -(hit.get("unique_scans_n") or 0),
@@ -194,9 +275,17 @@ async def rechercher(
     if reglages.source_produits.strip().lower() == "fictive":
         return _catalogue_fictif(texte, limite)
 
-    contenu = await _reponse_off(texte, reglages, transport)
-    produits = produits_depuis_reponse(contenu, texte)[:limite] if contenu else []
+    base, quantite = separer_quantite(texte)
+    hits: list[dict] = []
+    if quantite is not None and len(base) >= 2:
+        # Recherche ciblée sur la quantité d'abord ; la recherche générale complète si besoin.
+        ciblee = await _reponse_off(requete_ciblee(base, quantite), reglages, transport)
+        hits += (ciblee or {}).get("hits") or []
+    if len(hits) < limite:
+        generale = await _reponse_off(base if len(base) >= 2 else texte, reglages, transport)
+        hits += (generale or {}).get("hits") or []
+    produits = produits_depuis_reponse({"hits": hits}, texte)[:limite]
     if not produits:
-        return _catalogue_fictif(texte, limite)
+        return _catalogue_fictif(base if len(base) >= 2 else texte, limite)
     enregistrer(reglages, produits)
     return produits

@@ -1,0 +1,93 @@
+{
+ "hits": [
+  {
+   "code": "80762003",
+   "brands": [
+    "xx:Ferrero"
+   ],
+   "quantity": "400 G",
+   "unique_scans_n": 1,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.910284
+  },
+  {
+   "code": "80177128",
+   "brands": [
+    "xx:nutella",
+    "xx:Ferrero"
+   ],
+   "quantity": "400 g",
+   "unique_scans_n": 14,
+   "product_name": "Nutella Hazelnut Spread With Cocoa",
+   "product_name_fr": "Nutella",
+   "_score": 11.910284
+  },
+  {
+   "code": "3017620422003",
+   "brands": [
+    "xx:ferrero",
+    "xx:nutella"
+   ],
+   "quantity": "400 g e",
+   "unique_scans_n": 838,
+   "product_name": "Nutella",
+   "product_name_fr": "Nutella",
+   "_score": 11.910284
+  },
+  {
+   "code": "6048690422003",
+   "brands": [
+    "xx:ferrero"
+   ],
+   "quantity": "400g",
+   "unique_scans_n": 1,
+   "product_name": "nutella",
+   "product_name_fr": "nutella",
+   "_score": 11.910284
+  },
+  {
+   "code": "0101502116722",
+   "brands": [
+    "xx:ferrero"
+   ],
+   "quantity": "400g",
+   "product_name": "",
+   "product_name_fr": "Nutella",
+   "_score": 11.910284
+  },
+  {
+   "code": "7613312341209",
+   "brands": [
+    "xx:m-classic"
+   ],
+   "quantity": "400g",
+   "unique_scans_n": 3,
+   "product_name": "Nutella Frelitta",
+   "product_name_fr": "Nutella Frelitta",
+   "_score": 10.219355
+  },
+  {
+   "code": "9300698000216",
+   "brands": [
+    "xx:Ferrero"
+   ],
+   "quantity": "400 g",
+   "unique_scans_n": 11,
+   "product_name": "nutella",
+   "product_name_fr": "Nutella Hazelnut Spread With Cocoa",
+   "_score": 7.1837378
+  }
+ ],
+ "aggregations": null,
+ "facets": {},
+ "charts": {},
+ "page": 1,
+ "page_size": 50,
+ "page_count": 1,
+ "took": 6,
+ "timed_out": false,
+ "count": 7,
+ "is_count_exact": true,
+ "warnings": null
+}
