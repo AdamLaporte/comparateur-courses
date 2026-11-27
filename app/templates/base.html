@@ -4,8 +4,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f4f3ee">
+  <meta name="theme-color" content="#F8FAFC">
   <title>{% block titre %}GrignotePrix{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='logo-grignoteprix.svg') }}?v={{ version_statique('logo-grignoteprix.svg') }}">
   {# Tout est servi par le site lui-même (app/static/vendor/) : la démo marche sans Internet. #}
   <link rel="preload" href="{{ url_for('static', path='vendor/polices/archivo-latin-wdth-normal.woff2') }}"
         as="font" type="font/woff2" crossorigin>
@@ -20,10 +21,15 @@
   {% set chemin = request.url.path %}
   <header class="entete">
     <div class="entete-dedans">
-      <a class="marque" href="/" aria-label="GrignotePrix, accueil">
-        <span class="marque-tag" aria-hidden="true">{{ icone("etiquette") }}</span>
-        <span class="marque-nom">GrignotePrix</span>
-      </a>
+      <div class="marque">
+        <button type="button" class="marque-tag" data-grignoter aria-label="Grignoter le chariot" aria-pressed="false">
+          <img class="logo-entier" src="{{ url_for('static', path='logo-grignoteprix-entier.svg') }}?v={{ version_statique('logo-grignoteprix-entier.svg') }}"
+               width="54" height="54" alt="">
+          <img class="logo-grignote" src="{{ url_for('static', path='logo-grignoteprix.svg') }}?v={{ version_statique('logo-grignoteprix.svg') }}"
+               width="54" height="54" alt="">
+        </button>
+        <a class="marque-nom" href="/" aria-label="GrignotePrix, accueil">GrignotePrix</a>
+      </div>
       <nav class="menu" aria-label="Navigation principale">
         <a href="/" {% if chemin == "/" or chemin.startswith("/magasins") %}aria-current="page"{% endif %}>
           {{ icone("repere") }}<span>Magasins</span>

@@ -5,6 +5,10 @@
 
   const moinsDeMouvement = window.matchMedia("(prefers-reduced-motion: reduce)");
   const petitEcran = window.matchMedia("(max-width: 959px)");
+  const logo = document.querySelector("[data-grignoter]");
+  logo?.addEventListener("click", () => {
+    logo.setAttribute("aria-pressed", String(logo.getAttribute("aria-pressed") === "false"));
+  });
   const ICONE_VALIDE =
     '<svg class="icone" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
   const ICONE_CROIX =
