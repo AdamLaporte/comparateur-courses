@@ -13,6 +13,8 @@
 - Vérification de la boucle serveur avec un collecteur simulé et des deux extracteurs sur une page locale dans Edge.
 - Vérification de `/drives` sous Uvicorn et des prix importés via l’API. Les 94 tests, les deux vérifications
   Ruff et les contrôles de la page de test Edge passent.
+- Serveur local lancé sur `127.0.0.1:8000` à la demande de Raphaël. La page des drives et l’historique
+  Intermarché répondent.
 
 ## Fichiers modifiés
 

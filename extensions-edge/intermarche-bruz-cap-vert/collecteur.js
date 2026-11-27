@@ -34,17 +34,47 @@ async function injecter(target, func, ...args) {
   return reponse;
 }
 
+async function ouvrirOnglet(identifiant) {
+  const existant = identifiant && await chrome.tabs.get(identifiant).catch(() => null);
+  if (existant && siteDuDrive(existant.url)) return existant.id;
+  const onglet = await chrome.tabs.create({ active: false });
+  await chrome.storage.session.set({ ongletCollecte: onglet.id });
+  return onglet.id;
+}
+
+async function verifierRetrait(cible, limite) {
+  let boutonUtilise = false;
+  while (Date.now() < limite) {
+    if (erreursNavigation.has(cible.tabId)) return { erreur: erreursNavigation.get(cible.tabId) };
+    const onglet = await chrome.tabs.get(cible.tabId);
+    if (onglet.status === "complete" && siteDuDrive(onglet.url)) {
+      const page = await injecter(cible, lirePage, drive.adapter);
+      if (page.result.erreur || page.result.retrait === drive.id) return page.result;
+      if (!boutonUtilise && drive.adapter === "intermarche" && onglet.url === drive.accueil) {
+        boutonUtilise = true;
+        await injecter(cible, () => {
+          const boutons = [...document.querySelectorAll("button, a[href]")].filter((bouton) =>
+            bouton.getClientRects().length && bouton.innerText.trim() === "Faire mes courses");
+          if (boutons.length === 1) boutons[0].click();
+        });
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 700));
+  }
+  return { erreur: "mauvais_drive" };
+}
+
 async function relever(tabId, requete) {
-  const limite = Date.now() + 30_000;
   const cible = { tabId };
   tabEnCours = tabId;
   erreursNavigation.delete(tabId);
   try {
+    const initial = await chrome.tabs.get(tabId);
+    if (!siteDuDrive(initial.url)) await chrome.tabs.update(tabId, { url: drive.accueil });
+    const depart = await verifierRetrait(cible, Date.now() + 18_000);
+    if (depart.erreur) return { erreur: depart.erreur };
     const tab = await chrome.tabs.get(tabId);
     if (!siteDuDrive(tab.url)) return { erreur: "page_inattendue" };
-    const { result: depart } = await injecter(cible, lirePage, drive.adapter);
-    if (depart.erreur) return { erreur: depart.erreur };
-    if (depart.retrait !== drive.id) return { erreur: "mauvais_drive" };
 
     if (drive.adapter === "intermarche") {
       // Route utilisée par le bouton de recherche dans les scripts de la page de référence.
@@ -56,6 +86,7 @@ async function relever(tabId, requete) {
       if (result.erreur) return { erreur: result.erreur };
     }
 
+    const limite = Date.now() + 30_000;
     let precedent = "";
     while (Date.now() < limite) {
       await new Promise((resolve) => setTimeout(resolve, 700));
@@ -122,16 +153,21 @@ async function collecter() {
   if (occupe) return;
   occupe = true;
   try {
-    const { jeton } = await chrome.storage.local.get("jeton");
+    const { jeton, suspendu } = await chrome.storage.local.get(["jeton", "suspendu"]);
     const { ongletCollecte, depot } = await chrome.storage.session.get(["ongletCollecte", "depot"]);
     if (!jeton) return;
     if (depot && !await livrer(jeton, depot)) return;
-    if (!ongletCollecte) return;
+    if (suspendu) return;
     const reponse = await appeler(`/${drive.serveurId}/prendre`, jeton);
     if (!reponse.ok) return;
     const tache = await reponse.json();
     if (!tache || tache.drive_id !== drive.serveurId) return;
-    const resultat = await relever(ongletCollecte, tache.requete);
+    let resultat;
+    try {
+      resultat = await relever(await ouvrirOnglet(ongletCollecte), tache.requete);
+    } catch {
+      resultat = { erreur: "page_inattendue" };
+    }
     const message = {
       id: tache.id,
       depot: {
@@ -172,6 +208,8 @@ chrome.alarms.onAlarm.addListener(({ name }) => {
 chrome.runtime.onMessage.addListener((message, expediteur) => {
   if (expediteur.id === chrome.runtime.id && message === reveil) void collecter();
 });
+chrome.runtime.onStartup.addListener(() => void collecter());
+chrome.runtime.onInstalled.addListener(() => void collecter());
 chrome.alarms.get(reveil).then((alarme) => {
   if (!alarme) return chrome.alarms.create(reveil, { periodInMinutes: 0.5 });
 }).catch(() => {});

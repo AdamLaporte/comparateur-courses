@@ -126,6 +126,9 @@ def _vue_drive(
     recherche: Recherche,
     instant: datetime,
     creer: bool,
+    *,
+    alternatives: bool = True,
+    terme_marchand: str | None = None,
 ) -> dict:
     horodatage = horodater(instant)
     seuil = horodater(instant - timedelta(minutes=reglages.drives_fraicheur_min))
@@ -174,7 +177,7 @@ def _vue_drive(
             "ON l.observation_id=o.id WHERE l.tache_id=? ORDER BY o.id",
             (tache["id"],),
         ).fetchall()
-        frais = _classer(observes, recherche.cle, alternatives=True) or frais
+        frais = _classer(observes, recherche.cle, alternatives=alternatives) or frais
         etat = "recent" if frais else "sans_correspondance"
     elif frais:
         etat = "recent"
@@ -186,7 +189,12 @@ def _vue_drive(
         tache_id = cnx.execute(
             "INSERT INTO drive_tache (drive_id, cle, requete, etat, expire_le) "
             "VALUES (?, ?, ?, 'attente', ?) RETURNING id",
-            (drive, recherche.cle, recherche.q, horodater(instant + timedelta(minutes=5))),
+            (
+                drive,
+                recherche.cle,
+                terme_marchand or recherche.q,
+                horodater(instant + timedelta(minutes=5)),
+            ),
         ).fetchone()["id"]
         etat = "attente"
     elif tache and tache["etat"] == "echec":
@@ -204,8 +212,33 @@ def _vue_drive(
         "erreur": erreur,
         "tache_id": tache_id,
         "connecte": connecte,
-        "produits": produits[:LIMITE_RESULTATS],
+        "produits": produits[:LIMITE_RESULTATS] if alternatives else produits,
     }
+
+
+def rechercher_pour_panier(
+    reglages: Reglages,
+    drive: DriveId,
+    recherche: Recherche,
+    *,
+    creer: bool,
+    terme_marchand: str | None,
+) -> dict:
+    instant = maintenant()
+    with db.connexion(reglages.db_path) as cnx:
+        if creer:
+            cnx.execute("BEGIN IMMEDIATE")
+            _expiration(cnx, horodater(instant))
+        return _vue_drive(
+            cnx,
+            reglages,
+            drive,
+            recherche,
+            instant,
+            creer,
+            alternatives=False,
+            terme_marchand=terme_marchand,
+        )
 
 
 def rechercher(reglages: Reglages, recherche: Recherche, *, creer: bool) -> list[dict]:
@@ -256,12 +289,8 @@ def prendre(reglages: Reglages, drive: DriveId) -> dict | None:
     with db.connexion(reglages.db_path) as cnx:
         cnx.execute("BEGIN IMMEDIATE")
         _expiration(cnx, horodatage)
-        collecteur = cnx.execute(
-            "INSERT INTO drive_collecteur (drive_id, vu_le) VALUES (?, ?) "
-            "ON CONFLICT (drive_id) DO UPDATE SET vu_le=excluded.vu_le RETURNING pause_jusqua",
-            (drive, horodatage),
-        ).fetchone()
-        if collecteur["pause_jusqua"] and collecteur["pause_jusqua"] > horodatage:
+        pause_jusqua = _signaler(cnx, drive, horodatage)
+        if pause_jusqua and pause_jusqua > horodatage:
             return None
         ligne = cnx.execute(
             "UPDATE drive_tache SET etat='cours', bail=?, expire_le=? WHERE id=( "
@@ -271,6 +300,19 @@ def prendre(reglages: Reglages, drive: DriveId) -> dict | None:
             (secrets.token_hex(24), horodater(instant + timedelta(minutes=2)), drive, drive),
         ).fetchone()
         return dict(ligne) if ligne else None
+
+
+def _signaler(cnx: sqlite3.Connection, drive: DriveId, horodatage: str) -> str | None:
+    return cnx.execute(
+        "INSERT INTO drive_collecteur (drive_id, vu_le) VALUES (?, ?) "
+        "ON CONFLICT (drive_id) DO UPDATE SET vu_le=excluded.vu_le RETURNING pause_jusqua",
+        (drive, horodatage),
+    ).fetchone()["pause_jusqua"]
+
+
+def signaler(reglages: Reglages, drive: DriveId) -> None:
+    with db.connexion(reglages.db_path) as cnx:
+        _signaler(cnx, drive, horodater(maintenant()))
 
 
 def deposer(reglages: Reglages, tache_id: int, depot: Depot) -> None:

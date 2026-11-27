@@ -42,7 +42,7 @@ def completer(
     ligne: LigneListe, resultat: ResultatLigne, cartes: frozenset[Enseigne] = frozenset()
 ) -> ResultatLigne:
     """Ajoute le sous-total et les économies à un résultat trouvé."""
-    if resultat.statut != StatutPrix.TROUVE or resultat.prix is None:
+    if resultat.prix is None:
         return resultat
     enseigne = resultat.magasin_id.split("-", 1)[0]
     total, economies = sous_total(ligne, resultat.prix, avec_carte=enseigne in cartes)

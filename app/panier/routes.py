@@ -5,7 +5,6 @@ import asyncio
 import json
 import logging
 import re
-import time
 from collections.abc import AsyncIterable, AsyncIterator
 from typing import Annotated
 
@@ -24,11 +23,8 @@ from app.contrats import (
     Magasin,
     ModeLigne,
     ResultatLigne,
-    StatutPrix,
     TotauxReponse,
 )
-from app.drives import comparaison as drives_comparaison
-from app.drives.modeles import DRIVES
 from app.gabarits import rendre, templates
 from app.magasins.geocodage import CodePostalInconnu, CodePostalInvalide
 from app.magasins.service import magasins_proches
@@ -45,7 +41,7 @@ INEXISTANT = "inexistant"  # valeur du choix « Inexistant en magasins » dans l
 
 def comparables(lignes: list[LigneListe]) -> list[LigneListe]:
     """Lignes à comparer : toutes. Un article « inexistant » dans notre catalogue est cherché sur la
-    page des drives de Bruz par les extensions (app/drives/comparaison.py)."""
+    site des drives de Bruz par les extensions (app/drives/comparaison.py)."""
     return list(lignes)
 
 
@@ -69,11 +65,17 @@ async def correspondances(recherche: str, reglages: Reglages) -> list:
 
 
 async def comparer(
-    lignes: list[LigneListe], magasins: list[Magasin], reglages: Reglages
+    lignes: list[LigneListe],
+    magasins: list[Magasin],
+    reglages: Reglages,
+    *,
+    suivre_edge: bool = False,
 ) -> AsyncIterator[ResultatLigne]:
     """Résultats complétés (sous-totaux), dans l'ordre d'arrivée."""
     par_id = {ligne.id: ligne for ligne in lignes}
-    async for resultat in collecter(lignes, magasins, sources_actives(reglages), reglages):
+    async for resultat in collecter(
+        lignes, magasins, sources_actives(reglages), reglages, suivre_edge=suivre_edge
+    ):
         yield calcul.completer(par_id[resultat.ligne_id], resultat)
 
 
@@ -417,9 +419,8 @@ async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[Se
         lignes_par_id = {ligne.id: ligne for ligne in lignes}
         magasins_par_id = {magasin.id: magasin for magasin in magasins}
         resultats: dict[tuple[int, str], ResultatLigne] = {}
-
-        def evenements(resultat: ResultatLigne, en_drive: str | None = None):
-            resultats[(resultat.ligne_id, resultat.magasin_id)] = resultat
+        async for resultat in comparer(lignes, magasins, reglages, suivre_edge=True):
+            resultats[resultat.ligne_id, resultat.magasin_id] = resultat
             yield ServerSentEvent(
                 event=f"prix-{resultat.ligne_id}-{resultat.magasin_id}",
                 raw_data=rendre(
@@ -427,7 +428,6 @@ async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[Se
                     resultat=resultat,
                     ligne=lignes_par_id[resultat.ligne_id],
                     magasin=magasins_par_id[resultat.magasin_id],
-                    en_drive=en_drive,
                 ),
             )
             total = next(
@@ -439,83 +439,19 @@ async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[Se
                 event=f"total-{resultat.magasin_id}",
                 raw_data=rendre("panier/_total.html", total=total),
             )
-
-        def resume() -> ServerSentEvent:
-            totaux = calcul.totaux(lignes, magasins, resultats.values())
-            utilisateur_id = request.session.get("utilisateur_id")
-            economie = (
-                cagnotte.preparer(reglages, utilisateur_id, totaux) if utilisateur_id else None
-            )
-            return ServerSentEvent(
-                event="resume",
-                raw_data=rendre(
-                    "panier/_resume.html",
-                    totaux=totaux,
-                    economie=economie,
-                    prix_fictifs=any(r.prix and r.prix.est_fictif for r in resultats.values()),
-                ),
-            )
-
-        async for resultat in comparer(lignes, magasins, reglages):
-            for evenement in evenements(resultat):
-                yield evenement
-        yield resume()
-
-        # Drives de Bruz : les articles sans prix sont cherchés par l'extension du drive.
-        associations = drives_comparaison.associer(magasins)
-        a_chercher = [
-            (r, associations[r.magasin_id])
-            for r in list(resultats.values())
-            if r.magasin_id in associations and r.statut != StatutPrix.TROUVE
-        ]
-        en_cours = []
-        for resultat, drive in a_chercher:
-            ligne, magasin = lignes_par_id[resultat.ligne_id], magasins_par_id[resultat.magasin_id]
-            etat, prix = drives_comparaison.chercher(reglages, ligne, magasin, drive, creer=True)
-            if prix:
-                for evenement in evenements(_avec_prix(ligne, resultat, prix)):
-                    yield evenement
-            elif etat in drives_comparaison.EN_ATTENTE:
-                en_cours.append((resultat, drive))
-                for evenement in evenements(resultat, en_drive=DRIVES[drive][0]):
-                    yield evenement
-        trouves = len(a_chercher) - len(en_cours)
-        fin_attente = time.monotonic() + reglages.drives_attente_s
-        while en_cours and time.monotonic() < fin_attente and not await request.is_disconnected():
-            await asyncio.sleep(2)
-            restants = []
-            for resultat, drive in en_cours:
-                ligne, magasin = (
-                    lignes_par_id[resultat.ligne_id],
-                    magasins_par_id[resultat.magasin_id],
-                )
-                etat, prix = drives_comparaison.chercher(
-                    reglages, ligne, magasin, drive, creer=False
-                )
-                if prix:
-                    trouves += 1
-                    for evenement in evenements(_avec_prix(ligne, resultat, prix)):
-                        yield evenement
-                elif etat in drives_comparaison.EN_ATTENTE:
-                    restants.append((resultat, drive))
-                else:
-                    for evenement in evenements(resultat):
-                        yield evenement
-            en_cours = restants
-        for resultat, _ in en_cours:  # l'extension n'a pas répondu à temps
-            for evenement in evenements(resultat):
-                yield evenement
-        if a_chercher and trouves:
-            yield resume()
+        totaux = calcul.totaux(lignes, magasins, resultats.values())
+        utilisateur_id = request.session.get("utilisateur_id")
+        economie = cagnotte.preparer(reglages, utilisateur_id, totaux) if utilisateur_id else None
+        yield ServerSentEvent(
+            event="resume",
+            raw_data=rendre(
+                "panier/_resume.html",
+                totaux=totaux,
+                economie=economie,
+                prix_fictifs=any(r.prix and r.prix.est_fictif for r in resultats.values()),
+            ),
+        )
     yield ServerSentEvent(event="fin", raw_data="fin")
-
-
-def _avec_prix(ligne: LigneListe, resultat: ResultatLigne, prix) -> ResultatLigne:
-    """Le résultat d'une case, complété par le prix relevé sur le drive."""
-    trouve = resultat.model_copy(
-        update={"statut": StatutPrix.TROUVE, "prix": prix, "remarque": None}
-    )
-    return calcul.completer(ligne, trouve)
 
 
 @router.post("/api/panier/totaux", response_model=TotauxReponse)

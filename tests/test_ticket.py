@@ -62,6 +62,7 @@ def test_article_inexistant_cherche_sur_le_drive(client, reglages):
 
     reglages.drives_jeton = "j" * 32
     reglages.drives_attente_s = 0
+    reglages.magasins_osm = True
     client.get("/magasins", params={"code_postal": "35170"})
     client.post(
         "/panier/ticket/ajouter",
@@ -76,10 +77,10 @@ def test_article_inexistant_cherche_sur_le_drive(client, reglages):
         observer(cnx, "intermarche-05052", produit, datetime.now(UTC).isoformat(), "extension")
 
     tableau = client.get("/panier/resultats").text
-    assert "hors catalogue" in tableau and tableau.count('sse-swap="prix-') == 8
+    assert "hors catalogue" in tableau and 'sse-swap="prix-1-intermarche-05052"' in tableau
     with client.stream("GET", "/panier/prix/flux") as flux:
         texte = "".join(flux.iter_text())
-    assert "Drive Intermarché Super Bruz Cap Vert (extension)" in texte and "2,49 €" in texte
+    assert "event: prix-1-intermarche-05052" in texte and "2,49 €" in texte
     assert texte.rstrip().endswith("data: fin")
 
 
@@ -121,6 +122,7 @@ def test_sans_releve_une_recherche_est_demandee_a_l_extension(client, reglages):
 
     reglages.drives_jeton = "j" * 32
     reglages.drives_attente_s = 0  # l'extension ne répond pas à temps : la case retombe proprement
+    reglages.magasins_osm = True
     client.get("/magasins", params={"code_postal": "35170"})
     client.post(
         "/panier/ticket/ajouter",
@@ -131,9 +133,8 @@ def test_sans_releve_une_recherche_est_demandee_a_l_extension(client, reglages):
     assert "Recherche sur le drive Intermarché Super Bruz Cap Vert" in texte
     assert texte.rstrip().endswith("data: fin")
     with db.connexion(reglages.db_path) as cnx:
-        tache = cnx.execute("SELECT drive_id, requete, etat FROM drive_tache").fetchone()
-    assert dict(tache) == {
-        "drive_id": "intermarche-05052",
-        "requete": "xyzqwertyu",
-        "etat": "attente",
+        taches = cnx.execute("SELECT drive_id, requete, etat FROM drive_tache").fetchall()
+    assert {tuple(tache) for tache in taches} == {
+        ("coursesu-33315", "xyzqwertyu", "attente"),
+        ("intermarche-05052", "xyzqwertyu", "attente"),
     }

@@ -1,7 +1,6 @@
 import { extractProductPage } from "./extract.js";
 import { csv, price, validEan } from "./csv.js";
 import { drive } from "./drive.js";
-import { lirePage } from "./navigation.js";
 
 const byId = (id) => document.getElementById(id);
 const form = byId("form");
@@ -130,11 +129,9 @@ byId("export").addEventListener("click", () => {
 byId("drive-name").textContent = drive.name;
 byId("drive-address").textContent = drive.address;
 const collecteStatut = byId("collecte-statut");
-chrome.storage.local.get("jeton").then(({ jeton }) => {
+chrome.storage.local.get(["jeton", "suspendu"]).then(({ jeton, suspendu }) => {
   byId("jeton").value = jeton || "";
-});
-chrome.storage.session.get("ongletCollecte").then(({ ongletCollecte }) => {
-  collecteStatut.textContent = ongletCollecte ? "Collecte activée." : "Collecte inactive.";
+  collecteStatut.textContent = jeton && !suspendu ? "Collecte automatique activée." : "Collecte inactive.";
 });
 byId("activer").addEventListener("click", async () => {
   const jeton = byId("jeton").value.trim();
@@ -143,28 +140,31 @@ byId("activer").addEventListener("click", async () => {
     return;
   }
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!matchesSite(tab?.url)) {
-      collecteStatut.textContent = "Ouvre le site du drive demandé.";
+    const reponse = await fetch(
+      `http://127.0.0.1:8000/api/drives/${drive.serveurId}/connexion`,
+      {
+        method: "POST",
+        credentials: "omit",
+        redirect: "error",
+        signal: AbortSignal.timeout(5000),
+        headers: { "X-Drives-Jeton": jeton },
+      },
+    ).catch(() => null);
+    if (!reponse?.ok) {
+      collecteStatut.textContent = reponse?.status === 401
+        ? "Jeton refusé. Vérifie DRIVES_JETON."
+        : "Serveur local indisponible sur 127.0.0.1:8000.";
       return;
     }
-    const [{ result }] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id }, func: lirePage, args: [drive.adapter],
-    });
-    if (result.erreur || result.retrait !== drive.id) {
-      collecteStatut.textContent = "Le retrait demandé n’a pas pu être confirmé. Vérifie le magasin actif.";
-      return;
-    }
-    await chrome.storage.local.set({ jeton });
-    await chrome.storage.session.set({ ongletCollecte: tab.id });
-    collecteStatut.textContent = "Collecte activée pour cet onglet.";
+    await chrome.storage.local.set({ jeton, suspendu: false });
+    collecteStatut.textContent = "Serveur connecté. L’onglet marchand s’ouvrira au premier relevé.";
     void chrome.runtime.sendMessage("releve-drive").catch(() => {});
   } catch {
-    collecteStatut.textContent = "Impossible d’activer le relevé sur cet onglet.";
+    collecteStatut.textContent = "Impossible d’enregistrer la configuration.";
   }
 });
 byId("desactiver").addEventListener("click", async () => {
-  await chrome.storage.session.remove("ongletCollecte");
+  await chrome.storage.local.set({ suspendu: true });
   collecteStatut.textContent = "Collecte inactive.";
 });
 chrome.storage.local.get({ rows: [] }).then((data) => {

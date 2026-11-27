@@ -1,107 +1,137 @@
-"""Pont entre la comparaison de « Ma liste » et les drives de Bruz relevés par les extensions Edge.
+"""Projection des observations Edge dans les lignes de comparaison du panier."""
 
-Quand un article n'a pas de prix dans un magasin qui correspond à un drive (Super U Bruz, Intermarché
-Bruz Cap Vert) — introuvable, indisponible, ou « inexistant » dans notre catalogue — on regarde les
-relevés des extensions ; s'il n'y en a pas de récent, on crée une recherche que l'extension du drive
-fera d'elle-même dans l'onglet ouvert (elle passe toutes les 30 s). Il faut DRIVES_JETON réglé.
-"""
+import asyncio
+from collections.abc import AsyncIterator
+from datetime import date, datetime
+from decimal import Decimal
+from time import monotonic
 
-import math
-from datetime import UTC, datetime
-
+from app.collecte.equivalence import choisir_equivalent
 from app.config import Reglages
-from app.contrats import (
-    Enseigne,
-    LigneListe,
-    Magasin,
-    ModeLigne,
-    Position,
-    Prix,
-    Produit,
-    TypeSource,
-)
-from app.drives.modeles import DRIVES, Recherche, ean_valide
-from app.drives.service import rechercher
+from app.contrats import LigneListe, ModeLigne, Prix, Produit, ResultatLigne, StatutPrix, TypeSource
+from app.drives.modeles import DriveId, Recherche, date_tri, ean_valide, normaliser
+from app.drives.navigateur import reveiller_edge
+from app.drives.service import rechercher_pour_panier
 
-DRIVE_PAR_ENSEIGNE = {
-    Enseigne.COURSES_U: "coursesu-33315",
-    Enseigne.INTERMARCHE: "intermarche-05052",
+INTERVALLE_S = 2
+ATTENTE_CONNEXION_S = 35
+MESSAGES = {
+    "mauvais_drive": "Le point de retrait actif dans Edge est incorrect.",
+    "page_inattendue": "La page marchande n’a pas permis de confirmer le résultat.",
+    "reseau": "Erreur de connexion au site marchand.",
+    "delai": "Le relevé a expiré.",
+    "403": "Le site marchand a refusé l’accès.",
+    "429": "Le site marchand a limité les requêtes.",
+    "defi": "Le site marchand demande une vérification.",
+    "404": "La page de recherche est introuvable.",
 }
-# shortcut: les deux drives sont à Bruz ; on prend le magasin de même enseigne le plus proche du centre,
-# à moins de 3 km. À remplacer par les coordonnées exactes des drives s'il y en a d'autres.
-CENTRE_BRUZ = Position(lat=48.02516, lon=-1.748362)
-RAYON_KM = 3.0
-EN_ATTENTE = ("attente", "cours")
 
 
-def _distance_km(a: Position, b: Position) -> float:
-    phi1, phi2 = math.radians(a.lat), math.radians(b.lat)
-    h = (
-        math.sin((phi2 - phi1) / 2) ** 2
-        + math.cos(phi1) * math.cos(phi2) * math.sin(math.radians(b.lon - a.lon) / 2) ** 2
-    )
-    return 2 * 6371.0 * math.asin(math.sqrt(h))
-
-
-def associer(magasins: list[Magasin]) -> dict[str, str]:
-    """magasin_id → drive_id, pour les magasins du tableau qui sont l'un des deux drives de Bruz."""
-    associations = {}
-    for enseigne, drive in DRIVE_PAR_ENSEIGNE.items():
-        candidats = [
-            (_distance_km(CENTRE_BRUZ, m.position), m.id)
-            for m in magasins
-            if m.enseigne == enseigne
-        ]
-        candidats = [c for c in candidats if c[0] <= RAYON_KM]
-        if candidats:
-            associations[min(candidats)[1]] = drive
-    return associations
-
-
-def _texte(ligne: LigneListe) -> str:
-    if ligne.mode == ModeLigne.PRODUIT and ligne.ean and ean_valide(ligne.ean):
-        return ligne.ean
-    return ligne.recherche[:160]
-
-
-def _prix(produit: dict, magasin: Magasin, drive: str) -> Prix:
-    try:
-        releve = datetime.fromisoformat(produit.get("releve_le", "")).astimezone(UTC)
-    except ValueError:
-        releve = datetime.now(UTC)
-    unitaire = produit.get("prix_par_unite_eur")
+def _prix(drive: DriveId, observation: dict) -> Prix:
+    releve = observation["releve_le"]
+    prix_unitaire = observation["prix_par_unite_eur"]
+    ancien = observation["ancien"]
     return Prix(
-        magasin_id=magasin.id,
+        magasin_id=drive,
         produit=Produit(
-            ean=produit.get("ean") or None,
-            libelle=produit.get("produit") or "?",
-            marque=produit.get("marque") or None,
-            quantite=produit.get("format") or None,
+            ean=observation["ean"] or None,
+            libelle=observation["produit"],
+            marque=observation["marque"] or None,
+            quantite=observation["format"] or None,
         ),
-        prix_centimes=int(produit["prix_centimes"]),
-        prix_unitaire_centimes=round(float(unitaire) * 100) if unitaire else None,
-        unite=produit.get("unite") or None,
-        source=TypeSource.COLLECTE,
-        source_detail=f"Drive {DRIVES[drive][0]} (extension)",
-        releve_le=releve,
+        prix_centimes=observation["prix_centimes"],
+        prix_unitaire_centimes=round(Decimal(prix_unitaire) * 100)
+        if prix_unitaire is not None
+        else None,
+        unite=observation["unite"] or None,
+        source=TypeSource.CACHE if ancien else TypeSource.COLLECTE,
+        source_detail=("Dernier prix connu · " if ancien else "") + observation["source"],
+        releve_le=datetime.fromisoformat(date_tri(releve)),
+        date_releve_source=date.fromisoformat(releve) if len(releve) == 10 else None,
+        conditions_affichees=observation["promos"],
     )
 
 
-def chercher(
-    reglages: Reglages, ligne: LigneListe, magasin: Magasin, drive: str, *, creer: bool
-) -> tuple[str, Prix | None]:
-    """(état, prix) : « recent » avec un prix, « attente »/« cours » pendant que l'extension cherche,
-    sinon un état sans prix (« vide », « echec », « pause », « indisponible »…)."""
-    vue = rechercher(reglages, Recherche(q=_texte(ligne), drives=[drive]), creer=creer)[0]
-    produits = [p for p in vue["produits"] if not p.get("ancien")] or vue["produits"]
-    if vue["etat"] in EN_ATTENTE and not [p for p in produits if not p.get("ancien")]:
-        return vue["etat"], None
-    if not produits:
-        return vue["etat"], None
-    if ligne.mode == ModeLigne.PRODUIT and ligne.ean:
-        exacts = [p for p in produits if p.get("ean") == ligne.ean]
-        choisi = exacts[0] if exacts else produits[0]
+def _resultat(ligne: LigneListe, drive: DriveId, vue: dict, *, hors_ligne: bool) -> ResultatLigne:
+    offres = [_prix(drive, o) for o in vue["produits"]]
+    prix = offres[0] if offres and ligne.mode == ModeLigne.PRODUIT else choisir_equivalent(offres)
+    etat = vue["etat"]
+    remarque = None
+    if hors_ligne:
+        remarque = "L’extension de collecte Edge ne répond pas. Vérifiez sa configuration initiale."
+    elif etat == "attente":
+        remarque = "Relevé en attente." if vue["connecte"] else "En attente de l’extension Edge."
+    elif etat == "cours":
+        remarque = "Relevé en cours dans Edge."
+    elif etat == "pause":
+        remarque = "Collecte en pause. " + MESSAGES.get(vue["erreur"], "Réessayez plus tard.")
+    elif etat == "echec":
+        remarque = MESSAGES.get(vue["erreur"], "Le relevé a échoué.")
+    elif etat == "indisponible":
+        remarque = "Collecte Edge indisponible."
+    elif etat == "sans_correspondance":
+        remarque = "Aucun produit correspondant parmi les résultats relevés."
+    elif etat == "vide":
+        remarque = "Aucun produit trouvé lors du dernier relevé."
+
+    if etat in ("attente", "cours") and not hors_ligne:
+        statut = StatutPrix.EN_ATTENTE
+    elif prix:
+        statut = StatutPrix.TROUVE
+    elif etat == "vide":
+        statut = StatutPrix.INTROUVABLE
     else:
-        # « Le moins cher » : le moins cher des produits les plus pertinents.
-        choisi = min(produits[:5], key=lambda p: p["prix_centimes"])
-    return "recent", _prix(choisi, magasin, drive)
+        statut = StatutPrix.INDISPONIBLE
+    return ResultatLigne(
+        ligne_id=ligne.id, magasin_id=drive, statut=statut, prix=prix, remarque=remarque
+    )
+
+
+async def relever_ligne(
+    reglages: Reglages, drive: DriveId, ligne: LigneListe, *, suivre: bool
+) -> AsyncIterator[ResultatLigne]:
+    exact = ligne.mode == ModeLigne.PRODUIT
+    q = (ligne.ean or "") if exact else ligne.recherche
+    if not normaliser(q) or (exact and not ean_valide(q)):
+        yield ResultatLigne(
+            ligne_id=ligne.id,
+            magasin_id=drive,
+            statut=StatutPrix.INDISPONIBLE,
+            remarque="EAN invalide." if exact else "Recherche vide.",
+        )
+        return
+    recherche = Recherche(q=q, drives=[drive])
+    terme = " ".join(ligne.libelle.split())[:160]
+    terme_marchand = terme if exact and any(c.isalpha() for c in terme) else None
+    deconnecte_depuis = None
+    echeance = monotonic() + reglages.drives_attente_s
+    precedent = None
+    creer = suivre
+    while True:
+        vue = await asyncio.to_thread(
+            rechercher_pour_panier,
+            reglages,
+            drive,
+            recherche,
+            creer=creer,
+            terme_marchand=terme_marchand,
+        )
+        creer = False
+        hors_ligne = False
+        if suivre and vue["tache_id"] and not vue["connecte"]:
+            if deconnecte_depuis is None:
+                deconnecte_depuis = monotonic()
+                if reglages.drives_demarrer_edge:
+                    await asyncio.to_thread(reveiller_edge)
+            hors_ligne = monotonic() - deconnecte_depuis >= ATTENTE_CONNEXION_S
+        else:
+            deconnecte_depuis = None
+        if suivre and precedent and vue["tache_id"] and monotonic() >= echeance and not hors_ligne:
+            vue.update(etat="echec", erreur="delai", tache_id=None)
+        resultat = _resultat(ligne, drive, vue, hors_ligne=hors_ligne)
+        if resultat != precedent:
+            yield resultat
+            precedent = resultat
+        if not suivre or not vue["tache_id"] or hors_ligne:
+            return
+        await asyncio.sleep(min(INTERVALLE_S, max(0.0, echeance - monotonic())))

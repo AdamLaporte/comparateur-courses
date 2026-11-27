@@ -1,7 +1,8 @@
 # Comparateur de courses
 
-Le site compare des prix par article ou par panier. Le parcours **Drives de Bruz** compare les prix
-de retrait de Super U Bruz et d’Intermarché Bruz Cap Vert. Il peut partir d’une base vide.
+Le site compare les prix d’un panier dans les magasins proches. Pour les points de retrait Super U
+Bruz et Intermarché Bruz Cap Vert, il affiche les prix enregistrés et demande à Edge de relever
+les prix manquants ou anciens au clic sur **Comparer**. Il peut partir d’une base vide.
 
 ## Lancer sous Windows
 
@@ -21,7 +22,7 @@ déjà été générée.
 [guid]::NewGuid().ToString('N')
 ```
 
-Lancez le serveur et ouvrez **http://127.0.0.1:8000/drives** dans Edge.
+Lancez le serveur et ouvrez **http://127.0.0.1:8000/** dans Edge.
 
 ```powershell
 uv run --locked uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-proxy-headers
@@ -33,15 +34,16 @@ uv run --locked uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-proxy-hea
    empaquetée** pour chacun des dossiers `extensions-edge\super-u-bruz` et
    `extensions-edge\intermarche-bruz-cap-vert`. Après une mise à jour, utilisez **Recharger** sur
    chaque carte d’extension.
-2. Dans deux onglets, ouvrez les sites marchands et sélectionnez le retrait indiqué. Pour Intermarché,
-   vérifiez **Cap Vert, 2 place Robert Barré**. Pour Super U, vérifiez **12 place de Bretagne**.
-3. Dans chaque onglet marchand, ouvrez l’extension correspondante, puis **Collecte du comparateur local**.
-   Saisissez le jeton, cliquez sur **Utiliser cet onglet pour la collecte** et gardez l’onglet ouvert
-   sur le site. Répétez la sélection de l’onglet après un redémarrage d’Edge.
-4. Sur la page du comparateur, cochez les deux drives et cherchez par exemple **lait Lactel**. Les prix
-   connus s’affichent tout de suite. Pour un nouveau relevé, comptez jusqu’à 30 secondes avant le prochain
-   réveil de l’extension, puis jusqu’à 30 secondes de lecture. Relancez la recherche pour voir la
-   réutilisation des résultats.
+2. Configurez chaque extension une seule fois depuis son popup **Collecte du comparateur local**.
+   Saisissez le jeton et cliquez sur **Activer la collecte automatique**. Le popup confirme
+   **Serveur connecté**. La configuration reste enregistrée au redémarrage d’Edge.
+3. Sur Windows, ajoutez `DRIVES_DEMARRER_EDGE=true` dans `.env` et redémarrez le serveur si vous
+   souhaitez qu’il ouvre Edge quand le collecteur ne répond pas. Chaque extension ouvre son propre
+   onglet marchand quand une demande arrive.
+4. Depuis l’accueil, saisissez **35170**, cliquez sur **Composer ma liste**, ajoutez par exemple
+   **lait Lactel**, puis cliquez sur **Comparer**. Consultez les deux colonnes du tableau.
+   Un nouveau relevé peut attendre jusqu’à 30 secondes avant le prochain réveil de l’extension,
+   puis jusqu’à 30 secondes de lecture par article.
 
 Le relevé manuel et l’export CSV restent accessibles dans les deux extensions. Si Edge est fermé, le
 comparateur affiche l’historique et indique l’attente du collecteur. La fraîcheur se règle avec
@@ -82,6 +84,8 @@ uv run --locked ruff check .
 Pour vérifier les extracteurs Edge sur les cartes et pages simulées, lancez le serveur de fichiers
 depuis la racine et ouvrez **http://127.0.0.1:8765/tests/donnees/drives/navigateur.html** dans Edge.
 La page affiche `DRIVES_BROWSER_OK` lorsque les contrôles passent.
+Le test `/tests/donnees/drives/collecteur.html` vérifie aussi l’ouverture automatique d’un onglet
+et l’arrêt sur défi simulé. Il affiche `DRIVES_COLLECTEUR_OK`.
 
 ```powershell
 uv run --locked python -m http.server 8765 --bind 127.0.0.1
