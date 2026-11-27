@@ -1,6 +1,8 @@
 """Projection des observations Edge dans les lignes de comparaison du panier."""
 
 import asyncio
+import html
+import re
 from collections.abc import AsyncIterator
 from datetime import date, datetime
 from decimal import Decimal
@@ -27,6 +29,47 @@ MESSAGES = {
 }
 
 
+CAMPAGNE = re.compile(
+    r"\d+\s*%|\d+\s*€|offert|gratuit|remise|\d+\s*(?:e|è|ème|eme)\b|lot|carte", re.I
+)
+
+
+def nettoyer_promo(texte: str) -> str:
+    """Texte de promo d'un drive, lisible : sans HTML et sans le code interne de la campagne.
+
+    « TRAFIC S47-48 - LOT 2 RDG NUTELLA 1 - Le 2 ème à -50% en remise immédiate <br><i>pour un retrait
+    jusqu'au 29/11</i> » → « Le 2 ème à -50% en remise immédiate · pour un retrait jusqu'au 29/11 »."""
+    texte = re.sub(r"<br\s*/?>", " · ", texte or "", flags=re.I)
+    texte = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", texte)).split())
+    morceaux = [m.strip() for m in re.split(r"\s+-\s+", texte) if m.strip()]
+    # Le code de campagne (« TRAFIC S47-48 », « LOT 2 RDG NUTELLA 1 ») précède le texte client :
+    # on garde à partir du dernier morceau qui parle d'une remise.
+    utiles = [i for i, m in enumerate(morceaux) if CAMPAGNE.search(m) and not m.isupper()]
+    if len(morceaux) > 1 and utiles:
+        texte = " - ".join(morceaux[utiles[-1] :])
+    return texte.strip(" ·")
+
+
+def _meme_produit_par_nom(reglages: Reglages, drive: DriveId, ligne: LigneListe) -> dict | None:
+    """Produit précis dont le code-barres n'est pas celui du drive (plusieurs EAN existent pour un même
+    produit) : même nom et même format parmi les relevés déjà faits, sans lancer de nouveau relevé."""
+    texte = " ".join((ligne.recherche or ligne.libelle).split())[:160]
+    if not normaliser(texte):
+        return None
+    vue = rechercher_pour_panier(
+        reglages, drive, Recherche(q=texte, drives=[drive]), creer=False, terme_marchand=None
+    )
+    format_voulu = re.search(r"(\d+(?:[.,]\d+)?)\s*(kg|g|l|cl|ml)\b", ligne.libelle.lower())
+    if not format_voulu:  # sans format, trop risqué : on garde « aucun produit correspondant »
+        return None
+    voulu = format_voulu[1].replace(",", ".") + format_voulu[2]
+    for produit in vue["produits"]:
+        texte_produit = normaliser(f"{produit['produit']} {produit['format']}").replace(" ", "")
+        if ean_valide(produit.get("ean") or "") and voulu in texte_produit:
+            return {**produit, "source": f"{produit['source']} · même produit, autre code-barres"}
+    return None
+
+
 def _prix(drive: DriveId, observation: dict) -> Prix:
     releve = observation["releve_le"]
     prix_unitaire = observation["prix_par_unite_eur"]
@@ -48,7 +91,7 @@ def _prix(drive: DriveId, observation: dict) -> Prix:
         source_detail=("Dernier prix connu · " if ancien else "") + observation["source"],
         releve_le=datetime.fromisoformat(date_tri(releve)),
         date_releve_source=date.fromisoformat(releve) if len(releve) == 10 else None,
-        conditions_affichees=observation["promos"],
+        conditions_affichees=nettoyer_promo(observation["promos"]),
     )
 
 
@@ -119,6 +162,10 @@ async def relever_ligne(
             terme_marchand=terme_marchand,
         )
         creer = False
+        if exact and vue["etat"] == "sans_correspondance" and not vue["produits"]:
+            secours = await asyncio.to_thread(_meme_produit_par_nom, reglages, drive, ligne)
+            if secours:
+                vue = {**vue, "etat": "recent", "produits": [secours]}
         hors_ligne = False
         if suivre and vue["tache_id"] and not vue["connecte"]:
             if deconnecte_depuis is None:
