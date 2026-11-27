@@ -27,6 +27,11 @@
             {% if localisations[m.id] %}
             <span class="localisation-magasin">{{ localisations[m.id] }}</span>
             {% endif %}
+            {% if m.id in reperes %}
+            <a class="repere-comparatif" target="_blank" rel="noopener"
+               href="https://www.openstreetmap.org/?mlat={{ m.position.lat }}&amp;mlon={{ m.position.lon }}#map=18/{{ m.position.lat }}/{{ m.position.lon }}"
+               aria-label="Voir {{ m.nom }}, repère {{ reperes[m.id] }}, sur la carte (nouvel onglet)">Carte · repère {{ reperes[m.id] }}</a>
+            {% endif %}
           </th>
           {% endfor %}
         </tr>

@@ -20,16 +20,17 @@ def test_localisation_des_colonnes_du_comparatif(client, monkeypatch):
         ("Nantes", "1 rue du Commerce"),
         ("", "5 rue de la Paix"),
         ("", ""),
+        ("", ""),
     ]
     magasins = [
         Magasin(
             id=f"carrefour-{i}",
             id_enseigne=str(i),
             enseigne=Enseigne.CARREFOUR,
-            nom=f"Magasin {i}",
+            nom="U Express" if i >= 5 else f"Magasin {i}",
             ville=ville,
             adresse=adresse,
-            position=position,
+            position=Position(lat=48, lon=-1.7 + i / 1000),
             distance_km=1.1,
         )
         for i, (ville, adresse) in enumerate(lieux)
@@ -53,6 +54,8 @@ def test_localisation_des_colonnes_du_comparatif(client, monkeypatch):
     assert re.search(
         r'class="distance">1,1 km</span>\s*<span class="localisation-magasin">', page.text
     )
+    assert "Carte · repère 1" in page.text and "Carte · repère 2" in page.text
+    assert "mlon=-1.695" in page.text and "mlon=-1.694" in page.text
 
 
 def test_magasins_proches_json(client):

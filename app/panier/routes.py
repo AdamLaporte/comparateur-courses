@@ -384,8 +384,23 @@ def localisations_colonnes(magasins: list[Magasin]) -> dict[str, str]:
         rue = re.sub(r"(?:^|[,\s])\d{5}(?:\s|,|$).*$", "", adresse).rstrip(" ,")
         if ville:
             rue = re.sub(rf",\s*{re.escape(ville)}$", "", rue, flags=re.IGNORECASE)
-        localisations[magasin.id] = rue or ville or adresse
+        localisations[magasin.id] = rue or ville or adresse or magasin.code_postal.strip()
     return localisations
+
+
+def reperes_colonnes(magasins: list[Magasin], localisations: dict[str, str]) -> dict[str, int]:
+    def cle(magasin: Magasin) -> tuple[str, str, str]:
+        return (magasin.enseigne, magasin.nom.casefold(), localisations[magasin.id].casefold())
+
+    frequences = Counter(cle(magasin) for magasin in magasins)
+    numeros: Counter[tuple[str, str, str]] = Counter()
+    reperes = {}
+    for magasin in magasins:
+        groupe = cle(magasin)
+        if not localisations[magasin.id] or frequences[groupe] > 1:
+            numeros[groupe] += 1
+            reperes[magasin.id] = numeros[groupe]
+    return reperes
 
 
 @router.get("/panier/resultats", response_class=HTMLResponse)
@@ -411,6 +426,7 @@ async def tableau_resultats(request: Request, reglages: ReglagesDep):
         if not contexte["magasins"] and not contexte["message"]:
             contexte["message"] = "Aucun magasin trouvé autour de ce code postal."
     contexte["localisations"] = localisations_colonnes(contexte["magasins"])
+    contexte["reperes"] = reperes_colonnes(contexte["magasins"], contexte["localisations"])
     return templates.TemplateResponse(request, "panier/_resultats.html", contexte)
 
 
