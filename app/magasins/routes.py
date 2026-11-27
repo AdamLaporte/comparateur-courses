@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse
 
 from app.comptes import lieux
 from app.config import ReglagesDep
-from app.contrats import MagasinsReponse, Position
+from app.contrats import Enseigne, MagasinsReponse, Position
 from app.gabarits import templates
 from app.magasins.geocodage import CodePostalInconnu, CodePostalInvalide
 from app.magasins.service import magasins_proches
@@ -91,6 +91,7 @@ async def page_magasins(
     trajet: bool = False,
     mode_trajet: str = "",
     rayon_trajet: str = "",
+    enseigne: Enseigne | None = None,
 ):
     contexte = contexte_trajet(request, reglages)
     favori = contexte["lieux_trajet"].get(lieu_trajet)
@@ -140,10 +141,19 @@ async def page_magasins(
             for magasin in reponse.magasins
         }
         contexte["nom_mode"] = mode.nom
+    enseignes = list(dict.fromkeys(m.enseigne for m in reponse.magasins))
+    magasins_affiches = [m for m in reponse.magasins if enseigne is None or m.enseigne == enseigne]
     return templates.TemplateResponse(
         request,
         "magasins/liste.html",
-        {"reponse": reponse, "nb_articles": nb_articles(request, reglages), **contexte},
+        {
+            "reponse": reponse,
+            "magasins_affiches": magasins_affiches,
+            "enseignes_filtres": enseignes,
+            "enseigne_active": enseigne,
+            "nb_articles": nb_articles(request, reglages),
+            **contexte,
+        },
     )
 
 

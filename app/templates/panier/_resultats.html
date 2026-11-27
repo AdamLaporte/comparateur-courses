@@ -1,5 +1,6 @@
 {# Tableau articles × magasins, rempli case par case par le flux SSE /panier/prix/flux.
    data-magasin sert à site.js pour mettre en avant le moins cher de chaque ligne et la colonne gagnante. #}
+{% from "_enseignes.html" import badge_enseigne with context %}
 {% if message %}
 <div class="comparaison"><div class="vide"><p>{{ message }}</p></div></div>
 {% else %}
@@ -18,7 +19,7 @@
           <th scope="col" class="col-article">Article</th>
           {% for m in magasins %}
           <th scope="col" class="col-magasin {{ m.enseigne.value }}" data-magasin="{{ m.id }}">
-            <span class="badge {{ m.enseigne.value }}">{{ m.enseigne.nom }}</span>
+            {{ badge_enseigne(m.enseigne) }}
             <span class="nom-magasin">{{ m.nom }}</span>
             {% if m.distance_km is not none %}
             <span class="distance">{{ ('%.1f' % m.distance_km).replace('.', ',') }} km</span>

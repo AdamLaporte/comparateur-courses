@@ -89,6 +89,16 @@ def test_page_magasins_avec_rayon(client):
     assert 'class="badge-trajet"' not in page.text
 
 
+def test_filtre_enseigne_et_logos(client):
+    page = client.get("/magasins", params={"code_postal": "35170", "enseigne": "carrefour"})
+    assert page.status_code == 200
+    assert 'class="filtre-enseigne carrefour"' in page.text
+    cartes = page.text.split('<ol class="liste-magasins">', 1)[1].split("</ol>", 1)[0]
+    assert "enseignes/carrefour.webp" in cartes
+    assert "enseignes/intermarche.webp" not in cartes
+    assert 'width="40" height="40"' in cartes
+
+
 @pytest.mark.parametrize(
     ("mode", "rayon"), [("voiture", "15"), ("transport", "6"), ("velo", "3"), ("pied", "1,5")]
 )

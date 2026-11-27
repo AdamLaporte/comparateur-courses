@@ -87,10 +87,10 @@
   --rouge-pale: #fbe9e5;
   --focus: #1d4ed8;
 
-  --carrefour: #1f5fd1;
-  --intermarche: #d3121b;
-  --coursesu: #1b2f6b;
-  --leclerc: #e8730c;
+  --carrefour: #83AFD8;
+  --intermarche: #0BAF89;
+  --coursesu: #FE7A1B;
+  --leclerc: #141E32;
 
   --police: "Archivo Variable", "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --police-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -299,6 +299,23 @@ span.erreur { display: inline-flex; margin: 0; padding: 4px 8px; }
 .intermarche { --c: var(--intermarche); }
 .coursesu { --c: var(--coursesu); }
 .leclerc { --c: var(--leclerc); }
+.logo-enseigne {
+  display: block; flex: none; width: 40px; height: 40px;
+  object-fit: contain; border-radius: 4px;
+}
+.badge-logo::before { content: none; }
+.badge-logo { white-space: normal; }
+.filtres-enseignes { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+.filtre-enseigne {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 3px 9px;
+  background: var(--blanc); border: 1px solid var(--trait); border-radius: var(--rayon);
+  color: var(--encre); text-decoration: none; font-weight: 650; font-size: .88rem;
+}
+.filtre-enseigne:hover { border-color: var(--c, var(--economie)); }
+.filtre-enseigne[aria-current="true"] {
+  border-color: var(--c, var(--economie));
+  box-shadow: inset 0 -3px var(--c, var(--principal));
+}
 
 /* ---------- Blocs ---------- */
 

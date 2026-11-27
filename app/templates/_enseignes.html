@@ -1,0 +1,8 @@
+{% macro logo_enseigne(enseigne) -%}
+<img class="logo-enseigne" src="{{ url_for('static', path='enseignes/' ~ enseigne.value ~ '.webp') }}"
+     width="40" height="40" alt="" decoding="async">
+{%- endmacro %}
+
+{% macro badge_enseigne(enseigne) -%}
+<span class="badge badge-logo {{ enseigne.value }}">{{ logo_enseigne(enseigne) }}<span>{{ enseigne.nom }}</span></span>
+{%- endmacro %}

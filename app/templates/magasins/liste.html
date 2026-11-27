@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "_icones.html" import icone %}
+{% from "_enseignes.html" import badge_enseigne, logo_enseigne with context %}
 {% set lieu = reponse.ville or reponse.code_postal %}
 {% block titre %}Magasins autour de {{ lieu }} · GrignotePrix{% endblock %}
 {% block tete %}
@@ -7,7 +8,7 @@
 <script src="{{ url_for('static', path='vendor/leaflet-1.9.4/leaflet.js') }}" defer></script>
 {% endblock %}
 {% block contenu %}
-{% set nb = reponse.magasins | length %}
+{% set nb = magasins_affiches | length %}
 <div class="entete-magasins">
   <div>
     <p class="surtitre">Étape 2 sur 3 · les magasins</p>
@@ -39,14 +40,26 @@
 <p class="note note-trajet">{{ nom_mode }} · Distance à vol d’oiseau et durée approximative. Le badge indique la proximité pour ce mode. Les itinéraires, horaires et accès PMR restent à vérifier.</p>
 {% endif %}
 
-{% if reponse.magasins %}
+{% if enseignes_filtres %}
+<nav class="filtres-enseignes" aria-label="Filtrer les magasins par enseigne">
+  <a class="filtre-enseigne" href="{{ request.url.remove_query_params('enseigne') }}"
+     {% if not enseigne_active %}aria-current="true"{% endif %}>Toutes</a>
+  {% for enseigne in enseignes_filtres %}
+  <a class="filtre-enseigne {{ enseigne.value }}" href="{{ request.url.include_query_params(enseigne=enseigne.value) }}"
+     {% if enseigne_active == enseigne %}aria-current="true"{% endif %}>
+    {{ logo_enseigne(enseigne) }}<span>{{ enseigne.nom }}</span>
+  </a>
+  {% endfor %}
+</nav>
+{% endif %}
+{% if magasins_affiches %}
 <div class="magasins-grille">
   <div>
     <ol class="liste-magasins">
-      {% for m in reponse.magasins %}
+      {% for m in magasins_affiches %}
       <li class="{{ m.enseigne.value }}" data-numero="{{ loop.index }}" style="--i: {{ loop.index0 }}">
         <span class="numero" aria-hidden="true">{{ loop.index }}</span>
-        <span class="badge {{ m.enseigne.value }}">{{ m.enseigne.nom }}</span>
+        {{ badge_enseigne(m.enseigne) }}
         <span class="nom">{{ m.nom }}</span>
         {% if m.adresse %}<span class="adresse">{{ m.adresse }}</span>{% endif %}
         <span class="cote">
@@ -62,7 +75,7 @@
       </li>
       {% endfor %}
     </ol>
-    {% if reponse.enseignes_sans_magasin %}
+    {% if reponse.enseignes_sans_magasin and not enseigne_active %}
     <p class="sans-magasin">
       Pas de magasin trouvé pour :
       {% for e in reponse.enseignes_sans_magasin %}{{ e.nom }}{% if not loop.last %}, {% endif %}{% endfor %}.
@@ -73,7 +86,7 @@
 
   <div id="carte-magasins" class="carte-magasins" role="region" aria-label="Carte des magasins listés"></div>
   {% set points = [] %}
-  {% for m in reponse.magasins %}
+  {% for m in magasins_affiches %}
     {% set _ = points.append({"n": loop.index, "nom": m.nom, "enseigne": m.enseigne.value,
                               "lat": m.position.lat, "lon": m.position.lon}) %}
   {% endfor %}
