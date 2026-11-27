@@ -10,7 +10,7 @@
 | 1. Cadrage | Questions, recherches sur les sources, choix de l'architecture A | fait |
 | 2. Conception | `docs/architecture.md` (3 diagrammes), `AGENTS.md`, `CLAUDE.md`, `docs/decisions.md`, ce fichier, journal | fait |
 | 3. Squelette | Projet uv, parcours de bout en bout avec données fictives, 17 tests. Fusionné dans `main` | fait |
-| 4. Répartition | 4 lots indépendants (ci-dessous), attribution des personnes | en attente de validation |
+| 4. Répartition | 4 lots indépendants (ci-dessous). Attribution des personnes : plus tard | fait |
 
 ## Comment travailler
 
