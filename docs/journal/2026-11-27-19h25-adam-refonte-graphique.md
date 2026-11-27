@@ -29,6 +29,7 @@
 ## Reste à faire
 
 - Scénario de démo avec le lot 4 (articles bien couverts, préchauffage).
-- Polices, HTMX et Leaflet viennent de jsdelivr : sans Internet le jour de la démo, le site reste utilisable mais
-  perd ses polices, sa carte et HTMX. Si la salle n'a pas de réseau, copier ces fichiers dans `app/static/`.
+- Fait ensuite, à la demande d'Adam : HTMX, l'extension SSE, Leaflet et les polices sont copiés dans
+  `app/static/vendor/` (voir `LISEZMOI.md` à l'intérieur). Le site marche sans Internet ; seuls les fonds de carte
+  OpenStreetMap restent en ligne (sans réseau, la carte est grise, la liste suffit).
 - Images des produits (Open Food Facts) : possible, demanderait un champ en plus dans `Produit` (lot 4).

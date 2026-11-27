@@ -3,12 +3,8 @@
 {% set lieu = reponse.ville or reponse.code_postal %}
 {% block titre %}Magasins autour de {{ lieu }} · Comparateur de courses{% endblock %}
 {% block tete %}
-<link rel="stylesheet" crossorigin="anonymous"
-      href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H">
-<script defer crossorigin="anonymous"
-        src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH"></script>
+<link rel="stylesheet" href="{{ url_for('static', path='vendor/leaflet-1.9.4/leaflet.css') }}">
+<script src="{{ url_for('static', path='vendor/leaflet-1.9.4/leaflet.js') }}" defer></script>
 {% endblock %}
 {% block contenu %}
 {% set nb = reponse.magasins | length %}

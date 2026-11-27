@@ -6,19 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f3ee">
   <title>{% block titre %}Comparateur de courses{% endblock %}</title>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="stylesheet" crossorigin="anonymous"
-        href="https://cdn.jsdelivr.net/npm/@fontsource-variable/archivo@5.3.0/wdth.css"
-        integrity="sha384-vjcJagy/QG7TVWEpv/BSGwmn+C7DviTSwDEGbRW7XomYit1xRqvEa1tOvwsdZUqe">
-  <link rel="stylesheet" crossorigin="anonymous"
-        href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5.3.0/400.css"
-        integrity="sha384-skmNCjNGr3vAP9enjEtv/Ifs9QVeKfEF6q4rnDaS7YqtsgrCVRjcB7LPcLnQyL9p">
-  <link rel="stylesheet" crossorigin="anonymous"
-        href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5.3.0/500.css"
-        integrity="sha384-Kc76rmz8/sN1crakstIAL9hO3G6GlkS7LXZxYz6aM3HgNHNuukjqpQ0xmqtD2X1B">
+  {# Tout est servi par le site lui-même (app/static/vendor/) : la démo marche sans Internet. #}
+  <link rel="preload" href="{{ url_for('static', path='vendor/polices/archivo-latin-wdth-normal.woff2') }}"
+        as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
-  <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/htmx-ext-sse@2.2.2/sse.js" defer></script>
+  <script src="{{ url_for('static', path='vendor/htmx-2.0.4.min.js') }}" defer></script>
+  <script src="{{ url_for('static', path='vendor/htmx-ext-sse-2.2.2.js') }}" defer></script>
   {% block tete %}{% endblock %}
   <script src="{{ url_for('static', path='site.js') }}" defer></script>
 </head>

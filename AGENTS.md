@@ -71,7 +71,8 @@ Détails et diagrammes : [`docs/architecture.md`](docs/architecture.md). Décisi
 │   ├── panier/                # routes.py (liste, flux SSE, API), service.py, calcul.py, schema.sql
 │   ├── comptes/               # routes.py, service.py, schema.sql (inscription, connexion, favoris)
 │   ├── templates/             # base.html, erreur.html, _icones.html (icônes SVG) + un dossier par fonctionnalité
-│   └── static/                # style.css (charte graphique), site.js (géolocalisation, carte, mise en avant)
+│   └── static/                # style.css (charte graphique), site.js (géolocalisation, carte, mise en avant),
+│                              # vendor/ (htmx, extension SSE, Leaflet et polices copiés : marche sans Internet)
 ├── data/demo/recherches.txt   # recherches pour préchauffer le cache avant la démo
 ├── data/magasins/osm.json     # magasins des 4 enseignes en France (OpenStreetMap, ODbL)
 ├── tests/                     # conftest.py, test_parcours.py, test_calcul.py, test_orchestrateur.py
