@@ -41,7 +41,11 @@ def test_localisation_des_colonnes_du_comparatif(client, monkeypatch):
             code_postal="35170", ville="Bruz", position=position, magasins=magasins
         )
 
+    async def sans_adresse(*args):
+        return "", ""
+
     monkeypatch.setattr(routes, "magasins_proches", proches)
+    monkeypatch.setattr(routes, "localisation_proche", sans_adresse)
     page = client.get("/panier/resultats")
     assert page.status_code == 200
     assert re.findall(r'class="localisation-magasin">([^<]+)', page.text) == [
@@ -54,8 +58,21 @@ def test_localisation_des_colonnes_du_comparatif(client, monkeypatch):
     assert re.search(
         r'class="distance">1,1 km</span>\s*<span class="localisation-magasin">', page.text
     )
-    assert "Carte · repère 1" in page.text and "Carte · repère 2" in page.text
+    assert "Repère 1" in page.text and "Repère 2" in page.text
     assert "mlon=-1.695" in page.text and "mlon=-1.694" in page.text
+
+    async def adresse_depuis_position(position, reglages):
+        if position.lon == magasins[-2].position.lon:
+            return "Vay", "16 rue Principale"
+        if position.lon == magasins[-1].position.lon:
+            return "Blain", "12 rue du Château"
+        return "", ""
+
+    monkeypatch.setattr(routes, "localisation_proche", adresse_depuis_position)
+    page = client.get("/panier/resultats")
+    assert '<span class="localisation-magasin">Vay</span>' in page.text
+    assert '<span class="localisation-magasin">Près de 12 rue du Château</span>' in page.text
+    assert 'class="repere-comparatif"' not in page.text
 
 
 def test_magasins_proches_json(client):

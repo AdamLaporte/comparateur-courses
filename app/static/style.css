@@ -668,6 +668,8 @@ span.favori { font-size: 0.85rem; font-weight: 600; color: var(--corail-texte); 
 .tableau-prix thead th { vertical-align: bottom; border-bottom: 1.5px solid var(--encre); }
 .tableau-prix thead th.col-magasin { min-width: 9.6rem; border-top: 4px solid var(--c, var(--encre)); }
 .col-magasin .nom-magasin { display: block; margin-top: 4px; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+.col-magasin .lien-magasin { display: block; color: var(--encre); text-decoration: none; }
+.col-magasin .lien-magasin:hover .nom-magasin { text-decoration: underline; }
 .col-magasin .distance { display: block; margin-top: 2px; font-family: var(--police-mono); font-size: 0.75rem; font-weight: 400; color: var(--encre-3); }
 .col-magasin :is(.localisation-magasin, .repere-comparatif) {
   display: block; margin-top: 2px; font-size: .6875rem; font-weight: 500;

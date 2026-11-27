@@ -30,6 +30,7 @@ CODES_POSTAUX_CONNUS: dict[str, tuple[str, Position]] = {
 }
 
 _deja_geocodes: dict[tuple[bool, str], tuple[str, Position]] = {}
+_localisations_proches: dict[tuple[str, float, float], tuple[str, str]] = {}
 
 
 async def _api_adresse(chemin: str, params: dict, reglages: Reglages) -> list[dict]:
@@ -55,6 +56,26 @@ async def adresse_proche(position: Position, reglages: Reglages) -> str | None:
         if trouves:
             return trouves[0]["properties"].get("label")
     return None
+
+
+async def localisation_proche(position: Position, reglages: Reglages) -> tuple[str, str]:
+    cle = (reglages.api_adresse_url, position.lat, position.lon)
+    if cle in _localisations_proches:
+        return _localisations_proches[cle]
+    trouves = await _api_adresse(
+        "reverse", {"lat": position.lat, "lon": position.lon, "limit": 1}, reglages
+    )
+    if not trouves:
+        return "", ""
+    proprietes = trouves[0]["properties"]
+    ville = proprietes.get("city") or ""
+    rue = (
+        proprietes.get("name") or "" if proprietes.get("type") in {"housenumber", "street"} else ""
+    )
+    if len(_localisations_proches) >= 512:
+        _localisations_proches.pop(next(iter(_localisations_proches)))
+    _localisations_proches[cle] = (ville, rue)
+    return ville, rue
 
 
 async def geocoder(lieu: str, reglages: Reglages, *, adresse: bool = False) -> tuple[str, Position]:

@@ -27,7 +27,7 @@ from app.contrats import (
     TotauxReponse,
 )
 from app.gabarits import rendre, templates
-from app.magasins.geocodage import CodePostalInconnu, CodePostalInvalide
+from app.magasins.geocodage import CodePostalInconnu, CodePostalInvalide, localisation_proche
 from app.magasins.service import magasins_proches
 from app.panier import calcul, service, ticket
 from app.produits.service import rechercher
@@ -371,8 +371,40 @@ async def changer_quantite(
     return _liste_maj(request, reglages)
 
 
-def localisations_colonnes(magasins: list[Magasin]) -> dict[str, str]:
+def adresse_courte(magasin: Magasin) -> str:
+    ville = " ".join(magasin.ville.split())
+    adresse = " ".join(magasin.adresse.split()).strip(" ,")
+    rue = re.sub(r"(?:^|[,\s])\d{5}(?:\s|,|$).*$", "", adresse).rstrip(" ,")
+    if ville:
+        rue = re.sub(rf"(?:^|,\s*){re.escape(ville)}$", "", rue, flags=re.IGNORECASE)
+    return rue
+
+
+async def localisations_colonnes(magasins: list[Magasin], reglages: Reglages) -> dict[str, str]:
     villes = {m.id: " ".join(m.ville.split()) for m in magasins}
+    rues = {m.id: adresse_courte(m) for m in magasins}
+    proches: dict[str, str] = {}
+    limite = asyncio.Semaphore(5)
+
+    async def completer(magasin: Magasin) -> None:
+        async with limite:
+            ville, rue = await localisation_proche(magasin.position, reglages)
+        villes[magasin.id] = villes[magasin.id] or ville
+        if rue and not rues[magasin.id]:
+            proches[magasin.id] = f"Près de {rue}"
+
+    try:
+        async with asyncio.timeout(2.5):
+            await asyncio.gather(
+                *(
+                    completer(m)
+                    for m in magasins
+                    if not m.est_fictif and (not villes[m.id] or not rues[m.id])
+                )
+            )
+    except TimeoutError:
+        pass
+
     frequences = Counter(ville.casefold() for ville in villes.values() if ville)
     localisations = {}
     for magasin in magasins:
@@ -380,11 +412,13 @@ def localisations_colonnes(magasins: list[Magasin]) -> dict[str, str]:
         if ville and frequences[ville.casefold()] == 1:
             localisations[magasin.id] = ville
             continue
-        adresse = " ".join(magasin.adresse.split()).strip(" ,")
-        rue = re.sub(r"(?:^|[,\s])\d{5}(?:\s|,|$).*$", "", adresse).rstrip(" ,")
-        if ville:
-            rue = re.sub(rf",\s*{re.escape(ville)}$", "", rue, flags=re.IGNORECASE)
-        localisations[magasin.id] = rue or ville or adresse or magasin.code_postal.strip()
+        localisations[magasin.id] = (
+            rues[magasin.id]
+            or proches.get(magasin.id)
+            or ville
+            or magasin.adresse.strip()
+            or magasin.code_postal.strip()
+        )
     return localisations
 
 
@@ -425,7 +459,7 @@ async def tableau_resultats(request: Request, reglages: ReglagesDep):
             contexte["message"] = "Choisissez d'abord votre code postal."
         if not contexte["magasins"] and not contexte["message"]:
             contexte["message"] = "Aucun magasin trouvé autour de ce code postal."
-    contexte["localisations"] = localisations_colonnes(contexte["magasins"])
+    contexte["localisations"] = await localisations_colonnes(contexte["magasins"], reglages)
     contexte["reperes"] = reperes_colonnes(contexte["magasins"], contexte["localisations"])
     return templates.TemplateResponse(request, "panier/_resultats.html", contexte)
 

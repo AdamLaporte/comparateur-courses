@@ -19,19 +19,19 @@
           <th scope="col" class="col-article">Article</th>
           {% for m in magasins %}
           <th scope="col" class="col-magasin {{ m.enseigne.value }}" data-magasin="{{ m.id }}">
-            {{ badge_enseigne(m.enseigne) }}
-            <span class="nom-magasin">{{ m.nom }}</span>
-            {% if m.distance_km is not none %}
-            <span class="distance">{{ ('%.1f' % m.distance_km).replace('.', ',') }} km</span>
-            {% endif %}
-            {% if localisations[m.id] %}
-            <span class="localisation-magasin">{{ localisations[m.id] }}</span>
-            {% endif %}
-            {% if m.id in reperes %}
-            <a class="repere-comparatif" target="_blank" rel="noopener"
+            <a class="lien-magasin" target="_blank" rel="noopener"
                href="https://www.openstreetmap.org/?mlat={{ m.position.lat }}&amp;mlon={{ m.position.lon }}#map=18/{{ m.position.lat }}/{{ m.position.lon }}"
-               aria-label="Voir {{ m.nom }}, repère {{ reperes[m.id] }}, sur la carte (nouvel onglet)">Carte · repère {{ reperes[m.id] }}</a>
-            {% endif %}
+               title="Voir sur la carte (nouvel onglet)">
+              {{ badge_enseigne(m.enseigne) }}
+              <span class="nom-magasin">{{ m.nom }}</span>
+              {% if m.distance_km is not none %}
+              <span class="distance">{{ ('%.1f' % m.distance_km).replace('.', ',') }} km</span>
+              {% endif %}
+              {% if localisations[m.id] %}
+              <span class="localisation-magasin">{{ localisations[m.id] }}</span>
+              {% endif %}
+              {% if m.id in reperes %}<span class="repere-comparatif">Repère {{ reperes[m.id] }}</span>{% endif %}
+            </a>
           </th>
           {% endfor %}
         </tr>
