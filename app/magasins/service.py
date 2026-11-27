@@ -120,12 +120,22 @@ async def magasins_proches(
     rayon_km: float | None = None,
     *,
     lieu_enregistre: tuple[str, Position] | None = None,
+    seulement_drives: bool = False,
 ) -> MagasinsReponse:
-    """Lève CodePostalInvalide ou CodePostalInconnu si le lieu ne convient pas."""
+    """Lève CodePostalInvalide ou CodePostalInconnu si le lieu ne convient pas.
+
+    `seulement_drives` (mode « données réelles ») : seulement les drives répertoriés, dont les prix sont
+    relevés par les extensions Edge (app/drives/points_retrait.json)."""
     ville, position = lieu_enregistre or await geocoder(lieu, reglages)
     rayon, maximum = _limites(rayon_km, reglages)
     sources = sources_actives(reglages)
-    if reglages.magasins_osm and FICHIER_OSM.exists():
+    if seulement_drives:
+        tous = magasins_osm() if FICHIER_OSM.exists() else {e: [] for e in Enseigne}
+        listes = [
+            _garder_proches([m for m in tous[e] if m.id in DRIVES], position, rayon, maximum)
+            for e in sources
+        ]
+    elif reglages.magasins_osm and FICHIER_OSM.exists():
         tous = magasins_osm()
         listes = [_garder_proches(tous[e], position, rayon, maximum) for e in sources]
     else:

@@ -25,6 +25,7 @@
 | Ticket de caisse | Photo lue par OCR local, articles rapprochés du catalogue, « inexistant » sinon | Adam |
 | Comparaison | Prix en direct (SSE), verdict (même sans panier complet), classement, prix périmés signalés | Adam |
 | Prix réels | Cache, Open Prices et relevés Edge par point de retrait répertorié, dont Bruz, Guichen et Rennes Gayeulles | Jade, Raph |
+| Mode des données | Bouton dans le bandeau : « démo » (tous les magasins, prix fictifs, aucune requête Edge) ou « données réelles » (drives répertoriés seulement, relevés Edge). Défaut : `MODE_DONNEES_DEFAUT` | Jade |
 | Site partagé | Base commune sur le PC de Raph via Tailscale, avec accès privé et jetons de collecte. Réutilisation réelle sur le second PC à valider | Raph, Adam |
 | Comptes | Inscription, connexion, mot de passe perdu, maison, favoris, tirelire (écart avec la moyenne) | Jade, Ilona |
 | Interface | GrignotePrix (nom, logo, couleurs), animations, mobile, fonctionne sans Internet (sauf fonds de carte) | Adam, Ilona |

@@ -23,6 +23,7 @@ JETON = {"X-Drives-Jeton": "test-edge"}
 @pytest.fixture
 def edge(reglages, monkeypatch):
     reglages.drives_jeton = JETON["X-Drives-Jeton"]
+    reglages.mode_donnees_defaut = "reel"  # relevés Edge : mode « données réelles »
     maintenant = [datetime(2026, 11, 27, 19, tzinfo=UTC)]
     monkeypatch.setattr(service, "maintenant", lambda: maintenant[0])
     with TestClient(creer_app(reglages), client=("127.0.0.1", 9999)) as client:
@@ -294,7 +295,7 @@ def test_drives_conditionnement_precis_et_correspondance_possible(edge):
 
 def _panier(client, reglages, **article):
     reglages.magasins_osm = True
-    magasins = client.get("/magasins?code_postal=35170")
+    magasins = client.get("/magasins?code_postal=35170&rayon_km=5")  # drives de Bruz seulement
     assert magasins.status_code == 200
     assert 'href="/drives"' not in magasins.text
     assert client.get("/drives").status_code == 404

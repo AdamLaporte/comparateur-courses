@@ -10,6 +10,7 @@ from app.gabarits import templates
 from app.magasins.geocodage import CodePostalInconnu, CodePostalInvalide, adresse_proche
 from app.magasins.service import magasins_proches
 from app.magasins.trajets import MODES, estimer
+from app.mode_donnees import est_reel
 from app.panier import service as panier
 
 router = APIRouter(tags=["magasins"])
@@ -115,7 +116,11 @@ async def page_magasins(
     )
     try:
         reponse = await magasins_proches(
-            code_postal, reglages, rayon, lieu_enregistre=lieu_enregistre
+            code_postal,
+            reglages,
+            rayon,
+            lieu_enregistre=lieu_enregistre,
+            seulement_drives=est_reel(request),
         )
     except (CodePostalInvalide, CodePostalInconnu) as erreur:
         message = MESSAGE_INVALIDE if isinstance(erreur, CodePostalInvalide) else MESSAGE_INCONNU

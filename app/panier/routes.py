@@ -29,6 +29,7 @@ from app.contrats import (
 from app.gabarits import rendre, templates
 from app.magasins.geocodage import CodePostalInconnu, CodePostalInvalide, localisation_proche
 from app.magasins.service import magasins_proches
+from app.mode_donnees import est_reel
 from app.panier import calcul, service, ticket
 from app.produits.service import rechercher
 from app.sources.registre import sources_actives
@@ -71,11 +72,17 @@ async def comparer(
     reglages: Reglages,
     *,
     suivre_edge: bool = False,
+    drives_par_edge: bool = True,
 ) -> AsyncIterator[ResultatLigne]:
     """Résultats complétés (sous-totaux), dans l'ordre d'arrivée."""
     par_id = {ligne.id: ligne for ligne in lignes}
     async for resultat in collecter(
-        lignes, magasins, sources_actives(reglages), reglages, suivre_edge=suivre_edge
+        lignes,
+        magasins,
+        sources_actives(reglages),
+        reglages,
+        suivre_edge=suivre_edge,
+        drives_par_edge=drives_par_edge,
     ):
         yield calcul.completer(par_id[resultat.ligne_id], resultat)
 
@@ -453,7 +460,12 @@ async def tableau_resultats(request: Request, reglages: ReglagesDep):
     else:
         try:
             contexte["magasins"] = (
-                await magasins_proches(code_postal, reglages, request.session.get("rayon_km"))
+                await magasins_proches(
+                    code_postal,
+                    reglages,
+                    request.session.get("rayon_km"),
+                    seulement_drives=est_reel(request),
+                )
             ).magasins
         except (CodePostalInvalide, CodePostalInconnu):
             contexte["message"] = "Choisissez d'abord votre code postal."
@@ -478,7 +490,10 @@ async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[Se
     try:
         magasins = (
             await magasins_proches(
-                request.session.get("code_postal", ""), reglages, request.session.get("rayon_km")
+                request.session.get("code_postal", ""),
+                reglages,
+                request.session.get("rayon_km"),
+                seulement_drives=est_reel(request),
             )
         ).magasins
     except (CodePostalInvalide, CodePostalInconnu):
@@ -488,7 +503,10 @@ async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[Se
         lignes_par_id = {ligne.id: ligne for ligne in lignes}
         magasins_par_id = {magasin.id: magasin for magasin in magasins}
         resultats: dict[tuple[int, str], ResultatLigne] = {}
-        async for resultat in comparer(lignes, magasins, reglages, suivre_edge=True):
+        reel = est_reel(request)  # démo : prix fictifs partout, aucune requête Edge
+        async for resultat in comparer(
+            lignes, magasins, reglages, suivre_edge=reel, drives_par_edge=reel
+        ):
             resultats[resultat.ligne_id, resultat.magasin_id] = resultat
             yield ServerSentEvent(
                 event=f"prix-{resultat.ligne_id}-{resultat.magasin_id}",
