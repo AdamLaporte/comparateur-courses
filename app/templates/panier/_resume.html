@@ -65,13 +65,27 @@
   <p>Moyenne des paniers complets <strong>{{ economie[1] | euros }}</strong></p>
   {% if prix_fictifs %}<p class="note">Cette comparaison contient des prix fictifs.</p>{% endif %}
   <input type="hidden" name="comparaison" value="{{ economie[0] }}">
-  <label for="magasin-cagnotte">Où avez-vous fait vos courses ?</label>
-  <select name="magasin_id" id="magasin-cagnotte" required>
-    {% for t in complets %}
-    {% set ecart = economie[1] - t.total_centimes %}
-    <option value="{{ t.magasin.id }}">{{ t.magasin.nom }} · {{ t.total_centimes | euros }} · {{ "+" if ecart > 0 else "" }}{{ ecart | euros }} dans la tirelire</option>
-    {% endfor %}
-  </select>
+  {# Une carte par magasin au lieu d'un menu déroulant : tout se lit d'un coup d'œil, un clic suffit. #}
+  <fieldset class="choix-magasin">
+    <legend>Où avez-vous fait vos courses ?</legend>
+    <div class="cartes-choix">
+      {% for t in complets %}
+      {% set ecart = economie[1] - t.total_centimes %}
+      <label class="carte-choix">
+        <input type="radio" name="magasin_id" value="{{ t.magasin.id }}" data-total="{{ t.total_centimes }}"
+               {% if loop.first %}checked{% endif %} required>
+        <span class="carte-choix-corps">
+          <span class="badge {{ t.magasin.enseigne.value }}">{{ t.magasin.enseigne.nom }}</span>
+          <strong class="carte-choix-nom">{{ t.magasin.nom }}</strong>
+          <span class="carte-choix-total">{{ t.total_centimes | etiquette }}</span>
+          <span class="carte-choix-ecart {{ 'gain' if ecart > 0 else 'perte' if ecart < 0 else '' }}">
+            {% if ecart > 0 %}+{{ ecart | euros }} dans la tirelire{% elif ecart < 0 %}{{ ecart | euros }} : plus cher que la moyenne{% else %}pile la moyenne{% endif %}
+          </span>
+        </span>
+      </label>
+      {% endfor %}
+    </div>
+  </fieldset>
   <button type="submit" class="principal">Enregistrer l’écart</button>
 </form>
 {% endif %}

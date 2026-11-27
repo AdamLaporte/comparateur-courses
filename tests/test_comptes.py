@@ -236,8 +236,8 @@ def test_cagnotte_enregistre_une_fois_et_cumule(client):
     def comparaison():
         flux = client.get("/panier/prix/flux").text
         identifiant = re.search(r'name="comparaison" value="(\w+)"', flux)[1]
-        magasins = re.findall(r'<option value="([^"]+)">.*? · (\d+,\d+) € ·', flux)
-        prix = [int(montant.replace(",", "")) for _, montant in magasins]
+        magasins = re.findall(r'name="magasin_id" value="([^"]+)" data-total="(\d+)"', flux)
+        prix = [int(montant) for _, montant in magasins]
         moyenne = (sum(prix) + len(prix) // 2) // len(prix)
         return identifiant, magasins, moyenne, prix
 

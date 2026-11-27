@@ -28,7 +28,7 @@ def lire_rayon(texte: str | float | None) -> float | None:
 
 def nb_articles(request: Request, reglages) -> int:
     """Taille de la liste en cours (0 sans session) : pour proposer de la reprendre."""
-    return len(panier.lister(reglages, panier.proprietaire(request, creer=False)))
+    return len(panier.lister(reglages, panier.cle_liste(request, reglages, creer=False)))
 
 
 @router.get("/", response_class=HTMLResponse)

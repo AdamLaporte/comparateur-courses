@@ -11,13 +11,15 @@
   {% for promo in p.promotions %}
   <span class="promo {{ promo.type.value }}">{{ promo.libelle }}</span>
   {% endfor %}
-  {% if ligne.mode.value == "equivalent" %}
+  {% if ligne.mode.value != "produit" %}
   <span class="produit">{{ p.produit.libelle }}{% if p.produit.marque %} · {{ p.produit.marque }}{% endif %}</span>
   {% endif %}
   <span class="source{% if p.est_fictif %} fictif{% endif %}">
     {{ p.source_detail }} · {{ p.releve_le | releve }}{% if resultat.remarque %} · {{ resultat.remarque }}{% endif %}
   </span>
 </div>
+{% elif en_drive %}
+<span class="recherche-drive"><span class="tourne" aria-hidden="true"></span>Recherche sur le drive {{ en_drive }}…</span>
 {% elif resultat.statut.value == "introuvable" %}
 <span class="absent">Pas en rayon</span>
 {% else %}

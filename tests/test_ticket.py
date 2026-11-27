@@ -50,28 +50,37 @@ def test_ticket_lu_puis_ajoute_apres_verification(client, monkeypatch):
     assert "produit précis" in page.text and "inexistant en magasins" in page.text
 
 
-def test_article_inexistant_garde_mais_pas_compare(client, monkeypatch):
-    monkeypatch.setattr(ticket, "lire_texte", lambda image: ["XYZQWERTYU 2,00", "TOTAL 2,00"])
-    client.get("/magasins", params={"code_postal": "35170"})
-    page = client.post("/panier/ticket", files={"image": ("t.jpg", b"jpeg", "image/jpeg")})
-    assert 'name="choix" value="inexistant"' in page.text  # aucun produit trouvé
+def test_article_inexistant_cherche_sur_le_drive(client, reglages):
+    """Un article absent du catalogue est cherché sur le drive de Bruz : ici l'extension l'a déjà
+    relevé sur l'Intermarché, donc le prix s'affiche dans la case de ce magasin."""
+    from datetime import UTC, datetime
+    from decimal import Decimal
 
+    from app import db
+    from app.drives.modeles import ProduitObserve
+    from app.drives.service import observer
+
+    reglages.drives_jeton = "j" * 32
+    reglages.drives_attente_s = 0
+    client.get("/magasins", params={"code_postal": "35170"})
     client.post(
         "/panier/ticket/ajouter",
         data={"recherche": ["xyzqwertyu"], "quantite": ["1"], "choix": ["inexistant"]},
     )
-    assert (
-        "Aucun article de votre liste n&#39;existe en magasin"
-        in client.get("/panier/resultats").text
-    )
+    with db.connexion(reglages.db_path) as cnx:
+        produit = ProduitObserve(
+            produit="Xyzqwertyu nature",
+            prix_eur=Decimal("2.49"),
+            url="https://www.intermarche.com/produit/xyzqwertyu/123",
+        )
+        observer(cnx, "intermarche-05052", produit, datetime.now(UTC).isoformat(), "extension")
 
-    client.post("/panier/lignes", data={"mode": "equivalent", "recherche": "riz"})
     tableau = client.get("/panier/resultats").text
-    assert "Inexistant en magasins : pas de comparaison" in tableau
-    assert tableau.count('sse-swap="prix-') == 8  # seule la ligne « riz » est comparée
+    assert "hors catalogue" in tableau and tableau.count('sse-swap="prix-') == 8
     with client.stream("GET", "/panier/prix/flux") as flux:
         texte = "".join(flux.iter_text())
-    assert texte.count("event: prix-") == 8
+    assert "Drive Intermarché Super Bruz Cap Vert (extension)" in texte and "2,49 €" in texte
+    assert texte.rstrip().endswith("data: fin")
 
 
 def test_ticket_quantite_invalide_signalee(client):
@@ -105,3 +114,26 @@ def test_lecture_reelle_d_une_image():
         cv2.putText(image, ligne, (20, 50 + 45 * i), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 0), 2)
     texte = ticket.lire_texte(cv2.imencode(".png", image)[1].tobytes())
     assert [r for r, _ in ticket.analyser(texte)][0].startswith("nutella")
+
+
+def test_sans_releve_une_recherche_est_demandee_a_l_extension(client, reglages):
+    from app import db
+
+    reglages.drives_jeton = "j" * 32
+    reglages.drives_attente_s = 0  # l'extension ne répond pas à temps : la case retombe proprement
+    client.get("/magasins", params={"code_postal": "35170"})
+    client.post(
+        "/panier/ticket/ajouter",
+        data={"recherche": ["xyzqwertyu"], "quantite": ["1"], "choix": ["inexistant"]},
+    )
+    with client.stream("GET", "/panier/prix/flux") as flux:
+        texte = "".join(flux.iter_text())
+    assert "Recherche sur le drive Intermarché Super Bruz Cap Vert" in texte
+    assert texte.rstrip().endswith("data: fin")
+    with db.connexion(reglages.db_path) as cnx:
+        tache = cnx.execute("SELECT drive_id, requete, etat FROM drive_tache").fetchone()
+    assert dict(tache) == {
+        "drive_id": "intermarche-05052",
+        "requete": "xyzqwertyu",
+        "etat": "attente",
+    }
