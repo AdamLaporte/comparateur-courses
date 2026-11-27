@@ -2,3 +2,4 @@
 {% include "panier/_liste.html" %}
 <div id="suggestions" aria-live="polite" hx-swap-oob="true"></div>
 <section id="resultats" aria-label="Comparaison des prix" hx-swap-oob="true"></section>
+{% if ticket_fini %}<div id="ticket-lu" hx-swap-oob="true"></div>{% endif %}

@@ -33,6 +33,14 @@
       cher qui correspond.
     </p>
     <div id="suggestions" aria-live="polite"></div>
+    <form hx-post="/panier/ticket" hx-encoding="multipart/form-data" hx-target="#ticket-lu"
+          hx-trigger="change" hx-indicator="#lecture-ticket" class="ajout-ticket"
+          hx-on::after-request="this.reset()">
+      <label for="image-ticket">📷 Ou ajoutez la photo d'un ticket de caisse :</label>
+      <input id="image-ticket" name="image" type="file" accept="image/*" capture="environment">
+      <span id="lecture-ticket" class="htmx-indicator aide">Lecture du ticket…</span>
+    </form>
+    <div id="ticket-lu" aria-live="polite"></div>
   </section>
 
   <section class="bloc bloc-liste" aria-labelledby="titre-liste">

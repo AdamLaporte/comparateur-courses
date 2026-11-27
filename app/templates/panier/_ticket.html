@@ -1,0 +1,21 @@
+{# Articles lus sur le ticket : l'utilisateur corrige, retire, puis ajoute le tout à sa liste. #}
+{% if erreur %}
+<p class="erreur" role="alert">{{ erreur }}</p>
+{% else %}
+<form hx-post="/panier/ticket/ajouter" hx-target="#liste" hx-swap="outerHTML" class="ticket-lu">
+  <p class="aide">{{ articles | length }} article(s) lu(s). Corrigez ou retirez-les, puis ajoutez-les :</p>
+  <ul>
+    {% for recherche, quantite in articles %}
+    <li>
+      <label class="masque" for="ticket-q-{{ loop.index }}">Quantité</label>
+      <input id="ticket-q-{{ loop.index }}" name="quantite" type="number" min="1" max="99" value="{{ quantite }}">
+      <label class="masque" for="ticket-r-{{ loop.index }}">Article</label>
+      <input id="ticket-r-{{ loop.index }}" name="recherche" value="{{ recherche }}" maxlength="120">
+      <button type="button" class="bouton-icone" onclick="this.closest('li').remove()"
+              aria-label="Retirer {{ recherche }}" title="Retirer">✕</button>
+    </li>
+    {% endfor %}
+  </ul>
+  <button type="submit" class="principal">Ajouter à ma liste</button>
+</form>
+{% endif %}

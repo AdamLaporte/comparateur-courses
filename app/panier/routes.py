@@ -1,10 +1,12 @@
 """Routes du panier : page de la liste, ajout et suppression de lignes, tableau des prix,
 flux SSE des prix et des totaux, et calcul complet en JSON (sans session)."""
 
+import asyncio
+import logging
 from collections.abc import AsyncIterable, AsyncIterator
 from typing import Annotated
 
-from fastapi import APIRouter, Form, HTTPException, Request
+from fastapi import APIRouter, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import ValidationError
@@ -16,16 +18,19 @@ from app.contrats import (
     DemandeTotaux,
     LigneListe,
     Magasin,
+    ModeLigne,
     ResultatLigne,
     TotauxReponse,
 )
 from app.gabarits import rendre, templates
 from app.magasins.geocodage import CodePostalInconnu, CodePostalInvalide
 from app.magasins.service import magasins_proches
-from app.panier import calcul, service
+from app.panier import calcul, service, ticket
 from app.sources.registre import sources_actives
 
 router = APIRouter(tags=["panier"])
+logger = logging.getLogger(__name__)
+TAILLE_MAX_TICKET = 10 * 1024 * 1024
 
 
 async def comparer(
@@ -37,10 +42,14 @@ async def comparer(
         yield calcul.completer(par_id[resultat.ligne_id], resultat)
 
 
-def _liste_maj(request: Request, reglages: Reglages, erreur: str | None = None) -> HTMLResponse:
+def _liste_maj(
+    request: Request, reglages: Reglages, erreur: str | None = None, ticket_fini: bool = False
+) -> HTMLResponse:
     lignes = service.lister(reglages, service.proprietaire(request))
     return templates.TemplateResponse(
-        request, "panier/_liste_maj.html", {"lignes": lignes, "erreur": erreur}
+        request,
+        "panier/_liste_maj.html",
+        {"lignes": lignes, "erreur": erreur, "ticket_fini": ticket_fini},
     )
 
 
@@ -77,6 +86,50 @@ async def ajouter_ligne(
         return _liste_maj(request, reglages, erreur="Article non ajouté : vérifiez la quantité.")
     service.ajouter(reglages, service.proprietaire(request), ajout)
     return _liste_maj(request, reglages)
+
+
+@router.post("/panier/ticket", response_class=HTMLResponse)
+async def lire_ticket(request: Request, image: UploadFile):
+    """Photo d'un ticket de caisse → articles lus, à vérifier avant de les ajouter."""
+    contexte: dict = {"articles": [], "erreur": None}
+    contenu = await image.read(TAILLE_MAX_TICKET + 1)
+    if not (image.content_type or "").startswith("image/") or len(contenu) > TAILLE_MAX_TICKET:
+        contexte["erreur"] = "Envoyez une photo du ticket (10 Mo au plus)."
+    else:
+        try:
+            contexte["articles"] = ticket.analyser(
+                await asyncio.to_thread(ticket.lire_texte, contenu)
+            )
+        except Exception:
+            logger.exception("Lecture du ticket impossible")
+        if not contexte["articles"]:
+            contexte["erreur"] = "Aucun article lu sur ce ticket : essayez une photo plus nette."
+    return templates.TemplateResponse(request, "panier/_ticket.html", contexte)
+
+
+@router.post("/panier/ticket/ajouter", response_class=HTMLResponse)
+async def ajouter_ticket(
+    request: Request,
+    reglages: ReglagesDep,
+    recherche: Annotated[list[str], Form()] = [],  # noqa: B006 (FastAPI copie la valeur)
+    quantite: Annotated[list[str], Form()] = [],  # noqa: B006
+):
+    """Ajoute les articles du ticket gardés et corrigés par l'utilisateur."""
+    proprietaire = service.proprietaire(request)
+    ignores = 0
+    for texte, nombre in zip(recherche, quantite, strict=False):
+        if not texte.strip():
+            continue
+        try:
+            ajout = AjoutLigne(
+                mode=ModeLigne.EQUIVALENT, recherche=texte.strip(), quantite=nombre or 1
+            )
+        except ValidationError:
+            ignores += 1
+            continue
+        service.ajouter(reglages, proprietaire, ajout)
+    erreur = f"{ignores} article(s) non ajouté(s) : vérifiez la quantité." if ignores else None
+    return _liste_maj(request, reglages, erreur=erreur, ticket_fini=True)
 
 
 @router.delete("/panier/lignes/{ligne_id}", response_class=HTMLResponse)

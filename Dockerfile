@@ -1,6 +1,10 @@
 # Image minimale pour une mise en ligne facultative (la démo prévue tourne en local avec uv).
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
+# opencv (lecture des tickets de caisse) a besoin de ces bibliothèques système.
+RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
