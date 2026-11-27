@@ -69,14 +69,15 @@ aux mêmes fichiers. L'arborescence exacte et les commandes sont dans [`AGENTS.m
 | `app/db.py` | Connexion `sqlite3`, exécute au démarrage les schémas déclarés par chaque fonctionnalité | partagé |
 | `app/contrats.py` | Schémas Pydantic communs (le contrat) | partagé, **modification concertée** |
 | `app/gabarits.py` | Moteur Jinja2 commun, filtres `euros` et `releve`, `rendre()` pour les fragments SSE | partagé, ajout concerté |
-| `app/sources/` | `base.py` (interface `SourcePrix`), `registre.py`, puis un fichier par source : `fictive.py`, `intermarche.py`, `carrefour.py`, `leclerc.py`, `coursesu.py`, `open_prices.py` | un fichier = un lot ou sous-lot |
+| `app/sources/` | `base.py` (interface `SourcePrix`), `registre.py`, puis un fichier par source : `fictive.py`, `open_prices.py` (actives) ; `intermarche.py`, `carrefour.py`, `leclerc.py`, `coursesu.py` (bouchons : collecte serveur abandonnée, 403) | un fichier = une source |
 | `app/collecte/` | `orchestrateur.py` (parallélisme, limites), `repli.py`, `cache.py`, `prechauffer.py` (commande) | lot données et fiabilité |
 | `app/magasins/` | Ville, code postal ou position GPS → magasins proches (OpenStreetMap, `data/magasins/osm.json`) triés par distance, dans un rayon choisi ou les plus proches | lot Intermarché et magasins |
 | `app/produits/` | Recherche d'un article pour composer la liste (Open Food Facts) | lot données et fiabilité |
-| `app/panier/` | Liste de courses, flux SSE des prix, `calcul.py` (totaux, fonctions pures) | lot interface + cœur |
-| `app/comptes/` | Inscription, connexion, articles et adresses favoris | lot Intermarché et magasins |
+| `app/panier/` | Liste de courses (listes nommées, quantités, vider et annuler, « produit précis » / « le moins cher »), flux SSE des prix, `calcul.py` (totaux, fonctions pures), `ticket.py` (photo d'un ticket lue par OCR local) | interface + cœur |
+| `app/comptes/` | Inscription, connexion, mot de passe perdu, favoris, « maison », `cagnotte.py` (tirelire : écart entre le magasin choisi et la moyenne) | comptes |
+| `app/drives/` | Prix réels du Super U et de l'Intermarché de Bruz relevés par les extensions Edge (`extensions-edge/`) : file de recherches, observations, `comparaison.py` (prix manquants pendant la comparaison), `navigateur.py` (démarrage d'Edge sous Windows), `importer.py` (CSV) | voir §15 |
 | `app/templates/` | `base.html`, `erreur.html` + un sous-dossier par fonctionnalité (`magasins/`, `produits/`, `panier/`, `comptes/`) | lot interface |
-| `app/static/` | `style.css` : charte « étiquette de rayon et ticket de caisse » (variables CSS en tête de fichier). `site.js` : bouton « Me localiser », carte Leaflet des magasins, mise en avant du prix le plus bas par ligne et de la colonne gagnante (le site reste utilisable sans) | lot interface |
+| `app/static/` | `style.css` : charte GrignotePrix (variables CSS en tête de fichier, animations en fin). `site.js` : « Me localiser », carte, messages avec « Annuler », clavier dans la recherche, progression et mise en avant de la comparaison (le site reste utilisable sans). `vendor/` : htmx, Leaflet, polices copiés (démo sans Internet). CSS et JS appelés avec `?v=<date>` (`version_statique`) | interface |
 | `app/<fonctionnalite>/schema.sql` | Tables SQLite de la fonctionnalité, créées au démarrage | la fonctionnalité concernée |
 | `tests/` | Un fichier de test par fonctionnalité, jamais de réseau | chacun pour son lot |
 
@@ -410,15 +411,16 @@ Modèle dans `.env.example`.
 | `OPEN_PRICES_ACTIF` | `true` | Open Prices en secours. `false` = aucune requête (réponses déjà enregistrées seulement) |
 | `OPEN_FOOD_FACTS_RECHERCHE_URL` | `https://search.openfoodfacts.org` | Service de recherche texte d'Open Food Facts |
 
-## 14. Limites connues du squelette
+## 14. Limites connues (mises à jour le 27/11 au soir)
 
-- La page des résultats et le flux SSE appellent chacun `magasins_proches`. Avec la source fictive, les magasins sont
-  identiques. Avec de vraies sources, il faudra mettre la liste des magasins en cache (table `MAGASIN`, lot 2 ou 4)
-  pour que le tableau et le flux voient exactement les mêmes magasins.
-- Les comptes et les sources réelles (Intermarché, collecte) sont des modules vides documentés (« BOUCHON » en tête
-  de fichier). Le cache, Open Prices, la recherche Open Food Facts et le préchauffage sont faits (lot 4, 27/11).
-- Le repli après un délai dépassé traite les lignes restantes en parallèle (lot 4).
-- Le Dockerfile n'a pas pu être testé sur la machine du squelette (pas d'accès au démon Docker).
+- La page des résultats et le flux SSE appellent chacun `magasins_proches` : avec la liste OpenStreetMap en local,
+  les deux voient les mêmes magasins.
+- Prix réels : cache, Open Prices et les deux drives de Bruz (§15). Les autres magasins restent en données fictives
+  (marquées) ; la collecte serveur de Carrefour, Leclerc et Courses U est abandonnée (403 Cloudflare / DataDome).
+- Les relevés Edge dépendent d'un navigateur ouvert, du bon magasin en retrait et de `DRIVES_JETON` ; sans réponse
+  dans `DRIVES_ATTENTE_S`, la case retombe sur « prix indisponible ».
+- Les promos fidélité sont affichées, jamais déduites.
+- Le Dockerfile n'a pas été testé (pas d'accès au démon Docker sur la machine du squelette).
 
 ## 15. Recherche locale des drives de Bruz
 

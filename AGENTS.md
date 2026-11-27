@@ -69,22 +69,25 @@ Détails et diagrammes : [`docs/architecture.md`](docs/architecture.md). Décisi
 │   ├── magasins/              # routes.py, service.py (distances), geocodage.py, import_osm.py
 │   ├── produits/              # routes.py, service.py (recherche d'articles)
 │   ├── panier/                # routes.py (liste, flux SSE, API), service.py, calcul.py, schema.sql
-│   ├── comptes/               # routes.py, service.py, schema.sql (inscription, connexion, favoris)
+│   ├── comptes/               # routes.py, service.py, cagnotte.py (tirelire), schema.sql
+│   ├── drives/                # prix réels des drives de Bruz relevés par les extensions Edge (voir architecture §15)
 │   ├── templates/             # base.html, erreur.html, _icones.html (icônes SVG) + un dossier par fonctionnalité
 │   └── static/                # style.css (charte graphique), site.js (géolocalisation, carte, mise en avant),
 │                              # vendor/ (htmx, extension SSE, Leaflet et polices copiés : marche sans Internet)
 ├── data/demo/recherches.txt   # recherches pour préchauffer le cache avant la démo
 ├── data/magasins/osm.json     # magasins des 4 enseignes en France (OpenStreetMap, ODbL)
-├── tests/                     # conftest.py, test_parcours.py, test_calcul.py, test_orchestrateur.py
+├── extensions-edge/           # une extension Edge par drive de Bruz (Super U, Intermarché)
+├── tests/                     # conftest.py + un test_<fonctionnalite>.py par fonctionnalité
 └── docs/
     ├── architecture.md        # architecture et diagrammes (à jour)
     ├── decisions.md           # une ligne par décision importante
-    ├── taches.md              # lots, qui fait quoi, statut
+    ├── taches.md              # état actuel : ce qui marche, ce qui reste avant la démo, qui
     └── journal/               # un fichier par session d'agent
 ```
 
-> État au 27/11 (squelette) : parcours complet avec données fictives. Les modules marqués « BOUCHON » en tête de
-> fichier (sources réelles, cache, Open Prices, comptes, préchauffage) sont à remplir par les lots.
+> État au 27/11 au soir : site complet (magasins réels, liste, ticket, comparaison en direct, comptes, tirelire,
+> drives de Bruz). Ce qui marche et ce qui reste avant la démo : `docs/taches.md`. Les sources `carrefour.py`,
+> `leclerc.py`, `coursesu.py` et `intermarche.py` restent des bouchons (collecte serveur abandonnée).
 
 ## Commandes
 
@@ -148,10 +151,10 @@ propres.
 1. Lire `AGENTS.md` et `docs/taches.md` avant de commencer. Lire `docs/architecture.md` avant de toucher à la
    structure.
 2. Écrire son fichier dans `docs/journal/` avant de terminer la session (voir la règle n°1).
-3. Ne modifier **que les fichiers de son lot** (voir `docs/taches.md`). Les fichiers partagés (`app/main.py`,
+3. Ne modifier **que les fichiers que sa tâche demande** (voir `docs/taches.md`). Les fichiers partagés (`app/main.py`,
    `app/config.py`, `app/db.py`, `app/contrats.py`, `app/gabarits.py`, `app/sources/base.py`,
    `app/templates/base.html`) ne reçoivent que des **ajouts**, annoncés dans `docs/decisions.md` et commités à part.
-4. Tenir à jour : `docs/taches.md` (statut de son lot), `docs/decisions.md` (une ligne par décision importante :
+4. Tenir à jour : `docs/taches.md` (statut de sa tâche), `docs/decisions.md` (une ligne par décision importante :
    date, décision, raison), `docs/architecture.md` (dès que la structure change).
 5. Le reste de l'application ne dépend que de l'interface `SourcePrix`. Une nouvelle source implémente
    `trouver_magasins`, `chercher_produits` et `obtenir_prix`, lève `SourceIndisponible` ou `SourceNonConfiguree` en
