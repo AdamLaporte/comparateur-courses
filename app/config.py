@@ -43,6 +43,9 @@ class Reglages(BaseSettings):
     cache_ttl_min: int = 360
     drives_fraicheur_min: int = 1440
     drives_jeton: str = ""
+    # Comparaison : temps laissé aux extensions des drives pour trouver un prix manquant.
+    drives_attente_s: float = 75.0
+    drives_demarrer_edge: bool = False
     # Délai aléatoire maximal de la source fictive, pour voir l'affichage progressif (0 dans les tests).
     delai_fictif_max_s: float = 0.8
 

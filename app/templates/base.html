@@ -37,9 +37,6 @@
         <a href="/panier" {% if chemin.startswith("/panier") %}aria-current="page"{% endif %}>
           {{ icone("liste") }}<span>Ma liste</span>
         </a>
-        <a href="/drives" {% if chemin.startswith("/drives") %}aria-current="page"{% endif %}>
-          {{ icone("etiquette") }}<span>Drives de Bruz</span>
-        </a>
         {% if request.session.get("utilisateur_id") %}
         <a href="/comptes" {% if chemin.startswith("/comptes") %}aria-current="page"{% endif %}>
           {{ icone("compte") }}<span>Mon compte</span>

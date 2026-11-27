@@ -1,4 +1,5 @@
 import csv
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -7,6 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app import db
+from app.drives import comparaison as panier_drive
 from app.drives import service
 from app.drives.importer import importer
 from app.drives.modeles import ProduitObserve
@@ -108,16 +110,9 @@ def test_drives_prix_connu_et_collecte_concurrente(edge, reglages):
         assert cnx.execute("SELECT count(*) FROM drive_observation").fetchone()[0] == 2
 
 
-def test_drives_base_vide_sans_ean_et_affichage(edge):
+def test_drives_base_vide_sans_ean(edge):
     client, _ = edge
-    reponse = client.post(
-        "/drives",
-        data={"q": "Lait Lactel", "drives": [INTER, U]},
-        headers={"HX-Request": "true"},
-    )
-    assert reponse.status_code == 200
-    assert "En attente de l’extension Edge" in reponse.text
-    assert 'hx-trigger="load delay:2s"' in reponse.text
+    assert [d["etat"] for d in lancer(client, "Lait Lactel")] == ["attente", "attente"]
     for drive in (INTER, U):
         tache = prendre(client, drive)
         assert tache["requete"] == "Lait Lactel"
@@ -132,14 +127,7 @@ def test_drives_base_vide_sans_ean_et_affichage(edge):
         )
     suite = lancer(client, "Lait Lactel")
     assert all(d["etat"] == "recent" and len(d["produits"]) == 2 for d in suite)
-    reponse = client.get(
-        "/drives/suivi",
-        params={"q": "Lait Lactel", "drives": INTER},
-        headers={"HX-Request": "true"},
-    )
-    assert "6 × 1 L" in reponse.text and "1,25 €" in reponse.text and "7,99 €" in reponse.text
-    assert "2e à −50 % avec la carte" in reponse.text
-    assert "hx-trigger" not in reponse.text
+    assert {p["format"] for p in suite[0]["produits"]} == {"1 L", "6 × 1 L"}
 
 
 def test_drives_expiration_erreurs_et_prix_ancien(edge, reglages):
@@ -221,8 +209,18 @@ def test_drives_import_et_ean_en_texte(edge, reglages, tmp_path: Path):
 def test_drives_refuse_collecteur_sans_jeton_et_internet(edge, reglages):
     client, _ = edge
     assert client.post(f"{URL}/{U}/prendre").status_code == 401
+    assert client.post(f"{URL}/{U}/connexion").status_code == 401
     with TestClient(creer_app(reglages)) as distant:
         assert distant.post(f"{URL}/{U}/prendre", headers=JETON).status_code == 403
+
+
+def test_connexion_edge_signale_presence_sans_prendre_la_tache(edge):
+    client, _ = edge
+    lancer(client, drives=(U,))
+    assert client.post(f"{URL}/{U}/connexion", headers=JETON).status_code == 204
+    vue = suivre(client, drives=(U,))[0]
+    assert vue["connecte"] and vue["etat"] == "attente"
+    assert prendre(client, U)["id"] == vue["tache_id"]
 
 
 def test_drives_rejette_un_lot_partiellement_invalide(edge, reglages):
@@ -254,3 +252,98 @@ def test_drives_conditionnement_precis_et_correspondance_possible(edge):
         assert bouteille["format"] == "1 L"
         assert pack["format"] == "6x1L"
         assert bouteille["correspondance"] == pack["correspondance"] == "possible"
+
+
+def _panier(client, reglages, **article):
+    reglages.magasins_osm = True
+    magasins = client.get("/magasins?code_postal=35170")
+    assert magasins.status_code == 200
+    assert 'href="/drives"' not in magasins.text
+    assert client.get("/drives").status_code == 404
+    assert (
+        client.post(
+            "/panier/lignes",
+            data={"mode": "equivalent", "recherche": "Lait Lactel", "quantite": "2", **article},
+        ).status_code
+        == 200
+    )
+    comparaison = client.get("/panier/resultats").text
+    assert f'data-magasin="{U}"' in comparaison and f'data-magasin="{INTER}"' in comparaison
+    assert 'data-magasin="intermarche-osmn259373664"' not in comparaison
+
+
+def _tache_panier(client, drive):
+    echeance = time.monotonic() + 3
+    while time.monotonic() < echeance:
+        if tache := prendre(client, drive):
+            return tache
+        time.sleep(0.01)
+    pytest.fail(f"Le panier n’a créé aucune tâche pour {drive}")
+
+
+def test_panier_collecte_uniquement_le_drive_manquant(edge, reglages, monkeypatch):
+    client, _ = edge
+    monkeypatch.setattr(panier_drive, "INTERVALLE_S", 0.01)
+    with db.connexion(reglages.db_path) as cnx:
+        service.observer(cnx, INTER, ProduitObserve(**produit(INTER)), "2026-11-27", "CSV")
+    _panier(client, reglages)
+    assert prendre(client, U) is None
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        comparaison = pool.submit(client.get, "/panier/prix/flux")
+        tache = _tache_panier(client, U)
+        assert prendre(client, INTER) is None
+        assert succes(client, tache, produit(prix_eur="1.50")).status_code == 204
+        flux = comparaison.result(timeout=5).text
+    assert "En attente" in flux or "Relevé en attente" in flux
+    assert "CSV · 27/11/2026" in flux
+    assert "2e à −50 % avec la carte" in flux
+    assert f"event: total-{U}" in flux and 'data-centimes="300" data-complet="1"' in flux
+    assert "event: fin" in flux
+    assert 'data-centimes="300" data-complet="1"' in client.get("/panier/prix/flux").text
+    assert prendre(client, U) is None
+    with db.connexion(reglages.db_path) as cnx:
+        assert [
+            tuple(r) for r in cnx.execute("SELECT drive_id, count(*) FROM drive_tache GROUP BY 1")
+        ] == [
+            (U, 1),
+        ]
+
+
+def test_panier_prix_ancien_et_extension_absente(edge, reglages, monkeypatch):
+    client, _ = edge
+    demarrages = []
+    reglages.drives_demarrer_edge = True
+    monkeypatch.setattr(panier_drive, "reveiller_edge", lambda: demarrages.append(True))
+    monkeypatch.setattr(panier_drive, "ATTENTE_CONNEXION_S", 0)
+    with db.connexion(reglages.db_path) as cnx:
+        service.observer(cnx, U, ProduitObserve(**produit()), "2026-11-24", "CSV")
+    _panier(client, reglages)
+    flux = client.get("/panier/prix/flux").text
+    assert "L’extension de collecte Edge ne répond pas" in flux
+    assert "Dernier prix connu · CSV · 24/11/2026" in flux
+    assert demarrages
+    assert prendre(client, U)
+    assert prendre(client, INTER)
+
+
+def test_panier_verifie_ean_apres_recherche_par_libelle(edge, reglages, monkeypatch):
+    client, _ = edge
+    monkeypatch.setattr(panier_drive, "INTERVALLE_S", 0.01)
+    _panier(
+        client,
+        reglages,
+        mode="produit",
+        ean="0304360041667",
+        libelle="Lait Lactel demi-écrémé",
+    )
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        comparaison = pool.submit(client.get, "/panier/prix/flux")
+        tache = _tache_panier(client, U)
+        assert tache["requete"] == "Lait Lactel demi-écrémé"
+        assert succes(client, tache, produit(ean="")).status_code == 204
+        inter = _tache_panier(client, INTER)
+        assert succes(client, inter, produit(INTER), service_observe="33315").status_code == 204
+        flux = comparaison.result(timeout=5).text
+    assert "Aucun produit correspondant parmi les résultats relevés." in flux
+    assert "Le point de retrait actif dans Edge est incorrect." in flux
+    assert 'data-centimes="250"' not in flux

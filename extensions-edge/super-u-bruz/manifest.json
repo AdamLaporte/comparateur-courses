@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Prix – Super U Bruz",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Relève les prix des fiches produits ouvertes et exporte un CSV local.",
   "permissions": [
     "activeTab",

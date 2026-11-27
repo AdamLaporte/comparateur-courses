@@ -1179,3 +1179,41 @@ body.avec-barre { padding-bottom: 76px; }
 }
 /* Le bouton « Afficher » n'hérite pas de la marge du bouton d'envoi des formulaires de compte. */
 .champ-mdp .voir-mdp { margin: 0; }
+
+/* Comparaison : article cherché par l'extension d'un drive de Bruz. */
+.recherche-drive { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--encre-2); }
+.recherche-drive .tourne {
+  flex: none; width: 12px; height: 12px;
+  border: 2px solid var(--trait); border-top-color: var(--encre); border-radius: 50%;
+  animation: tourne 0.8s linear infinite;
+}
+.hors-catalogue { display: block; margin-top: 2px; font-size: 0.72rem; font-weight: 500; color: var(--encre-3); }
+
+/* Tirelire : « Où avez-vous fait vos courses ? » en cartes à cocher. */
+.choix-magasin { width: 100%; margin: 0; padding: 0; border: 0; }
+.choix-magasin legend { padding: 0; margin-bottom: 8px; font-weight: 700; }
+.cartes-choix { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.carte-choix { position: relative; display: block; cursor: pointer; font-weight: 400; }
+.carte-choix input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.carte-choix-corps {
+  display: flex; flex-direction: column; gap: 3px; height: 100%;
+  padding: 12px 14px 12px 14px;
+  background: var(--blanc); border: 1.5px solid var(--trait-fort); border-radius: var(--rayon-bloc);
+  transition: border-color var(--duree), background var(--duree), transform var(--duree) var(--entree), box-shadow var(--duree);
+}
+.carte-choix:hover .carte-choix-corps { border-color: var(--encre); }
+.carte-choix input:checked + .carte-choix-corps {
+  border: 2px solid var(--encre); background: var(--blanc);
+  box-shadow: 0 3px 0 var(--encre); transform: translateY(-2px);
+}
+.carte-choix input:checked + .carte-choix-corps::after {
+  content: "✓"; position: absolute; top: 10px; right: 12px;
+  display: grid; place-items: center; width: 22px; height: 22px;
+  font-size: 0.8rem; font-weight: 800; color: var(--encre); background: var(--jaune); border-radius: 50%;
+}
+.carte-choix input:focus-visible + .carte-choix-corps { outline: 3px solid var(--focus); outline-offset: 2px; }
+.carte-choix-nom { font-weight: 700; line-height: 1.2; padding-right: 26px; overflow-wrap: anywhere; }
+.carte-choix-total { font-size: 1.5rem; font-weight: 840; font-stretch: 72%; line-height: 1; margin-top: 4px; }
+.carte-choix-ecart { font-size: 0.82rem; color: var(--encre-3); }
+.carte-choix-ecart.gain { color: var(--vert); font-weight: 650; }
+.carte-choix-ecart.perte { color: var(--rouge); }

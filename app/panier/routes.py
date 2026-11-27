@@ -40,8 +40,9 @@ INEXISTANT = "inexistant"  # valeur du choix « Inexistant en magasins » dans l
 
 
 def comparables(lignes: list[LigneListe]) -> list[LigneListe]:
-    """Lignes à comparer : un article « inexistant en magasins » reste dans la liste, sans prix."""
-    return [ligne for ligne in lignes if ligne.mode != ModeLigne.INEXISTANT]
+    """Lignes à comparer : toutes. Un article « inexistant » dans notre catalogue est cherché sur la
+    site des drives de Bruz par les extensions (app/drives/comparaison.py)."""
+    return list(lignes)
 
 
 async def correspondances(recherche: str, reglages: Reglages) -> list:
@@ -64,11 +65,17 @@ async def correspondances(recherche: str, reglages: Reglages) -> list:
 
 
 async def comparer(
-    lignes: list[LigneListe], magasins: list[Magasin], reglages: Reglages
+    lignes: list[LigneListe],
+    magasins: list[Magasin],
+    reglages: Reglages,
+    *,
+    suivre_edge: bool = False,
 ) -> AsyncIterator[ResultatLigne]:
     """Résultats complétés (sous-totaux), dans l'ordre d'arrivée."""
     par_id = {ligne.id: ligne for ligne in lignes}
-    async for resultat in collecter(lignes, magasins, sources_actives(reglages), reglages):
+    async for resultat in collecter(
+        lignes, magasins, sources_actives(reglages), reglages, suivre_edge=suivre_edge
+    ):
         yield calcul.completer(par_id[resultat.ligne_id], resultat)
 
 
@@ -376,8 +383,6 @@ async def tableau_resultats(request: Request, reglages: ReglagesDep):
     }
     if not lignes:
         contexte["message"] = "Ajoutez au moins un article à votre liste."
-    elif not comparables(lignes):
-        contexte["message"] = "Aucun article de votre liste n'existe en magasin : rien à comparer."
     else:
         try:
             contexte["magasins"] = (
@@ -394,7 +399,10 @@ async def tableau_resultats(request: Request, reglages: ReglagesDep):
 async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[ServerSentEvent]:
     """Une case du tableau par événement « prix-<ligne>-<magasin> », le total du magasin par
     « total-<magasin> », le classement par « resume », puis « fin » (le navigateur ferme alors).
-    Les articles « inexistant en magasins » ne sont ni cherchés ni comptés."""
+
+    Ensuite, pour les drives de Bruz : chaque article sans prix y est cherché par l'extension du drive
+    (relevé récent, sinon nouvelle recherche) ; les cases et le classement se mettent à jour quand les
+    prix arrivent, pendant DRIVES_ATTENTE_S secondes au plus."""
     lignes = comparables(
         service.lister(reglages, service.cle_liste(request, reglages, creer=False))
     )
@@ -407,12 +415,12 @@ async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[Se
     except (CodePostalInvalide, CodePostalInconnu):
         magasins = []
 
-    resultats: list[ResultatLigne] = []
     if lignes and magasins:
         lignes_par_id = {ligne.id: ligne for ligne in lignes}
         magasins_par_id = {magasin.id: magasin for magasin in magasins}
-        async for resultat in comparer(lignes, magasins, reglages):
-            resultats.append(resultat)
+        resultats: dict[tuple[int, str], ResultatLigne] = {}
+        async for resultat in comparer(lignes, magasins, reglages, suivre_edge=True):
+            resultats[resultat.ligne_id, resultat.magasin_id] = resultat
             yield ServerSentEvent(
                 event=f"prix-{resultat.ligne_id}-{resultat.magasin_id}",
                 raw_data=rendre(
@@ -424,14 +432,14 @@ async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[Se
             )
             total = next(
                 t
-                for t in calcul.totaux(lignes, magasins, resultats)
+                for t in calcul.totaux(lignes, magasins, resultats.values())
                 if t.magasin.id == resultat.magasin_id
             )
             yield ServerSentEvent(
                 event=f"total-{resultat.magasin_id}",
                 raw_data=rendre("panier/_total.html", total=total),
             )
-        totaux = calcul.totaux(lignes, magasins, resultats)
+        totaux = calcul.totaux(lignes, magasins, resultats.values())
         utilisateur_id = request.session.get("utilisateur_id")
         economie = cagnotte.preparer(reglages, utilisateur_id, totaux) if utilisateur_id else None
         yield ServerSentEvent(
@@ -440,7 +448,7 @@ async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[Se
                 "panier/_resume.html",
                 totaux=totaux,
                 economie=economie,
-                prix_fictifs=any(r.prix and r.prix.est_fictif for r in resultats),
+                prix_fictifs=any(r.prix and r.prix.est_fictif for r in resultats.values()),
             ),
         )
     yield ServerSentEvent(event="fin", raw_data="fin")

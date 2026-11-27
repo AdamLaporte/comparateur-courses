@@ -422,13 +422,18 @@ Modèle dans `.env.example`.
 
 ## 15. Recherche locale des drives de Bruz
 
-- `/drives` recherche dans l’historique SQLite par point de retrait. HTMX interroge
-  `/drives/suivi` tant que le relevé est actif. Une recherche récente suffit à répondre depuis la base.
+- **Comparer** ouvre le flux `/panier/prix/flux`. Pour les deux points de retrait, il affiche
+  les prix déjà connus et suit les tâches Edge démarrées pour les prix manquants ou périmés.
+  Le total est recalculé à partir du dernier état de chaque couple article et magasin.
+- Le catalogue local associe les fiches OSM de Bruz aux identifiants marchands des deux drives. Pour
+  Courses U, le point de retrait se trouve à La Haye de Pan, à une adresse distincte du supermarché.
 - `app/drives/schema.sql` déclare les références marchandes, les observations et la file des recherches.
   Les tâches actives sont uniques par drive et requête normalisée. La prise de tâche et le dépôt utilisent
   des transactions SQLite. Chaque dépôt doit correspondre au bail actif et au point de retrait.
-- Les deux extensions Edge existantes sont adaptées dans `extensions-edge/`. Elles exécutent les
-  recherches dans les onglets marchands choisis et déposent seulement les observations via `/api/drives/`.
+- Les deux extensions Edge, configurées une fois, ouvrent leurs onglets à la demande. Elles
+  vérifient le retrait et déposent les observations via `/api/drives/`. Sur Windows,
+  `DRIVES_DEMARRER_EDGE=true` autorise le serveur local à ouvrir le navigateur en cas d’absence
+  de collecteur.
   Les cookies de session restent dans Edge. Les opérations de collecte exigent un client local et
   `DRIVES_JETON`.
 - `app.drives.importer` alimente facultativement l’historique à partir des exports CSV. Les dates sans

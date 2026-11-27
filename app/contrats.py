@@ -110,6 +110,8 @@ class Prix(BaseModel):
     )
     releve_le: datetime  # UTC
     est_fictif: bool = False
+    date_releve_source: date | None = None  # Un relevé importé peut se limiter au jour.
+    conditions_affichees: str = ""  # Texte du marchand sans règle de remise calculable.
 
 
 class LigneListe(BaseModel):

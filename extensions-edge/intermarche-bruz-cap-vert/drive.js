@@ -6,6 +6,7 @@ export const drive = {
   "address": "2 place Robert Barré, CC Cap Vert, 35170 Bruz",
   "id": "05052",
   "serveurId": "intermarche-05052",
+  "accueil": "https://www.intermarche.com/magasins/05052/bruz-35170/infos-pratiques",
   "domains": [
     "intermarche.com",
     "intermarche.fr"

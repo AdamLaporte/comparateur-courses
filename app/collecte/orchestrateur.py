@@ -6,7 +6,7 @@ Pour « lignes × magasins » :
 - au plus TIMEOUT_ENSEIGNE_S secondes par enseigne : ce qui n'est pas arrivé passe au repli ;
 - toute erreur d'une source passe au repli (cache, Open Prices, « prix indisponible ») ;
 - une enseigne lente ou en échec n'empêche jamais d'afficher les autres.
-Ne dépend que de l'interface SourcePrix.
+Les points de retrait Edge suivent leur propre file de collecte.
 """
 
 import asyncio
@@ -26,6 +26,8 @@ from app.contrats import (
     StatutPrix,
     TypeSource,
 )
+from app.drives.comparaison import relever_ligne
+from app.drives.modeles import DRIVES, DriveId
 from app.sources.base import SourceIndisponible, SourcePrix
 
 logger = logging.getLogger(__name__)
@@ -35,6 +37,13 @@ async def resoudre(
     source: SourcePrix, ligne: LigneListe, magasin: Magasin, reglages: Reglages
 ) -> ResultatLigne:
     """Prix d'une ligne dans un magasin. Ne lève jamais d'exception."""
+    if ligne.mode == ModeLigne.INEXISTANT:
+        return ResultatLigne(
+            ligne_id=ligne.id,
+            magasin_id=magasin.id,
+            statut=StatutPrix.INTROUVABLE,
+            remarque="Article hors catalogue.",
+        )
     cle = cache.cle_recherche(ligne)
     avec_cache = source.type_source != TypeSource.FICTIVE  # on ne met jamais du fictif en cache
     if avec_cache and (prix := cache.lire_frais(reglages, magasin.enseigne, magasin.id, cle)):
@@ -72,15 +81,38 @@ async def collecter(
     magasins: list[Magasin],
     sources: dict[Enseigne, SourcePrix],
     reglages: Reglages,
+    *,
+    suivre_edge: bool = False,
 ) -> AsyncIterator[ResultatLigne]:
-    """Rend un ResultatLigne par couple (ligne, magasin), dans l'ordre d'arrivée."""
+    """Rend les prix et les changements d'état Edge dans l'ordre d'arrivée."""
     if not lignes or not magasins:
         return
 
     file: asyncio.Queue[ResultatLigne | None] = asyncio.Queue()
     magasins_par_enseigne: dict[Enseigne, list[Magasin]] = defaultdict(list)
+    drives: list[DriveId] = []
     for magasin in magasins:
-        magasins_par_enseigne[magasin.enseigne].append(magasin)
+        if magasin.id in DRIVES:
+            drives.append(magasin.id)
+        else:
+            magasins_par_enseigne[magasin.enseigne].append(magasin)
+
+    async def traiter_drive(drive: DriveId, ligne: LigneListe) -> None:
+        try:
+            async for resultat in relever_ligne(reglages, drive, ligne, suivre=suivre_edge):
+                await file.put(resultat)
+        except Exception:
+            logger.exception("Relevé Edge impossible pour %s", drive)
+            await file.put(
+                ResultatLigne(
+                    ligne_id=ligne.id,
+                    magasin_id=drive,
+                    statut=StatutPrix.INDISPONIBLE,
+                    remarque="Relevé Edge indisponible.",
+                )
+            )
+        finally:
+            await file.put(None)
 
     async def traiter_enseigne(enseigne: Enseigne, ses_magasins: list[Magasin]) -> None:
         restantes = {(lg.id, m.id): (lg, m) for m in ses_magasins for lg in lignes}
@@ -124,6 +156,9 @@ async def collecter(
         asyncio.create_task(traiter_enseigne(enseigne, ses_magasins))
         for enseigne, ses_magasins in magasins_par_enseigne.items()
     ]
+    taches.extend(
+        asyncio.create_task(traiter_drive(drive, ligne)) for drive in drives for ligne in lignes
+    )
     try:
         enseignes_en_cours = len(taches)
         while enseignes_en_cours:

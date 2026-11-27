@@ -30,16 +30,15 @@
       <tbody>
         {% for l in lignes %}
         <tr>
-          <th scope="row"><span class="quantite">{{ l.quantite }}×</span>{{ l.libelle }}</th>
-          {% if l.mode.value == "inexistant" %}
-          <td class="inexistant" colspan="{{ magasins | length }}"><span>Inexistant en magasins : pas de comparaison de prix</span></td>
-          {% else %}
+          <th scope="row">
+            <span class="quantite">{{ l.quantite }}×</span>{{ l.libelle }}
+            {% if l.mode.value == "inexistant" %}<span class="hors-catalogue">hors catalogue : cherché sur les drives</span>{% endif %}
+          </th>
           {% for m in magasins %}
           <td class="case" data-magasin="{{ m.id }}" sse-swap="prix-{{ l.id }}-{{ m.id }}">
             <span class="attente" role="img" aria-label="Prix en cours de relevé"></span>
           </td>
           {% endfor %}
-          {% endif %}
         </tr>
         {% endfor %}
       </tbody>
@@ -56,7 +55,7 @@
     </table>
   </div>
   <p class="legende">
-    Promos immédiates et « 2e à −50 % » déduites ; promos fidélité affichées mais pas déduites.
+    Les remises calculables sont déduites. Les autres conditions figurent sous le prix.
     Sous chaque prix : sa source et l'heure du relevé.
   </p>
 </div>

@@ -12,7 +12,7 @@ from app.gabarits import PARIS
 
 DriveId = Literal["coursesu-33315", "intermarche-05052"]
 DRIVES: dict[DriveId, tuple[str, str, tuple[str, ...]]] = {
-    "coursesu-33315": ("Super U Bruz", "12 place de Bretagne", ("coursesu.com",)),
+    "coursesu-33315": ("Super U Bruz", "109 avenue Alphonse Legault", ("coursesu.com",)),
     "intermarche-05052": (
         "Intermarché Super Bruz Cap Vert",
         "2 place Robert Barré, CC Cap Vert",

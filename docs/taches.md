@@ -38,9 +38,11 @@
 
 ## Lots
 
-Le lot Drives de Bruz couvre `app/drives/**`, `app/templates/drives/**`, `extensions-edge/**`,
-`tests/test_drives.py`, `tests/donnees/drives/**` et le guide de lancement. Le parcours local, le relevé
-simulé et l’import sont implémentés. La validation des recherches sur les deux sites dans Edge est en attente.
+Le lot Drives de Bruz couvre le relevé via Edge, son intégration au panier et la documentation de
+lancement. Le bouton « Comparer », le relevé simulé et l’import sont implémentés. La validation des
+recherches sur les deux sites dans une session Edge configurée est en attente.
+Le lancement du navigateur sous Windows et l’ouverture automatique des onglets après l’activation
+initiale des extensions sont implémentés.
 
 | Lot | Qui | Statut |
 |---|---|---|
