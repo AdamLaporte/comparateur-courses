@@ -121,6 +121,10 @@ propres.
 
 ## Git
 
+- **Responsable du dépôt : Adam** (compte GitHub `AdamLaporte`). Il crée le dépôt distant, ajoute les autres
+  participants et gère les fusions dans `main` et les envois (`push`).
+- Chacun configure sa propre identité Git sur sa machine (`git config --global user.name "Prénom Nom"` et
+  `git config --global user.email "..."`, idéalement l'adresse « noreply » de son compte GitHub).
 - `main` reste **toujours fonctionnelle**. On travaille sur une branche par fonctionnalité : `feat/<nom>`
   (ex. `feat/collecte-carrefour`), `fix/<nom>` ou `docs/<nom>`.
 - Petits commits, messages clairs en français : `type : description`, où `type` vaut `feat`, `fix`, `docs`, `test`,

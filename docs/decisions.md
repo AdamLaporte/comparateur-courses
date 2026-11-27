@@ -25,4 +25,5 @@ est aussi notée ici.
 | 2026-11-27 | `app/main.py` inclut tous les routers et `app/config.py` déclare tous les réglages dès le squelette. `contrats.py` et `sources/base.py` ne changent qu'en concertation | Éviter les conflits Git avec 4 humains et plusieurs agents |
 | 2026-11-27 | Identifiant de magasin `"<enseigne>-<id_enseigne>"` | Utilisable tel quel dans les identifiants HTML et les noms d'événements SSE |
 | 2026-11-27 | HTMX et son extension SSE chargés depuis un CDN | Rien à compiler. Internet est de toute façon nécessaire pendant la démo pour les prix |
+| 2026-11-27 | Adam (GitHub `AdamLaporte`) est responsable du dépôt Git : dépôt distant, ajout des participants, fusions et envois. Sur son poste, les commits sont signés « Adam Laporte » avec son adresse noreply GitHub | Demande d'Adam. Commits rattachés à son compte sans exposer d'e-mail personnel |
 | 2026-11-27 | Journal des sessions d'agent : `prenom` = prénom de la personne qui pilote l'agent, ou `claude` / `codex` s'il n'est pas connu | Savoir qui a fait quoi |

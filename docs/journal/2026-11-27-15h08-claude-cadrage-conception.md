@@ -44,4 +44,7 @@
 ## Points d'attention pour la suite
 
 - `uv` n'est pas installé sur cette machine (Python 3.14 système, Node 22).
-- Aucune identité Git n'était configurée sur cette machine au moment du premier commit.
+- Aucune identité Git globale n'est configurée sur cette machine. Ce dépôt utilise une identité locale :
+  « Adam Laporte », avec l'adresse noreply du compte GitHub `AdamLaporte`. Le premier commit a été réécrit avec
+  cette identité, ce qui était sans risque puisque rien n'avait été poussé.
+- Adam est responsable du dépôt Git : dépôt distant, participants, fusions et envois.
