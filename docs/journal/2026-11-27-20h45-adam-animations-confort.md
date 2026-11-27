@@ -20,5 +20,8 @@
 
 ## Reste à faire
 
-- Le bouton « Afficher » du mot de passe est encore un peu bas dans le champ sur la page d'inscription.
-- Non vérifiés à l'œil : la transition entre pages (dépend du navigateur) et le glisser-déposer du ticket.
+- Corrigé ensuite : le bouton « Afficher » héritait de la marge des boutons d'envoi ; `style.css` et `site.js`
+  sont appelés avec `?v=<date de modification>` (`version_statique` dans `app/gabarits.py`) pour que le navigateur
+  ne garde pas une ancienne version après un `git pull`.
+- Vérifié : la transition entre pages se déclenche (type « page », Chrome).
+- Non vérifié à l'œil : le glisser-déposer du ticket.

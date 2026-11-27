@@ -54,6 +54,21 @@ templates.env.filters["releve"] = releve
 templates.env.filters["etiquette"] = etiquette
 
 
+DOSSIER_STATIQUE = Path(__file__).resolve().parent / "static"
+
+
+def version_statique(chemin: str) -> str:
+    """Date de modification d'un fichier de app/static/, ajoutée à son adresse (?v=…) : le navigateur
+    recharge le CSS ou le JS dès qu'il change, au lieu de garder l'ancien en cache."""
+    try:
+        return str(int((DOSSIER_STATIQUE / chemin).stat().st_mtime))
+    except OSError:
+        return "0"
+
+
+templates.env.globals["version_statique"] = version_statique
+
+
 def rendre(nom: str, **contexte: object) -> str:
     """Rend un template en texte (pour les fragments envoyés par SSE)."""
     return templates.env.get_template(nom).render(**contexte)

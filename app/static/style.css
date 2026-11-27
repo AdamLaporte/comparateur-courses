@@ -1158,3 +1158,5 @@ body.avec-barre { padding-bottom: 76px; }
   .bascule-option .long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .bascule-option .court { display: inline; }
 }
+/* Le bouton « Afficher » n'hérite pas de la marge du bouton d'envoi des formulaires de compte. */
+.champ-mdp .voir-mdp { margin: 0; }
