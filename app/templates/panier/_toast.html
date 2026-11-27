@@ -1,0 +1,16 @@
+{# Message bref en bas de l'écran (ajouté à #toasts, hors bande). Avec « Annuler » quand on vient de
+   retirer quelque chose : il renvoie les lignes à /panier/lignes/restaurer. site.js le fait disparaître. #}
+{% from "_icones.html" import icone %}
+<div hx-swap-oob="beforeend:#toasts">
+  <div class="toast" data-duree="{{ 6000 if toast.annuler else 3500 }}">
+    <span class="toast-icone">{{ icone("valide") }}</span>
+    <p class="toast-texte">{{ toast.message }}</p>
+    {% if toast.annuler %}
+    <button type="button" class="toast-action" hx-post="/panier/lignes/restaurer"
+            hx-vals='{{ {"lignes": toast.annuler} | tojson }}' hx-target="#liste"
+            hx-swap="outerHTML transition:true">{{ icone("annuler") }}<span>Annuler</span></button>
+    {% endif %}
+    <button type="button" class="toast-fermer" aria-label="Fermer le message">{{ icone("croix") }}</button>
+    <span class="toast-minuteur" aria-hidden="true"></span>
+  </div>
+</div>

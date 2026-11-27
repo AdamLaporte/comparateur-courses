@@ -1,4 +1,7 @@
 {% from "_icones.html" import icone %}
+{# Chaque changement remplace toute la liste avec « transition:true » : le navigateur anime le passage
+   (View Transitions). Chaque ligne et sa bascule ont un nom de transition à elles, d'où les styles en ligne. #}
+{% set maj = 'hx-target="#liste" hx-swap="outerHTML transition:true"' %}
 <div id="liste">
   {% if erreur %}<p class="erreur" role="alert">{{ icone("alerte") }}<span>{{ erreur }}</span></p>{% endif %}
   {% if lignes %}
@@ -6,38 +9,55 @@
   {% set reversibles = lignes | selectattr("mode.value", "equalto", "equivalent") | selectattr("ean") | list %}
   <div class="barre-liste">
     <p class="compteur">{{ lignes | length }} article{{ "s" if lignes | length > 1 }}</p>
-    {% if precis %}
-    <button class="bouton-tout" hx-post="/panier/lignes/mode" hx-vals='{"mode": "equivalent"}'
-            hx-target="#liste" hx-swap="outerHTML"
-            title="Chaque magasin propose alors son article le moins cher qui correspond">
-      {{ icone("etiquette") }}<span>Tout passer au moins cher</span>
-    </button>
-    {% elif reversibles %}
-    <button class="bouton-tout retour" hx-post="/panier/lignes/mode" hx-vals='{"mode": "produit"}'
-            hx-target="#liste" hx-swap="outerHTML">
-      {{ icone("retour") }}<span>Revenir aux produits choisis</span>
-    </button>
-    {% endif %}
+    <div class="barre-liste-actions">
+      {% if precis %}
+      <button class="bouton-tout" hx-post="/panier/lignes/mode" hx-vals='{"mode": "equivalent"}' {{ maj | safe }}
+              title="Chaque magasin propose alors son article le moins cher qui correspond">
+        {{ icone("etiquette") }}<span>Tout passer au moins cher</span>
+      </button>
+      {% elif reversibles %}
+      <button class="bouton-tout retour" hx-post="/panier/lignes/mode" hx-vals='{"mode": "produit"}' {{ maj | safe }}>
+        {{ icone("retour") }}<span>Revenir aux produits choisis</span>
+      </button>
+      {% endif %}
+      <button class="lien vider" hx-post="/panier/lignes/vider" {{ maj | safe }} title="Vider toute la liste (vous pourrez annuler)">
+        {{ icone("corbeille") }}<span>Vider</span>
+      </button>
+    </div>
   </div>
   <ul class="lignes">
     {% for l in lignes %}
-    <li>
-      <span class="quantite">{{ l.quantite }}×</span>
+    <li data-id="{{ l.id }}" style="view-transition-name: ligne-{{ l.id }}">
       <div class="ligne-corps">
         <span class="libelle">{{ l.libelle }}</span>
         {% if l.mode.value == "equivalent" and l.recherche | lower != l.libelle | lower %}
         <span class="recherche-ligne">Le moins cher pour « {{ l.recherche }} » dans chaque magasin</span>
         {% endif %}
         <span class="ligne-meta">
+          <span class="quantite-ctrl" role="group" aria-label="Quantité de {{ l.libelle }}">
+            <button type="button" class="pas" aria-label="Un de moins" title="Un de moins"
+                    {% if l.quantite <= 1 %}disabled{% else %}hx-post="/panier/lignes/{{ l.id }}/quantite"
+                    hx-vals='{"quantite": {{ l.quantite - 1 }}}' {{ maj | safe }}{% endif %}>{{ icone("moins") }}</button>
+            <span class="quantite">{{ l.quantite }}×</span>
+            <button type="button" class="pas" aria-label="Un de plus" title="Un de plus"
+                    {% if l.quantite >= 99 %}disabled{% else %}hx-post="/panier/lignes/{{ l.id }}/quantite"
+                    hx-vals='{"quantite": {{ l.quantite + 1 }}}' {{ maj | safe }}{% endif %}>{{ icone("plus") }}</button>
+          </span>
           {% if l.mode.value == "inexistant" %}
           <span class="mode inexistant">inexistant en magasins</span>
           {% elif l.ean %}
-          {# Bascule à deux positions : le produit choisi, ou le moins cher de chaque magasin. #}
+          {# Bascule : le produit choisi, ou le moins cher de chaque magasin. L'option choisie porte un nom de
+             transition : en changeant, elle glisse d'un côté à l'autre. #}
           <span class="bascule" role="group" aria-label="Choix pour {{ l.libelle }}">
-            {% for valeur, texte in [("produit", "produit précis"), ("equivalent", "le moins cher")] %}
-            <button type="button" class="bascule-option {{ valeur }}" aria-pressed="{{ 'true' if l.mode.value == valeur else 'false' }}"
-                    {% if l.mode.value != valeur %}hx-post="/panier/lignes/{{ l.id }}/mode" hx-vals='{"mode": "{{ valeur }}"}'
-                    hx-target="#liste" hx-swap="outerHTML"{% endif %}>{{ texte }}</button>
+            {% for valeur, texte, court in [("produit", "produit précis", "précis"), ("equivalent", "le moins cher", "moins cher")] %}
+            {% set libelle_option %}<span class="long">{{ texte }}</span><span class="court" aria-hidden="true">{{ court }}</span>{% endset %}
+            {% if l.mode.value == valeur %}
+            <button type="button" class="bascule-option {{ valeur }}" aria-pressed="true"
+                    style="view-transition-name: choix-{{ l.id }}">{{ libelle_option }}</button>
+            {% else %}
+            <button type="button" class="bascule-option {{ valeur }}" aria-pressed="false"
+                    hx-post="/panier/lignes/{{ l.id }}/mode" hx-vals='{"mode": "{{ valeur }}"}' {{ maj | safe }}>{{ libelle_option }}</button>
+            {% endif %}
             {% endfor %}
           </span>
           {% else %}
@@ -49,15 +69,25 @@
           {% endif %}
         </span>
       </div>
-      <button class="bouton-icone" hx-delete="/panier/lignes/{{ l.id }}" hx-target="#liste"
-              hx-swap="outerHTML" aria-label="Retirer {{ l.libelle }}" title="Retirer">{{ icone("croix") }}</button>
+      <button class="bouton-icone" hx-delete="/panier/lignes/{{ l.id }}" {{ maj | safe }}
+              aria-label="Retirer {{ l.libelle }}" title="Retirer">{{ icone("croix") }}</button>
     </li>
     {% endfor %}
   </ul>
   {% else %}
   <div class="liste-vide">
     {{ icone("panier") }}
-    <p>Votre liste est vide.<br>Cherchez un article pour commencer.</p>
+    <p>Votre liste est vide.<br>Cherchez un article, ou partez de ces idées :</p>
+    <ul class="idees" aria-label="Ajouter en un clic">
+      {% for idee in ["lait", "pâtes", "œufs", "riz", "café", "pain de mie", "beurre", "bananes"] %}
+      <li style="--i: {{ loop.index0 }}">
+        <button type="button" class="idee" hx-post="/panier/lignes"
+                hx-vals='{{ {"mode": "equivalent", "recherche": idee, "libelle": idee} | tojson }}' {{ maj | safe }}>
+          {{ icone("plus") }}<span>{{ idee }}</span>
+        </button>
+      </li>
+      {% endfor %}
+    </ul>
   </div>
   {% endif %}
 </div>

@@ -111,3 +111,60 @@ def changer_mode_tout(reglages: Reglages, proprietaire: str, mode: ModeLigne) ->
             "UPDATE ligne_liste SET mode = ? WHERE proprietaire = ? AND mode = ? AND ean IS NOT NULL",
             (mode.value, proprietaire, depart.value),
         )
+
+
+def lire(reglages: Reglages, proprietaire: str | None, ligne_id: int) -> LigneListe | None:
+    if proprietaire is None:
+        return None
+    with db.connexion(reglages.db_path) as cnx:
+        ligne = cnx.execute(
+            "SELECT id, mode, ean, recherche, libelle, quantite FROM ligne_liste "
+            "WHERE id = ? AND proprietaire = ?",
+            (ligne_id, proprietaire),
+        ).fetchone()
+    return LigneListe(**dict(ligne)) if ligne else None
+
+
+def changer_quantite(reglages: Reglages, proprietaire: str, ligne_id: int, quantite: int) -> None:
+    if not 1 <= quantite <= 99:
+        return
+    with db.connexion(reglages.db_path) as cnx:
+        cnx.execute(
+            "UPDATE ligne_liste SET quantite = ? WHERE id = ? AND proprietaire = ?",
+            (quantite, ligne_id, proprietaire),
+        )
+
+
+def vider(reglages: Reglages, proprietaire: str) -> list[LigneListe]:
+    """Vide la liste et rend les lignes retirées (pour pouvoir annuler)."""
+    retirees = lister(reglages, proprietaire)
+    with db.connexion(reglages.db_path) as cnx:
+        cnx.execute("DELETE FROM ligne_liste WHERE proprietaire = ?", (proprietaire,))
+    return retirees
+
+
+def restaurer(reglages: Reglages, proprietaire: str, lignes: list[LigneListe]) -> int:
+    """Remet des lignes retirées (bouton « Annuler »), à leur place d'origine quand leur numéro est
+    encore libre, sinon en fin de liste."""
+    colonnes = "proprietaire, mode, ean, recherche, libelle, quantite"
+    with db.connexion(reglages.db_path) as cnx:
+        for ligne in lignes:
+            valeurs = (
+                proprietaire,
+                ligne.mode.value,
+                ligne.ean,
+                ligne.recherche,
+                ligne.libelle,
+                ligne.quantite,
+            )
+            libre = cnx.execute("SELECT 1 FROM ligne_liste WHERE id = ?", (ligne.id,)).fetchone()
+            if libre is None:
+                cnx.execute(
+                    f"INSERT INTO ligne_liste (id, {colonnes}) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (ligne.id, *valeurs),
+                )
+            else:
+                cnx.execute(
+                    f"INSERT INTO ligne_liste ({colonnes}) VALUES (?, ?, ?, ?, ?, ?)", valeurs
+                )
+    return len(lignes)

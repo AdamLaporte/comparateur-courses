@@ -6,11 +6,26 @@
 <div class="accueil">
   <section aria-labelledby="titre-accueil">
     <p class="surtitre">Carrefour · Intermarché · Courses U · E.Leclerc</p>
-    <h1 id="titre-accueil" class="titre-geant">Remplis ton panier,<br><em>grignote l&#39;addition.</em></h1>
+    <h1 id="titre-accueil" class="titre-geant">
+      <span class="ligne-titre">Remplis ton panier,</span>
+      <span class="ligne-titre"><em>grignote l&#39;addition.</em></span>
+    </h1>
     <p class="chapeau">
       Dites-nous où vous faites vos courses. On relève le prix de votre liste dans les supermarchés
       autour de vous, promos comprises, et on vous montre le ticket le moins cher.
     </p>
+
+    {% if code_postal and nb_articles %}
+    {% set est_position = code_postal.replace(",", "").replace(".", "").replace("-", "").replace(" ", "").isdigit() and "," in code_postal %}
+    <a class="reprendre" href="/panier?comparer=1">
+      <span class="reprendre-icone">{{ icone("liste") }}</span>
+      <span class="reprendre-texte">
+        <strong>Reprendre ma liste</strong>
+        <span>{{ nb_articles }} article{{ "s" if nb_articles > 1 }} · autour de {{ "votre position" if est_position else code_postal }}</span>
+      </span>
+      <span class="reprendre-action">Comparer {{ icone("fleche") }}</span>
+    </a>
+    {% endif %}
 
     <form action="/magasins" method="get" id="form-lieu" class="recherche-lieu">
       <label for="code_postal">Ville ou code postal</label>

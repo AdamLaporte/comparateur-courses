@@ -2,6 +2,7 @@
 flux SSE des prix et des totaux, et calcul complet en JSON (sans session)."""
 
 import asyncio
+import json
 import logging
 import re
 from collections.abc import AsyncIterable, AsyncIterator
@@ -72,14 +73,64 @@ async def comparer(
 
 
 def _liste_maj(
-    request: Request, reglages: Reglages, erreur: str | None = None, ticket_fini: bool = False
+    request: Request,
+    reglages: Reglages,
+    erreur: str | None = None,
+    ticket_fini: bool = False,
+    toast: dict | None = None,
+    vider_suggestions: bool = False,
 ) -> HTMLResponse:
+    """La liste à jour, plus en option : un message (toast) avec ou sans « Annuler », les suggestions
+    vidées (après un ajout) et le ticket lu refermé."""
     lignes = service.lister(reglages, service.proprietaire(request))
     return templates.TemplateResponse(
         request,
         "panier/_liste_maj.html",
-        {"lignes": lignes, "erreur": erreur, "ticket_fini": ticket_fini},
+        {
+            "lignes": lignes,
+            "erreur": erreur,
+            "ticket_fini": ticket_fini,
+            "toast": toast,
+            "vider_suggestions": vider_suggestions,
+        },
     )
+
+
+def _pour_annuler(lignes: list[LigneListe]) -> str:
+    """Les lignes retirées, en JSON, pour le bouton « Annuler » du message."""
+    champs = {"id", "mode", "ean", "recherche", "libelle", "quantite"}
+    return json.dumps([ligne.model_dump(mode="json", include=champs) for ligne in lignes])
+
+
+def _depuis_annulation(texte: str) -> list[LigneListe]:
+    """Lignes renvoyées par « Annuler », revérifiées comme un ajout (on ignore les invalides)."""
+    try:
+        donnees = json.loads(texte)
+    except ValueError:
+        return []
+    lignes = []
+    for d in donnees[:200] if isinstance(donnees, list) else []:
+        try:
+            ajout = AjoutLigne(
+                mode=d["mode"],
+                ean=d.get("ean"),
+                recherche=d["recherche"],
+                libelle=d.get("libelle"),
+                quantite=d.get("quantite", 1),
+            )
+            lignes.append(
+                LigneListe(
+                    id=int(d["id"]),
+                    mode=ajout.mode,
+                    ean=ajout.ean,
+                    recherche=ajout.recherche.strip(),
+                    libelle=(ajout.libelle or ajout.recherche).strip(),
+                    quantite=ajout.quantite,
+                )
+            )
+        except (KeyError, TypeError, ValueError, ValidationError):
+            continue
+    return lignes
 
 
 @router.get("/panier", response_class=HTMLResponse)
@@ -87,7 +138,13 @@ async def page_panier(request: Request, reglages: ReglagesDep):
     code_postal = request.session.get("code_postal", "")
     lignes = service.lister(reglages, service.proprietaire(request))
     return templates.TemplateResponse(
-        request, "panier/page.html", {"code_postal": code_postal, "lignes": lignes}
+        request,
+        "panier/page.html",
+        {
+            "code_postal": code_postal,
+            "lignes": lignes,
+            "comparer": request.query_params.get("comparer") == "1" and bool(lignes),
+        },
     )
 
 
@@ -112,7 +169,7 @@ async def ajouter_ligne(
     except ValidationError:
         return _liste_maj(request, reglages, erreur="Article non ajouté : vérifiez la quantité.")
     service.ajouter(reglages, service.proprietaire(request), ajout)
-    return _liste_maj(request, reglages)
+    return _liste_maj(request, reglages, vider_suggestions=True)
 
 
 @router.post("/panier/ticket", response_class=HTMLResponse)
@@ -185,7 +242,7 @@ async def ajouter_ticket(
             continue
         service.ajouter(reglages, proprietaire, ajout)
     erreur = f"{ignores} article(s) non ajouté(s) : vérifiez la quantité." if ignores else None
-    return _liste_maj(request, reglages, erreur=erreur, ticket_fini=True)
+    return _liste_maj(request, reglages, erreur=erreur, ticket_fini=True, vider_suggestions=True)
 
 
 @router.post("/panier/lignes/mode", response_class=HTMLResponse)
@@ -210,7 +267,51 @@ async def changer_mode_ligne(
 
 @router.delete("/panier/lignes/{ligne_id}", response_class=HTMLResponse)
 async def supprimer_ligne(request: Request, ligne_id: int, reglages: ReglagesDep):
-    service.supprimer(reglages, service.proprietaire(request), ligne_id)
+    proprietaire = service.proprietaire(request)
+    ligne = service.lire(reglages, proprietaire, ligne_id)
+    service.supprimer(reglages, proprietaire, ligne_id)
+    toast = None
+    if ligne:
+        toast = {"message": f"« {ligne.libelle} » retiré.", "annuler": _pour_annuler([ligne])}
+    return _liste_maj(request, reglages, toast=toast)
+
+
+@router.post("/panier/lignes/vider", response_class=HTMLResponse)
+async def vider_liste(request: Request, reglages: ReglagesDep):
+    """Vide la liste d'un coup ; le message propose « Annuler »."""
+    retirees = service.vider(reglages, service.proprietaire(request))
+    toast = None
+    if retirees:
+        n = len(retirees)
+        toast = {
+            "message": f"Liste vidée ({n} article{'s' if n > 1 else ''}).",
+            "annuler": _pour_annuler(retirees),
+        }
+    return _liste_maj(request, reglages, toast=toast)
+
+
+@router.post("/panier/lignes/restaurer", response_class=HTMLResponse)
+async def restaurer_lignes(
+    request: Request, reglages: ReglagesDep, lignes: Annotated[str, Form()] = "[]"
+):
+    """Bouton « Annuler » : remet les articles retirés."""
+    n = service.restaurer(reglages, service.proprietaire(request), _depuis_annulation(lignes))
+    toast = None
+    if n:
+        toast = {"message": "Article remis dans la liste." if n == 1 else f"{n} articles remis."}
+    return _liste_maj(request, reglages, toast=toast)
+
+
+@router.post("/panier/lignes/{ligne_id}/quantite", response_class=HTMLResponse)
+async def changer_quantite(
+    request: Request, ligne_id: int, reglages: ReglagesDep, quantite: Annotated[str, Form()] = ""
+):
+    """Boutons − et + d'un article (de 1 à 99)."""
+    try:
+        nombre = int(quantite)
+    except ValueError:
+        nombre = 0
+    service.changer_quantite(reglages, service.proprietaire(request), ligne_id, nombre)
     return _liste_maj(request, reglages)
 
 

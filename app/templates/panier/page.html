@@ -24,14 +24,16 @@
     <label for="q" class="masque">Rechercher un article</label>
     <div class="champ-recherche">
       {{ icone("recherche") }}
-      <input id="q" name="q" type="search" autocomplete="off" enterkeyhint="search"
-             placeholder="nutella, lait demi-écrémé, spaghetti…"
+      <span class="recherche-encours" aria-hidden="true"></span>
+      <input id="q" name="q" type="search" autocomplete="off" enterkeyhint="done"
+             placeholder="nutella, lait demi-écrémé, spaghetti…" aria-describedby="aide-recherche"
              hx-get="/produits/recherche" hx-trigger="input changed delay:300ms, search"
-             hx-target="#suggestions">
+             hx-target="#suggestions" hx-indicator=".champ-recherche">
     </div>
-    <p class="aide">
+    <p class="aide" id="aide-recherche">
       Prenez un produit précis, ou « le moins cher » : chaque magasin propose alors son article le moins
       cher qui correspond.
+      <span class="aide-clavier"><kbd>Entrée</kbd> ajoute « le moins cher », <kbd>↓</kbd> parcourt les produits.</span>
     </p>
     <div id="suggestions" aria-live="polite"></div>
     <form hx-post="/panier/ticket" hx-encoding="multipart/form-data" hx-target="#ticket-lu"
@@ -61,7 +63,7 @@
     </div>
     {% include "panier/_liste.html" %}
     {% if code_postal %}
-    <button type="button" class="principal large" hx-get="/panier/resultats" hx-target="#resultats"
+    <button type="button" id="bouton-comparer" class="principal large" hx-get="/panier/resultats" hx-target="#resultats"
             hx-swap="innerHTML show:#resultats:top">
       {{ icone("ticket") }}<span>Comparer les prix</span>
     </button>
@@ -73,5 +75,14 @@
   </section>
 </div>
 
-<section id="resultats" aria-label="Comparaison des prix"></section>
+{# ?comparer=1 (depuis l'accueil ou les magasins) : la comparaison part d'elle-même. #}
+<section id="resultats" aria-label="Comparaison des prix"
+         {% if comparer %}hx-get="/panier/resultats" hx-trigger="load" hx-swap="innerHTML show:#resultats:top"{% endif %}></section>
+
+{# Sur téléphone, le bouton « Comparer » reste à portée de pouce quand on fait défiler (site.js). #}
+<div class="barre-comparer" hidden>
+  <button type="button" class="principal" data-comparer>
+    {{ icone("ticket") }}<span>Comparer les prix</span><span class="barre-comparer-nb"></span>
+  </button>
+</div>
 {% endblock %}

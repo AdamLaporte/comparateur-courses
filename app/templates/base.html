@@ -55,6 +55,8 @@
   <main id="contenu" class="contenu {% block classe_contenu %}{% endblock %}">
     {% block contenu %}{% endblock %}
   </main>
+  {# Messages brefs (ajouté, retiré + « Annuler »…), remplis par le serveur ou par site.js. #}
+  <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
   <footer class="pied">
     <div class="pied-dedans">
       <p><strong>GrignotePrix</strong> · hackathon ENSAI 2026</p>
