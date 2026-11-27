@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block titre %}Mot de passe perdu · Comparateur de courses{% endblock %}
+{% block contenu %}
+<section class="carte">
+  <h1>Mot de passe perdu</h1>
+  {% if envoye %}
+  <p class="note succes">
+    Si un compte existe pour <strong>{{ email }}</strong>, un lien pour choisir un nouveau mot de passe
+    vient d'être envoyé. Il est valable une heure.
+  </p>
+  <p><a href="/comptes/connexion">Retour à la connexion</a></p>
+  {% else %}
+  <p>Indiquez l'adresse e-mail du compte : vous recevrez un lien pour choisir un nouveau mot de passe.</p>
+  <form action="/comptes/mot-de-passe-perdu" method="post" class="formulaire">
+    <label for="email">Adresse e-mail</label>
+    <input id="email" name="email" type="email" value="{{ email }}" autocomplete="email" required autofocus>
+    <button type="submit" class="principal">Recevoir le lien</button>
+  </form>
+  <p><a href="/comptes/connexion">Retour à la connexion</a></p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -364,6 +364,11 @@ erDiagram
 - **Sans compte**, la liste est liée à la session (`proprietaire = "session:<uuid>"`). **Avec un compte**, elle est
   liée à l'utilisateur, et ses articles et adresses favoris sont enregistrés.
 - Les mots de passe sont hachés en argon2 avec `pwdlib`. Pas de connexion par un service tiers.
+- À la connexion, `utilisateur_id` et `email` sont posés dans la session, et la liste faite sans compte
+  (`session:<sid>`) passe dans celle du compte. À la déconnexion, la session est vidée (sauf le code postal).
+- Mot de passe perdu : lien signé (itsdangerous, clé `SECRET_KEY`), valable 1 h, à usage unique, envoyé par SMTP
+  si `SMTP_HOTE` est réglé, sinon écrit dans le journal du serveur. Réponse identique que l'e-mail existe ou non.
+- Après 5 échecs de connexion pour un e-mail, blocage de 15 min (en mémoire : remis à zéro au redémarrage).
 
 ## 12. Fonctionnalités secondaires : points d'accroche
 

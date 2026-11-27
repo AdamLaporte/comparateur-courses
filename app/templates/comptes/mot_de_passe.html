@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block titre %}Changer de mot de passe · Comparateur de courses{% endblock %}
+{% block contenu %}
+<section class="carte">
+  <h1>Changer de mot de passe</h1>
+  {% if erreur %}<p class="erreur">{{ erreur }}</p>{% endif %}
+  <form action="/comptes/mot-de-passe" method="post" class="formulaire">
+    <label for="actuel">Mot de passe actuel</label>
+    <input id="actuel" name="actuel" type="password" autocomplete="current-password" required autofocus>
+    <label for="nouveau">Nouveau mot de passe (8 caractères au moins)</label>
+    <input id="nouveau" name="nouveau" type="password" minlength="8" maxlength="128"
+           autocomplete="new-password" required>
+    <label for="confirmation">Confirmer le nouveau mot de passe</label>
+    <input id="confirmation" name="confirmation" type="password" minlength="8" maxlength="128"
+           autocomplete="new-password" required>
+    <button type="submit" class="principal">Enregistrer</button>
+  </form>
+  <p><a href="/comptes">Retour au compte</a></p>
+</section>
+{% endblock %}

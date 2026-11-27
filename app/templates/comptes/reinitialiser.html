@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block titre %}Nouveau mot de passe · Comparateur de courses{% endblock %}
+{% block contenu %}
+<section class="carte">
+  <h1>Nouveau mot de passe</h1>
+  {% if erreur %}<p class="erreur">{{ erreur }}</p>{% endif %}
+  {% if jeton %}
+  <form action="/comptes/reinitialiser" method="post" class="formulaire">
+    <input type="hidden" name="jeton" value="{{ jeton }}">
+    <label for="nouveau">Nouveau mot de passe (8 caractères au moins)</label>
+    <input id="nouveau" name="nouveau" type="password" minlength="8" maxlength="128"
+           autocomplete="new-password" required autofocus>
+    <label for="confirmation">Confirmer le mot de passe</label>
+    <input id="confirmation" name="confirmation" type="password" minlength="8" maxlength="128"
+           autocomplete="new-password" required>
+    <button type="submit" class="principal">Enregistrer</button>
+  </form>
+  {% else %}
+  <p><a class="bouton" href="/comptes/mot-de-passe-perdu">Demander un nouveau lien</a></p>
+  {% endif %}
+</section>
+{% endblock %}

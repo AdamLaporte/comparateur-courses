@@ -2,11 +2,39 @@
 {% block titre %}Compte · Comparateur de courses{% endblock %}
 {% block contenu %}
 <section class="carte">
+  {% set messages = {
+    "bienvenue": "Compte créé : vous êtes connecté.",
+    "deconnecte": "Vous êtes déconnecté. Le site reste utilisable sans compte.",
+    "mot_de_passe_change": "Mot de passe enregistré.",
+  } %}
+  {% if message in messages %}<p class="note succes">{{ messages[message] }}</p>{% endif %}
+
+  {% if email %}
+  <h1>Mon compte</h1>
+  <p>Connecté avec <strong>{{ email }}</strong>. Votre liste de courses est enregistrée dans votre compte.</p>
+  <ul>
+    <li>Articles favoris : bientôt</li>
+    <li>Ma « maison » : bientôt</li>
+    <li>Ma cagnotte d'économies : bientôt</li>
+  </ul>
+  <p class="actions">
+    <a class="bouton" href="/panier">Ma liste</a>
+    <a class="bouton" href="/comptes/mot-de-passe">Changer de mot de passe</a>
+  </p>
+  <form action="/comptes/deconnexion" method="post">
+    <button type="submit">Se déconnecter</button>
+  </form>
+  {% else %}
   <h1>Compte</h1>
   <p>
-    Les comptes arrivent bientôt : ils permettront d'enregistrer vos articles et adresses favoris.
-    Tout le site est utilisable sans compte.
+    Le compte est facultatif : tout le site marche sans. Avec un compte, vous retrouvez votre liste
+    sur tous vos appareils, et bientôt vos articles favoris, votre « maison » et votre cagnotte
+    d'économies.
   </p>
-  <p><a class="bouton" href="/panier">Retour à ma liste</a></p>
+  <p class="actions">
+    <a class="bouton principal" href="/comptes/connexion">Se connecter</a>
+    <a class="bouton" href="/comptes/inscription">Créer un compte</a>
+  </p>
+  {% endif %}
 </section>
 {% endblock %}
