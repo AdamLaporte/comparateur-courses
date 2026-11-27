@@ -1,0 +1,18 @@
+# Recherches pour préchauffer le cache avant la démo (une par ligne, # = commentaire).
+# Usage : uv run python -m app.collecte.prechauffer data/demo/recherches.txt --code-postal 35170
+nutella
+pâte à tartiner
+lait demi-écrémé
+spaghetti
+penne
+riz
+oeufs
+beurre doux
+yaourt nature
+pain de mie
+emmental râpé
+sauce tomate
+café moulu
+coca-cola
+bananes
+papier toilette
