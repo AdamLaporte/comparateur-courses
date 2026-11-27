@@ -182,18 +182,20 @@ p { margin: 0 0 0.8rem; }
 .menu {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px;
   width: clamp(23rem, 38vw, 32rem);
-  background: var(--papier); border: 1px solid var(--trait-doux); border-radius: 14px;
+  background: var(--papier); border: 1px solid var(--trait-doux); border-radius: 16px;
 }
 .menu a {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 48px; padding: 0 8px;
   color: var(--encre-2); text-decoration: none; font-weight: 600; font-size: 1.05rem;
-  border-radius: 10px;
-  transition: background var(--duree), color var(--duree);
+  border-radius: 12px;
+  transition: background-color var(--duree), color var(--duree), box-shadow var(--duree);
 }
-.menu a:hover { background: var(--blanc); color: var(--encre); }
-.menu a[aria-current="page"] { color: var(--encre); background: var(--principal-pale); }
-.menu a[aria-current="page"] .icone { color: var(--economie); }
+.menu a:not([aria-current="page"]):hover {
+  background: var(--blanc); color: var(--encre); box-shadow: var(--ombre-papier);
+}
+.menu a[aria-current="page"] { color: var(--encre); background: var(--principal); }
+.menu a:focus-visible { outline: 2px solid var(--encre); outline-offset: -3px; }
 .menu .icone { flex: none; }
 
 .bandeau-fictif {
