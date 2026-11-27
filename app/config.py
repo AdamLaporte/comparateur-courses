@@ -48,6 +48,12 @@ class Reglages(BaseSettings):
     # Services ouverts.
     open_prices_url: str = "https://prices.openfoodfacts.org/api/v1"
     open_food_facts_url: str = "https://world.openfoodfacts.org"
+    # Recherche texte d'Open Food Facts (search-a-licious) : la recherche classique renvoie souvent 503.
+    open_food_facts_recherche_url: str = "https://search.openfoodfacts.org"
+    # Référentiel produits : "open_food_facts" (défaut) ou "fictive" (catalogue fictif, sans réseau).
+    source_produits: str = "open_food_facts"
+    # Open Prices comme source de secours du repli (False = aucune requête, ex. dans les tests).
+    open_prices_actif: bool = True
     api_adresse_url: str = "https://data.geopf.fr/geocodage"
     # User-Agent des appels aux services ouverts (Open Food Facts le demande). Pas d'e-mail ici.
     user_agent_services: str = "ComparateurCourses/0.1 (hackathon ENSAI)"
