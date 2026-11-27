@@ -34,11 +34,21 @@
     </p>
     <div id="suggestions" aria-live="polite"></div>
     <form hx-post="/panier/ticket" hx-encoding="multipart/form-data" hx-target="#ticket-lu"
-          hx-trigger="change" hx-indicator="#lecture-ticket" class="ajout-ticket"
-          hx-on::after-request="this.reset()">
-      <label for="image-ticket">📷 Ou ajoutez la photo d'un ticket de caisse :</label>
-      <input id="image-ticket" name="image" type="file" accept="image/*" capture="environment">
-      <span id="lecture-ticket" class="htmx-indicator aide">Lecture du ticket…</span>
+          hx-trigger="change" class="ajout-ticket" hx-on::after-request="this.reset()">
+      <p class="separateur"><span>ou</span></p>
+      <label class="zone-ticket" for="image-ticket">
+        <input id="image-ticket" name="image" type="file" accept="image/*" capture="environment"
+               class="masque">
+        <span class="zone-ticket-icone">{{ icone("photo") }}</span>
+        <span class="zone-ticket-texte">
+          <strong>Photographier un ticket de caisse</strong>
+          <span>ou déposer une image ici · JPG ou PNG, 10 Mo au plus</span>
+        </span>
+        <span class="zone-ticket-lecture" aria-hidden="true">
+          <strong>Lecture du ticket…</strong>
+          <span class="barre-chargement"></span>
+        </span>
+      </label>
     </form>
     <div id="ticket-lu" aria-live="polite"></div>
   </section>

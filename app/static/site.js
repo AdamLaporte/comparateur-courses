@@ -117,6 +117,25 @@
     }
   });
 
+  // --- Ma liste : glisser-déposer une photo de ticket sur la zone prévue (sinon le clic suffit). ---
+  const zoneTicket = document.querySelector(".zone-ticket");
+  const champTicket = document.getElementById("image-ticket");
+  if (zoneTicket && champTicket) {
+    ["dragenter", "dragover"].forEach((nom) =>
+      zoneTicket.addEventListener(nom, (e) => {
+        e.preventDefault();
+        zoneTicket.classList.add("survol");
+      }),
+    );
+    ["dragleave", "drop"].forEach((nom) => zoneTicket.addEventListener(nom, () => zoneTicket.classList.remove("survol")));
+    zoneTicket.addEventListener("drop", (e) => {
+      e.preventDefault();
+      if (!e.dataTransfer || !e.dataTransfer.files.length) return;
+      champTicket.files = e.dataTransfer.files;
+      champTicket.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  }
+
   // --- Comparaison : met en avant le prix le plus bas de chaque ligne et la colonne gagnante. ---
   const surligner = () => {
     const comparaison = document.querySelector(".comparaison");

@@ -761,7 +761,37 @@ span.favori { font-size: 0.85rem; font-weight: 600; color: #8a5a00; }
 .erreur-page .actions { justify-content: center; }
 
 /* Ticket de caisse lu par photo */
-.ajout-ticket { margin-top: 1rem; display: grid; gap: 0.4rem; }
+.ajout-ticket { margin-top: 18px; }
+.separateur { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; font-family: var(--police-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--encre-3); }
+.separateur::before, .separateur::after { content: ""; flex: 1; border-top: 1.5px dashed var(--trait); }
+.zone-ticket {
+  position: relative;
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px;
+  background: var(--ticket);
+  border: 1.5px dashed var(--trait-fort); border-radius: var(--rayon-bloc);
+  font-weight: 400; cursor: pointer;
+  transition: border-color var(--duree), background var(--duree);
+}
+.zone-ticket:hover, .zone-ticket.survol { border-color: var(--encre); background: var(--jaune-pale); }
+.zone-ticket:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
+.zone-ticket-icone {
+  display: grid; place-items: center; flex: none;
+  width: 46px; height: 46px;
+  background: var(--jaune); border: 2px solid var(--encre); border-radius: 8px;
+  transform: rotate(-4deg);
+}
+.zone-ticket-icone .icone { width: 22px; height: 22px; }
+.zone-ticket-texte, .zone-ticket-lecture { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.zone-ticket-texte strong, .zone-ticket-lecture strong { font-weight: 700; }
+.zone-ticket-texte span { font-size: 0.85rem; color: var(--encre-3); }
+.zone-ticket-lecture { display: none; flex: 1; gap: 8px; }
+.ajout-ticket.htmx-request .zone-ticket { cursor: progress; border-style: solid; border-color: var(--encre); }
+.ajout-ticket.htmx-request .zone-ticket-texte { display: none; }
+.ajout-ticket.htmx-request .zone-ticket-lecture { display: flex; }
+.ajout-ticket.htmx-request .zone-ticket-icone { animation: tampon 0.9s var(--courbe) infinite alternate; }
+@keyframes tampon { to { transform: rotate(4deg); } }
+#ticket-lu:not(:empty) { margin-top: 14px; }
 .ticket-lu ul { list-style: none; padding: 0; margin: 0.5rem 0; display: grid; gap: 0.4rem; }
 .ticket-lu li { display: grid; grid-template-columns: 4rem 1fr auto; gap: 0.4rem; align-items: start; padding: 8px 0; border-bottom: 1px dashed var(--trait); }
 .ticket-article { display: grid; gap: 6px; min-width: 0; }
