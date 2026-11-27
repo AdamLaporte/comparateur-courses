@@ -1,0 +1,576 @@
+{
+ "hits": [
+  {
+   "code": "8076800195057",
+   "brands": [
+    "xx:barilla",
+    "xx:BARILLA NORGE ASbarilla"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 252,
+   "product_name": "Spaghetti Nº5",
+   "product_name_fr": "Spaghetti n°5",
+   "_score": null
+  },
+  {
+   "code": "8076809529419",
+   "brands": [
+    "xx:barilla",
+    "xx:Barilla G. e R. Fratelli SpA",
+    "xx:Fattoria La Vialla"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 209,
+   "product_name": "Pâtes spaghetti au blé complet integral 500g",
+   "product_name_fr": "Pâtes spaghetti au blé complet integral 500g",
+   "_score": null
+  },
+  {
+   "code": "3478820600651",
+   "brands": [
+    "xx:jardin-bio-etic"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 168,
+   "product_name": "spaghetti au quinoa ail et persil",
+   "product_name_fr": "spaghetti au quinoa ail et persil",
+   "_score": null
+  },
+  {
+   "code": "8076809545440",
+   "brands": [
+    "xx:Barilla"
+   ],
+   "quantity": "400g",
+   "unique_scans_n": 152,
+   "product_name": "Spaghetti senza glutine mais riso",
+   "product_name_fr": "Spaghetti sans gluten",
+   "_score": null
+  },
+  {
+   "code": "3478820043625",
+   "brands": [
+    "xx:jardin-bio-etic"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 152,
+   "product_name": "Spaghetti au Quinoa Tomate",
+   "product_name_fr": "Spaghetti au Quinoa Tomate",
+   "_score": null
+  },
+  {
+   "code": "8076800105056",
+   "brands": [
+    "xx:barilla"
+   ],
+   "quantity": "1 kg",
+   "unique_scans_n": 150,
+   "product_name": "Pâtes spaghetti n°5 1kg",
+   "product_name_fr": "Pâtes spaghetti n°5 1kg",
+   "_score": null
+  },
+  {
+   "code": "8076800195033",
+   "brands": [
+    "xx:barilla"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 106,
+   "product_name": "Spaghettini N°3",
+   "product_name_fr": "Spaghettini N°3",
+   "_score": null
+  },
+  {
+   "code": "8076809585880",
+   "brands": [
+    "xx:Barilla"
+   ],
+   "quantity": "400 g",
+   "unique_scans_n": 104,
+   "product_name": "Spaghetti Barilla Protéine",
+   "product_name_fr": "Spaghetti Barilla Protéine",
+   "_score": null
+  },
+  {
+   "code": "20995744",
+   "brands": [
+    "xx:combino"
+   ],
+   "quantity": "500g",
+   "unique_scans_n": 100,
+   "product_name": "Spaghetti blé complet Bio",
+   "product_name_fr": "Spaghetti blé complet Bio",
+   "_score": null
+  },
+  {
+   "code": "8076808150072",
+   "brands": [
+    "xx:barilla"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 88,
+   "product_name": "Pâtes spaghettoni n°7 500g",
+   "product_name_fr": "Pâtes spaghettoni n°7 500g",
+   "_score": null
+  },
+  {
+   "code": "8008343200059",
+   "brands": [
+    "xx:Rummo"
+   ],
+   "quantity": "500g",
+   "unique_scans_n": 75,
+   "product_name": "Spaghetti grossi - No. 5",
+   "product_name_fr": "Spaghetti Grossi N°5",
+   "_score": null
+  },
+  {
+   "code": "4056489376194",
+   "brands": [
+    "xx:vitasia"
+   ],
+   "quantity": "270g",
+   "unique_scans_n": 72,
+   "product_name": "Konjac Noodles",
+   "product_name_fr": "Spaghetti de konjac",
+   "_score": null
+  },
+  {
+   "code": "8001250120120",
+   "brands": [
+    "xx:de-cecco"
+   ],
+   "quantity": "500g",
+   "unique_scans_n": 69,
+   "product_name": "De Cecco Spaghetti Nr. 12",
+   "product_name_fr": "Spaghetti 12",
+   "_score": null
+  },
+  {
+   "code": "3560071086008",
+   "brands": [
+    "xx:Carrefour",
+    "xx:Carrefour Extra"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 61,
+   "product_name": "Spaghetti Blé complet",
+   "product_name_fr": "Spaghetti Blé complet",
+   "_score": null
+  },
+  {
+   "code": "5201193121700",
+   "brands": [
+    "xx:Melissa"
+   ],
+   "quantity": "500g",
+   "unique_scans_n": 61,
+   "product_name": "ΣΠΑΓΓΕΤΙ ολικής άλεσης",
+   "product_name_fr": "Melissa Whole Wheat Spaghetti",
+   "_score": null
+  },
+  {
+   "code": "3270190156222",
+   "brands": [
+    "xx:CARREFOUR FRANCE",
+    "xx:Carrefour"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 58,
+   "product_name": "Spaghetti semi-complets",
+   "product_name_fr": "Spaghetti semi-complets",
+   "_score": null
+  },
+  {
+   "code": "3038350015006",
+   "brands": [
+    "xx:Ebro Foods",
+    "xx:Panzani"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 56,
+   "product_name": "Spaghetti qualité supérieure 500g",
+   "product_name_fr": "Spaghetti qualité supérieure 500g",
+   "_score": null
+  },
+  {
+   "code": "3564707164511",
+   "brands": [
+    "xx:bio-village"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 55,
+   "product_name": "Spaghettis complets",
+   "product_name_fr": "Spaghettis complets",
+   "_score": null
+  },
+  {
+   "code": "5201193100019",
+   "brands": [
+    "xx:Melissa"
+   ],
+   "unique_scans_n": 51,
+   "product_name": "Spaghetti n6",
+   "product_name_fr": "Spaghetti n6",
+   "_score": null
+  },
+  {
+   "code": "3478820030823",
+   "brands": [
+    "xx:jardin-bio-etic",
+    "xx:Jardin biologique",
+    "xx:Léa Nature"
+   ],
+   "quantity": "200 g",
+   "unique_scans_n": 50,
+   "product_name": "Sauce tomate Spaghetti",
+   "product_name_fr": "Sauce tomate Spaghetti",
+   "_score": null
+  },
+  {
+   "code": "4013159604599",
+   "brands": [
+    "xx:BARESA"
+   ],
+   "quantity": "500g",
+   "unique_scans_n": 49,
+   "product_name": "Nudeln Spaghetti",
+   "product_name_fr": "Spaghetti",
+   "_score": null
+  },
+  {
+   "code": "3166352967907",
+   "brands": [
+    "xx:Marie"
+   ],
+   "quantity": "300 g",
+   "unique_scans_n": 47,
+   "product_name": "Escalope Milanaise, Dinde 100% filet",
+   "product_name_fr": "Escalope Milanaise, Dinde 100% filet",
+   "_score": null
+  },
+  {
+   "code": "8008343200035",
+   "brands": [
+    "xx:Rummo"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 47,
+   "product_name": "Rummo Lenta Lavorazione Spaghetti N° 3",
+   "product_name_fr": "Rummo Spaghetti No 3",
+   "_score": null
+  },
+  {
+   "code": "6111249945794",
+   "brands": [
+    "xx:Alitkane"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 46,
+   "product_name": "Spaghetti au blé complet N°5",
+   "product_name_fr": "Spaghetti au blé complet N°5",
+   "_score": null
+  },
+  {
+   "code": "3302740447020",
+   "brands": [
+    "xx:Fleury Michon"
+   ],
+   "quantity": "300 g",
+   "unique_scans_n": 45,
+   "product_name": "Escalope milanaise & spaghetti à la sauce tomate",
+   "product_name_fr": "Escalope milanaise & spaghetti à la sauce tomate",
+   "_score": null
+  },
+  {
+   "code": "3564700512555",
+   "brands": [
+    "xx:turini"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 45,
+   "product_name": "Spaghetti au blé complet",
+   "product_name_fr": "Spaghetti au blé complet",
+   "_score": null
+  },
+  {
+   "code": "8695077000798",
+   "brands": [
+    "xx:CARDELLA"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 42,
+   "product_name": "Spaghetti",
+   "product_name_fr": "Spaghetti",
+   "_score": null
+  },
+  {
+   "code": "3270160861101",
+   "brands": [
+    "xx:Picard"
+   ],
+   "quantity": "400g",
+   "unique_scans_n": 41,
+   "product_name": "Spaghetti à la Bolognaise",
+   "product_name_fr": "Spaghetti à la Bolognaise",
+   "_score": null
+  },
+  {
+   "code": "3478820003643",
+   "brands": [
+    "xx:jardin-bio-etic",
+    "xx:Léa Nature"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 39,
+   "product_name": "spaghetti au quinoa curry curcuma",
+   "product_name_fr": "spaghetti au quinoa curry curcuma",
+   "_score": null
+  },
+  {
+   "code": "8008343880039",
+   "brands": [
+    "xx:RUMMO"
+   ],
+   "quantity": "400g",
+   "unique_scans_n": 39,
+   "product_name": "Spaghetti n°3 sans gluten",
+   "product_name_fr": "Spaghetti n°3 sans gluten",
+   "_score": null
+  },
+  {
+   "code": "8076809545389",
+   "brands": [
+    "xx:Barilla",
+    "xx:Barilla Classic"
+   ],
+   "quantity": "1000g",
+   "unique_scans_n": 38,
+   "product_name": "Nudeln N°7 Spaghettoni",
+   "product_name_fr": "Pâtes spaghettoni n°7 1kg",
+   "_score": null
+  },
+  {
+   "code": "3270190127833",
+   "brands": [
+    "xx:CARREFOUR FRANCE",
+    "xx:Carrefour"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 37,
+   "product_name": "Spaghetti",
+   "product_name_fr": "Spaghetti",
+   "_score": null
+  },
+  {
+   "code": "8004880810058",
+   "brands": [
+    "xx:Monte Regale"
+   ],
+   "unique_scans_n": 36,
+   "product_name": "Monte Regale Italian Spaghetti",
+   "product_name_fr": "Monte Regale Italian Spaghetti",
+   "_score": null
+  },
+  {
+   "code": "8004690051573",
+   "brands": [
+    "xx:La Molisana"
+   ],
+   "quantity": "500g",
+   "unique_scans_n": 34,
+   "product_name": "",
+   "product_name_fr": "Spaghetti N°15",
+   "_score": null
+  },
+  {
+   "code": "3038350025005",
+   "brands": [
+    "xx:Ebro Foods",
+    "xx:Panzani"
+   ],
+   "quantity": "1 kg",
+   "unique_scans_n": 34,
+   "product_name": "Spaghetti",
+   "product_name_fr": "Spaghetti",
+   "_score": null
+  },
+  {
+   "code": "3038350335005",
+   "brands": [
+    "xx:Panzani"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 33,
+   "product_name": "Panzani spaghetti 3 minutes 500g",
+   "product_name_fr": "Panzani spaghetti 3 minutes 500g",
+   "_score": null
+  },
+  {
+   "code": "3248830002307",
+   "brands": [
+    "xx:WeightWatchers"
+   ],
+   "quantity": "300g",
+   "unique_scans_n": 32,
+   "product_name": "Spaghetti à la bolognaise",
+   "product_name_fr": "Spaghetti à la bolognaise",
+   "_score": null
+  },
+  {
+   "code": "3380390175531",
+   "brands": [
+    "xx:primeal"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 31,
+   "product_name": "Spaghetti Quinoa - Ail et persil",
+   "product_name_fr": "Spaghetti Quinoa - Ail et persil",
+   "_score": null
+  },
+  {
+   "code": "3256221135381",
+   "brands": [
+    "xx:u"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 31,
+   "product_name": "Pâtes Spaghetti au blé complet sachet de 500g",
+   "product_name_fr": "Pâtes Spaghetti au blé complet sachet de 500g",
+   "_score": null
+  },
+  {
+   "code": "3661945882846",
+   "brands": [
+    "xx:natura"
+   ],
+   "unique_scans_n": 31,
+   "product_name": "SPAGHETTI de konjac",
+   "product_name_fr": "spaghetti de konjac",
+   "_score": null
+  },
+  {
+   "code": "3250391422593",
+   "brands": [
+    "xx:Fiorini"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 31,
+   "product_name": "Spaghetti blé complet",
+   "product_name_fr": "Spaghetti blé complet",
+   "_score": null
+  },
+  {
+   "code": "3456300009682",
+   "brands": [
+    "xx:jardin-bio-etic",
+    "xx:Léa Nature"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 29,
+   "product_name": "Jardin Bio - Spaghetti brindilles semi-complets",
+   "product_name_fr": "Jardin Bio - Spaghetti brindilles semi-complets",
+   "_score": null
+  },
+  {
+   "code": "3248830001676",
+   "brands": [
+    "xx:WW"
+   ],
+   "quantity": "290 g",
+   "unique_scans_n": 29,
+   "product_name": "Spaghetti au poulet pesto de courgettes",
+   "product_name_fr": "Spaghetti au poulet pesto de courgettes",
+   "_score": null
+  },
+  {
+   "code": "8076809585385",
+   "brands": [
+    "xx:Barilla"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 28,
+   "product_name": "Pâtes premium Spaghettoni Al Bronzo 500G",
+   "product_name_fr": "Pâtes premium Spaghettoni Al Bronzo 500G",
+   "_score": null
+  },
+  {
+   "code": "6111249942274",
+   "brands": [
+    "xx:Alitkane"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 27,
+   "product_name": "Spaghetti",
+   "product_name_fr": "Spaghetti",
+   "_score": null
+  },
+  {
+   "code": "3564707000086",
+   "brands": [
+    "xx:bio-village",
+    "xx:marque-repere"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 27,
+   "product_name": "Spaghettis",
+   "product_name_fr": "Spaghettis",
+   "_score": null
+  },
+  {
+   "code": "4056489362449",
+   "brands": [
+    "xx:combino"
+   ],
+   "quantity": "500 g",
+   "unique_scans_n": 25,
+   "product_name": "Bio Spaghetti blé complet",
+   "product_name_fr": "Bio Spaghetti blé complet",
+   "_score": null
+  },
+  {
+   "code": "8718836396885",
+   "brands": [
+    "xx:zero pasta"
+   ],
+   "quantity": "200 gram",
+   "unique_scans_n": 24,
+   "product_name": "Zero Pasta Spaghetti",
+   "product_name_fr": "Zero Pasta Spaghetti",
+   "_score": null
+  },
+  {
+   "code": "06172481",
+   "brands": [
+    "xx:Ma vie sans gluten"
+   ],
+   "quantity": "400 g",
+   "unique_scans_n": 23,
+   "product_name": "Fusilli de lentilles corail imp",
+   "product_name_fr": "Spaghetti des Andes Quinoa & Amarante",
+   "_score": null
+  },
+  {
+   "code": "5018374320094",
+   "brands": [
+    "xx:Tsdt"
+   ],
+   "quantity": "10 g",
+   "unique_scans_n": 23,
+   "product_name": "Tesco Everyday Value Spaghetti In Tomato Sauce 410G",
+   "product_name_fr": "Tesco Everyday Value Spaghetti In Tomato Sauce 410G",
+   "_score": null
+  }
+ ],
+ "aggregations": null,
+ "facets": {},
+ "charts": {},
+ "page": 1,
+ "page_size": 50,
+ "page_count": 56,
+ "took": 15,
+ "timed_out": false,
+ "count": 2800,
+ "is_count_exact": true,
+ "warnings": null
+}

@@ -425,13 +425,14 @@ Modèle dans `.env.example`.
 - Les promos fidélité sont affichées, jamais déduites.
 - Le Dockerfile n'a pas été testé (pas d'accès au démon Docker sur la machine du squelette).
 
-## 15. Recherche locale des drives de Bruz
+## 15. Recherche des points de retrait répertoriés
 
-- **Comparer** ouvre le flux `/panier/prix/flux`. Pour les deux points de retrait, il affiche
+- **Comparer** ouvre le flux `/panier/prix/flux`. Pour les points de retrait répertoriés, il affiche
   les prix déjà connus et suit les tâches Edge démarrées pour les prix manquants ou périmés.
   Le total est recalculé à partir du dernier état de chaque couple article et magasin.
-- Le catalogue local associe les fiches OSM de Bruz aux identifiants marchands des deux drives. Pour
-  Courses U, le point de retrait se trouve à La Haye de Pan, à une adresse distincte du supermarché.
+- Le catalogue associe les fiches OSM aux points de retrait et aux adresses officielles du site
+  marchand. Chaque extension prend les tâches par enseigne et reçoit le point précis à ouvrir.
+  Les relevés, leur cache et leurs pauses sont associés au point de retrait.
 - `app/drives/schema.sql` déclare les références marchandes, les observations et la file des recherches.
   Les tâches actives sont uniques par drive et requête normalisée. La prise de tâche et le dépôt utilisent
   des transactions SQLite. Chaque dépôt doit correspondre au bail actif et au point de retrait.
@@ -443,6 +444,13 @@ Modèle dans `.env.example`.
   `DRIVES_JETON`.
 - `app.drives.importer` alimente facultativement l’historique à partir des exports CSV. Les dates sans
   heure restent au format d’origine. Leur fraîcheur se calcule depuis le début de la journée à Paris.
+
+## 16. Site partagé entre deux PC
+
+Tailscale Serve fournit une adresse HTTPS privée et transmet les requêtes à un seul serveur
+FastAPI sur le PC hôte. SQLite reste sur le disque du PC hôte. Chaque navigateur conserve son
+panier dans sa session. Les extensions autorisées prennent leurs tâches dans la même file
+et déposent leurs observations dans cette base. Un bail est lié au jeton qui a pris la tâche.
 
 ## Annexe : notes techniques sur les sources (relevées le 27/11/2026)
 

@@ -10,13 +10,15 @@
 <header><h1>Relevés de courses</h1><span id="count">0 relevé</span></header>
 <p><strong id="drive-name"></strong><br><span id="drive-address"></span></p>
 <details>
-  <summary>Collecte du comparateur local</summary>
+  <summary>Collecte du comparateur</summary>
+  <label>Adresse du comparateur<input id="adresse-serveur" type="url" spellcheck="false"></label>
   <label>Jeton de collecte<input id="jeton" type="password" autocomplete="off"></label>
-  <p>Configure une fois la connexion. Edge ouvrira le site marchand quand le comparateur en aura besoin.</p>
+  <p>Edge ouvrira automatiquement le point de retrait demandé par le comparateur.</p>
   <button id="activer" type="button">Activer la collecte automatique</button>
   <button id="desactiver" type="button">Arrêter la collecte automatique</button>
   <p id="collecte-statut" role="status"></p>
 </details>
+<p>Le relevé manuel ci-dessous concerne le drive de Bruz.</p>
 <button id="read" type="button">Relever cette page</button>
 <p id="status" role="status">Ouvre une fiche produit sur le drive souhaité.</p>
 <form id="form">

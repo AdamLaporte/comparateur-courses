@@ -1,24 +1,46 @@
+import json
 import re
 import unicodedata
 from datetime import UTC, date, datetime, time
 from decimal import Decimal
+from pathlib import Path
 from typing import Annotated, Literal
 from urllib.parse import urlsplit, urlunsplit
 
-from pydantic import BaseModel, Field, StringConstraints, field_validator, model_validator
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    Field,
+    StringConstraints,
+    field_validator,
+    model_validator,
+)
 from pydantic_core import PydanticCustomError
 
 from app.gabarits import PARIS
 
-DriveId = Literal["coursesu-33315", "intermarche-05052"]
-DRIVES: dict[DriveId, tuple[str, str, tuple[str, ...]]] = {
-    "coursesu-33315": ("Super U Bruz", "109 avenue Alphonse Legault", ("coursesu.com",)),
-    "intermarche-05052": (
-        "Intermarché Super Bruz Cap Vert",
-        "2 place Robert Barré, CC Cap Vert",
-        ("intermarche.com", "intermarche.fr"),
-    ),
-}
+EnseigneDrive = Literal["coursesu", "intermarche"]
+DOMAINES = {"coursesu": ("coursesu.com",), "intermarche": ("intermarche.com", "intermarche.fr")}
+
+
+class PointRetrait(BaseModel):
+    nom: str
+    osm: str
+    adresse: str
+    ville: str
+    code_postal: str
+    accueil: str
+    libelles: list[str]
+    coordonnees: tuple[float, float] | None = None
+
+
+def valider_drive(drive: str) -> str:
+    if drive not in DRIVES:
+        raise PydanticCustomError("drive_inconnu", "Point de retrait non répertorié.")
+    return drive
+
+
+DriveId = Annotated[str, AfterValidator(valider_drive)]
 Texte = Annotated[str, StringConstraints(strip_whitespace=True, max_length=500)]
 Montant = Annotated[Decimal, Field(ge=0, max_digits=10, decimal_places=4)]
 Erreur = Literal["mauvais_drive", "page_inattendue", "reseau", "delai", "403", "429", "defi", "404"]
@@ -46,10 +68,25 @@ def url_marchande(drive: DriveId, url: str) -> str:
     if (
         parsed.scheme != "https"
         or parsed.netloc != hote
-        or not any(hote == d or hote.endswith("." + d) for d in DRIVES[drive][2])
+        or not any(hote == d or hote.endswith("." + d) for d in DOMAINES[drive.split("-", 1)[0]])
     ):
         raise ValueError("Lien marchand hors du périmètre du drive.")
     return urlunsplit((parsed.scheme, hote, parsed.path or "/", "", ""))
+
+
+DRIVES = {
+    drive: PointRetrait.model_validate(point)
+    for drive, point in json.loads(
+        Path(__file__).with_name("points_retrait.json").read_text(encoding="utf-8")
+    ).items()
+}
+for identifiant, point in DRIVES.items():
+    if not re.fullmatch(r"(?:coursesu|intermarche)-[a-z0-9_-]+", identifiant):
+        raise ValueError(f"Identifiant de retrait invalide : {identifiant}")
+    if url_marchande(identifiant, point.accueil) != point.accueil:
+        raise ValueError(f"Adresse de retrait non canonique : {identifiant}")
+
+DRIVES_OSM = {point.osm: drive for drive, point in DRIVES.items()}
 
 
 def date_tri(releve_le: str) -> str:
@@ -64,7 +101,7 @@ def date_tri(releve_le: str) -> str:
 
 class Recherche(BaseModel):
     q: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=160)]
-    drives: Annotated[list[DriveId], Field(min_length=1, max_length=2)]
+    drives: Annotated[list[DriveId], Field(min_length=1, max_length=20)]
 
     @field_validator("q")
     @classmethod

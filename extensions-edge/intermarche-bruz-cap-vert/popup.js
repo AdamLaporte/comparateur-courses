@@ -1,6 +1,7 @@
 import { extractProductPage } from "./extract.js";
 import { csv, price, validEan } from "./csv.js";
 import { drive } from "./drive.js";
+import { appelerApi, normaliserOrigine, origineLocale } from "./connexion.js";
 
 const byId = (id) => document.getElementById(id);
 const form = byId("form");
@@ -129,34 +130,39 @@ byId("export").addEventListener("click", () => {
 byId("drive-name").textContent = drive.name;
 byId("drive-address").textContent = drive.address;
 const collecteStatut = byId("collecte-statut");
-chrome.storage.local.get(["jeton", "suspendu"]).then(({ jeton, suspendu }) => {
+chrome.storage.local.get(["jeton", "suspendu", "adresseServeur"]).then(({ jeton, suspendu, adresseServeur }) => {
+  byId("adresse-serveur").value = adresseServeur || origineLocale;
   byId("jeton").value = jeton || "";
   collecteStatut.textContent = jeton && !suspendu ? "Collecte automatique activée." : "Collecte inactive.";
 });
 byId("activer").addEventListener("click", async () => {
   const jeton = byId("jeton").value.trim();
   if (!jeton) {
-    collecteStatut.textContent = "Saisis la valeur de DRIVES_JETON configurée sur le serveur.";
+    collecteStatut.textContent = "Saisis le jeton de collecte fourni pour ce comparateur.";
+    return;
+  }
+  let origine;
+  try {
+    origine = normaliserOrigine(byId("adresse-serveur").value);
+  } catch {
+    collecteStatut.textContent = "Saisis l’adresse locale ou l’adresse HTTPS donnée par Tailscale.";
     return;
   }
   try {
-    const reponse = await fetch(
-      `http://127.0.0.1:8000/api/drives/${drive.serveurId}/connexion`,
-      {
-        method: "POST",
-        credentials: "omit",
-        redirect: "error",
-        signal: AbortSignal.timeout(5000),
-        headers: { "X-Drives-Jeton": jeton },
-      },
+    if (origine !== origineLocale && !await chrome.permissions.request({ origins: [origine + "/*"] })) {
+      collecteStatut.textContent = "Autorise l’accès à l’adresse du comparateur pour activer la collecte.";
+      return;
+    }
+    const reponse = await appelerApi(
+      origine, `/enseignes/${drive.enseigneId}/connexion`, jeton,
     ).catch(() => null);
     if (!reponse?.ok) {
       collecteStatut.textContent = reponse?.status === 401
-        ? "Jeton refusé. Vérifie DRIVES_JETON."
-        : "Serveur local indisponible sur 127.0.0.1:8000.";
+        ? "Jeton refusé par le comparateur."
+        : "Comparateur inaccessible à cette adresse.";
       return;
     }
-    await chrome.storage.local.set({ jeton, suspendu: false });
+    await chrome.storage.local.set({ adresseServeur: origine, jeton, suspendu: false });
     collecteStatut.textContent = "Serveur connecté. L’onglet marchand s’ouvrira au premier relevé.";
     void chrome.runtime.sendMessage("releve-drive").catch(() => {});
   } catch {

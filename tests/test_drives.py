@@ -223,6 +223,44 @@ def test_connexion_edge_signale_presence_sans_prendre_la_tache(edge):
     assert prendre(client, U)["id"] == vue["tache_id"]
 
 
+def test_extension_par_enseigne_collecte_deux_retraits_sans_melanger(edge):
+    client, _ = edge
+    gayeulles = "intermarche-06994"
+    guichen = "coursesu-hyperu-guichen"
+    lancer(client, drives=(INTER, gayeulles))
+    lancer(client, drives=(guichen,))
+    route = f"{URL}/enseignes/intermarche"
+    assert client.post(route + "/connexion", headers=JETON).status_code == 204
+    assert all(v["connecte"] for v in suivre(client, drives=(INTER, gayeulles)))
+    bruz = client.post(route + "/prendre", headers=JETON).json()
+    assert bruz["drive_id"] == INTER
+    assert bruz["point"]["id"] == "05052"
+    assert succes(client, bruz, produit(INTER, prix_eur="1.25")).status_code == 204
+    rennes = client.post(route + "/prendre", headers=JETON).json()
+    assert rennes["drive_id"] == gayeulles
+    assert rennes["point"]["id"] == "06994"
+    assert succes(client, rennes, produit(INTER, prix_eur="2.00")).status_code == 204
+    assert client.post(route + "/prendre", headers=JETON).json() is None
+    assert prendre(client, guichen)["drive_id"] == guichen
+    assert [
+        v["produits"][0]["prix_centimes"] for v in suivre(client, drives=(INTER, gayeulles))
+    ] == [125, 200]
+
+
+def test_magasins_point_de_retrait_hors_bruz():
+    from app.contrats import Enseigne
+    from app.magasins.service import magasins_osm
+
+    magasins = magasins_osm()
+    assert any(
+        m.id == "coursesu-hyperu-guichen" and m.ville == "Guichen"
+        for m in magasins[Enseigne.COURSES_U]
+    )
+    assert any(
+        m.id == "intermarche-06994" and m.ville == "Rennes" for m in magasins[Enseigne.INTERMARCHE]
+    )
+
+
 def test_drives_rejette_un_lot_partiellement_invalide(edge, reglages):
     client, _ = edge
     lancer(client, drives=(U,))

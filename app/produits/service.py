@@ -2,8 +2,12 @@
 
 - SOURCE_PRODUITS=open_food_facts (défaut) : recherche texte sur search.openfoodfacts.org
   (search-a-licious ; la recherche classique `cgi/search.pl` renvoie souvent 503).
-- Les résultats sont reclassés sur place : d'abord ceux dont le nom ou la marque contient tous les
-  mots, puis ceux qui ont la quantité demandée, les EAN français (préfixe 3) en tête, puis les plus scannés.
+- Recherche pendant la frappe : le dernier mot est un début de mot (« spag » → `spag*`), les autres doivent
+  tous être présents ; candidats triés par popularité, complétés par la recherche classique s'il en manque.
+- Les résultats sont reclassés sur place : d'abord ceux dont le nom ou la marque contient tous les mots (le
+  dernier en début de mot), puis ceux qui ont la quantité demandée, puis le nom le plus simple (qui commence
+  par la recherche, avec le moins de mots en plus ; un EAN français, préfixe 3, compte pour deux mots de
+  moins), puis les plus scannés.
 - Quantité dans la recherche (« nutella 400 g », « lait 1 L », « coca 6 x 1,5 L ») : elle est retirée des mots
   cherchés (sinon Open Food Facts ne renvoie rien) et sert à une recherche ciblée sur le champ `quantity`,
   complétée par la recherche générale. 1 kg = 1000 g, 1 L = 100 cl = 1000 ml.
@@ -46,10 +50,10 @@ _dernier_appel = 0.0
 
 
 def normaliser(texte: str | None) -> str:
+    """Minuscules, sans accents ni ponctuation ; « œ » et « æ » deviennent « oe » et « ae »."""
+    texte = (texte or "").lower().replace("œ", "oe").replace("æ", "ae")
     sans_accents = "".join(
-        c
-        for c in unicodedata.normalize("NFD", (texte or "").lower())
-        if not unicodedata.combining(c)
+        c for c in unicodedata.normalize("NFD", texte) if not unicodedata.combining(c)
     )
     return " ".join(re.sub(r"[^a-z0-9]+", " ", sans_accents).split())
 
@@ -152,6 +156,25 @@ def _marque(marques: list[str] | str | None) -> str | None:
     return premiere[0].upper() + premiere[1:] if premiere.islower() else premiere
 
 
+def requete_prefixe(texte: str) -> str | None:
+    """« spag » → « spag* », « pain de mi » → « pain AND de AND mi* » (recherche pendant la frappe)."""
+    mots = re.findall(r"[^\W_]+", texte.lower())
+    if not mots or len(mots[-1]) < 2:
+        return None
+    return " AND ".join([*mots[:-1], mots[-1] + "*"])
+
+
+def _mots_produit(hit: dict) -> list[str]:
+    libelle = hit.get("product_name_fr") or hit.get("product_name") or ""
+    return normaliser(f"{libelle} {' '.join(hit.get('brands') or [])}").split()
+
+
+def correspond(hit: dict, mots: list[str]) -> bool:
+    """Chaque mot de la recherche commence un mot du nom ou de la marque (« spag » → « Spaghetti »)."""
+    mots_produit = _mots_produit(hit)
+    return all(any(m.startswith(mot) for m in mots_produit) for mot in mots)
+
+
 def produits_depuis_reponse(contenu: dict, texte: str) -> list[Produit]:
     """Produits d'une réponse search-a-licious, reclassés pour la recherche `texte`."""
     texte, quantite_voulue = separer_quantite(texte)
@@ -170,12 +193,14 @@ def produits_depuis_reponse(contenu: dict, texte: str) -> list[Produit]:
             marque=_marque(hit.get("brands")),
             quantite=(hit.get("quantity") or "").strip() or None,
         )
-        texte_produit = normaliser(f"{libelle} {' '.join(hit.get('brands') or [])}")
-        correspond = all(mot in texte_produit for mot in mots)
+        mots_nom = normaliser(libelle).split()
+        en_plus = max(len(mots_nom) - len(mots), 0)
+        commence = bool(mots and mots_nom and mots_nom[0].startswith(mots[0]))
         cle = (
-            not correspond,
+            not correspond(hit, mots),
             not meme_quantite(quantite_voulue, lire_quantite(produit.quantite)),
-            not ean.startswith("3"),
+            # Nom le plus simple d'abord : « Spaghetti 500 g » avant « Sauce à spag ».
+            (0 if commence else 2) + en_plus - (2 if ean.startswith("3") else 0),
             produit.quantite is None,
             -(hit.get("unique_scans_n") or 0),
             rang,
@@ -203,9 +228,12 @@ def _verrou_courant() -> asyncio.Lock:
 
 
 async def _reponse_off(
-    texte: str, reglages: Reglages, transport: httpx.AsyncBaseTransport | None
+    texte: str,
+    reglages: Reglages,
+    transport: httpx.AsyncBaseTransport | None,
+    tri: str | None = None,
 ) -> dict | None:
-    cle = f"off:recherche:{normaliser(texte)}"
+    cle = f"off:recherche:{normaliser(texte)}" + (f":{tri}" if tri else "")
     frais = cache.lire_reponse(reglages, cle, DUREE_REPONSE_MIN)
     if frais is not None:
         return frais
@@ -222,7 +250,13 @@ async def _reponse_off(
             ) as client:
                 reponse = await client.get(
                     f"{reglages.open_food_facts_recherche_url}/search",
-                    params={"q": texte, "page_size": TAILLE_PAGE, "langs": "fr", "fields": CHAMPS},
+                    params={
+                        "q": texte,
+                        "page_size": TAILLE_PAGE,
+                        "langs": "fr",
+                        "fields": CHAMPS,
+                        **({"sort_by": tri} if tri else {}),
+                    },
                 )
                 reponse.raise_for_status()
                 contenu = reponse.json()
@@ -281,8 +315,14 @@ async def rechercher(
         # Recherche ciblée sur la quantité d'abord ; la recherche générale complète si besoin.
         ciblee = await _reponse_off(requete_ciblee(base, quantite), reglages, transport)
         hits += (ciblee or {}).get("hits") or []
-    if len(hits) < limite:
-        generale = await _reponse_off(base if len(base) >= 2 else texte, reglages, transport)
+    recherche = base if len(base) >= 2 else texte
+    mots = mots_recherche(recherche)
+    if (prefixe := requete_prefixe(recherche)) is not None:
+        # Pendant la frappe : dernier mot en début de mot, candidats les plus scannés d'abord.
+        populaires = await _reponse_off(prefixe, reglages, transport, tri="-unique_scans_n")
+        hits += (populaires or {}).get("hits") or []
+    if sum(correspond(hit, mots) for hit in hits) < limite:
+        generale = await _reponse_off(recherche, reglages, transport)
         hits += (generale or {}).get("hits") or []
     produits = produits_depuis_reponse({"hits": hits}, texte)[:limite]
     if not produits:

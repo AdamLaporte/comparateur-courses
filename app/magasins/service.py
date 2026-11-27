@@ -18,7 +18,7 @@ from itertools import chain
 
 from app.config import Reglages
 from app.contrats import Enseigne, Magasin, MagasinsReponse, Position
-from app.drives.modeles import DRIVES, DriveId
+from app.drives.modeles import DRIVES, DRIVES_OSM
 from app.magasins.geocodage import geocoder
 from app.magasins.import_osm import FICHIER as FICHIER_OSM
 from app.sources.base import SourceIndisponible, SourcePrix
@@ -27,12 +27,6 @@ from app.sources.registre import sources_actives
 logger = logging.getLogger(__name__)
 
 RAYON_PLUS_PROCHES_KM = 50.0
-
-# Fiches OSM associées aux points marchands vérifiés. Le retrait U est à La Haye de Pan.
-RETRAITS_BRUZ: dict[str, tuple[DriveId, tuple[float, float] | None]] = {
-    "n259373664": ("intermarche-05052", None),
-    "w66805674": ("coursesu-33315", (48.0289, -1.7282)),
-}
 
 
 def distance_km(a: Position, b: Position) -> float:
@@ -69,19 +63,18 @@ def magasins_osm() -> dict[Enseigne, list[Magasin]]:
     par_enseigne: dict[Enseigne, list[Magasin]] = {e: [] for e in Enseigne}
     for m in json.loads(FICHIER_OSM.read_text(encoding="utf-8")):
         enseigne = Enseigne(m["enseigne"])
-        if retrait := RETRAITS_BRUZ.get(m["id"]):
-            drive_id, coordonnees = retrait
-            nom, adresse, _ = DRIVES[drive_id]
-            lat, lon = coordonnees or (m["lat"], m["lon"])
+        if drive_id := DRIVES_OSM.get(m["id"]):
+            point = DRIVES[drive_id]
+            lat, lon = point.coordonnees or (m["lat"], m["lon"])
             par_enseigne[enseigne].append(
                 Magasin(
                     id=drive_id,
                     enseigne=enseigne,
                     id_enseigne=drive_id.split("-", 1)[1],
-                    nom=nom,
-                    adresse=f"{adresse}, 35170 Bruz",
-                    code_postal="35170",
-                    ville="Bruz",
+                    nom=point.nom,
+                    adresse=f"{point.adresse}, {point.code_postal} {point.ville}",
+                    code_postal=point.code_postal,
+                    ville=point.ville,
                     position=Position(lat=lat, lon=lon),
                 )
             )

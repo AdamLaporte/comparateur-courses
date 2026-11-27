@@ -4,11 +4,12 @@ Tous les réglages ont une valeur par défaut : le site marche sans `.env`, avec
 Modèle des variables : `.env.example`.
 """
 
+import re
 from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends, Request
-from pydantic import field_validator
+from pydantic import SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.contrats import Enseigne
@@ -18,7 +19,10 @@ RACINE = Path(__file__).resolve().parent.parent
 
 class Reglages(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=RACINE / ".env", env_file_encoding="utf-8", extra="ignore"
+        env_file=RACINE / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        hide_input_in_errors=True,
     )
 
     # Source de prix par enseigne : "fictive" (défaut), "api" (Intermarché),
@@ -43,6 +47,7 @@ class Reglages(BaseSettings):
     cache_ttl_min: int = 360
     drives_fraicheur_min: int = 1440
     drives_jeton: str = ""
+    drives_collecteurs: dict[str, SecretStr] = {}
     # Comparaison : temps laissé aux extensions des drives pour trouver un prix manquant.
     drives_attente_s: float = 75.0
     drives_demarrer_edge: bool = False
@@ -77,6 +82,53 @@ class Reglages(BaseSettings):
     # Application.
     secret_key: str = "dev-secret-a-changer"
     db_path: Path = Path("data/app.db")
+    site_partage_origine: str = ""
+    site_partage_comptes: dict[str, SecretStr] = {}
+
+    @model_validator(mode="after")
+    def verifier_site_partage(self) -> "Reglages":
+        if not self.site_partage_origine:
+            return self
+        if not re.fullmatch(
+            r"https://(?:[a-z0-9][a-z0-9-]*\.){2}ts\.net", self.site_partage_origine
+        ):
+            raise ValueError(
+                "L’origine du site partagé doit être l’adresse HTTPS fournie par Tailscale Serve."
+            )
+        if (
+            len(self.secret_key) < 32
+            or not self.site_partage_comptes
+            or not self.drives_collecteurs
+        ):
+            raise ValueError(
+                "Configurez la clé de session, les comptes et les jetons du site partagé."
+            )
+        if any(
+            not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}", identifiant)
+            for comptes in (self.site_partage_comptes, self.drives_collecteurs)
+            for identifiant in comptes
+        ):
+            raise ValueError(
+                "Utilisez des identifiants de comptes et de collecteurs alphanumériques."
+            )
+        secrets_partages = [
+            secret.get_secret_value()
+            for comptes in (self.site_partage_comptes, self.drives_collecteurs)
+            for secret in comptes.values()
+        ]
+        if (
+            min(map(len, secrets_partages)) < 24
+            or len(set(secrets_partages)) != len(secrets_partages)
+            or self.secret_key in secrets_partages
+        ):
+            raise ValueError(
+                "Les mots de passe, jetons et clé de session doivent être longs et distincts."
+            )
+        return self
+
+    @property
+    def collecte_drives_active(self) -> bool:
+        return bool(self.drives_collecteurs if self.site_partage_origine else self.drives_jeton)
 
     @field_validator("db_path")
     @classmethod

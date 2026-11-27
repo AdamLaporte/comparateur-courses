@@ -4,15 +4,18 @@
 <title>Démarrage automatique des collecteurs</title>
 <output id="rapport">Tests en cours</output>
 <script type="module">
-  async function tester(dossier, id, erreurAttendue = "") {
+  const catalogue = await (await fetch("/app/drives/points_retrait.json")).json();
+
+  async function tester(dossier, commandes, erreurAttendue = "", adresseServeur) {
     const evenement = () => ({ addListener() {} });
     const declencheurs = [];
     const session = {};
     const onglet = { id: 1, status: "complete", url: "about:blank" };
     const ouvertures = [];
+    let commande;
     let depot;
     let terminer;
-    const fini = new Promise((resolve) => { terminer = resolve; });
+    const enseigne = commandes[0].split("-")[0];
     Object.defineProperty(globalThis, "chrome", {
       configurable: true,
       value: {
@@ -23,7 +26,7 @@
         },
         webRequest: { onCompleted: evenement(), onErrorOccurred: evenement() },
         storage: {
-          local: { get: async () => ({ jeton: "simulation" }) },
+          local: { get: async () => ({ jeton: "simulation", adresseServeur }) },
           session: {
             get: async () => ({ ...session }),
             set: async (valeurs) => Object.assign(session, valeurs),
@@ -45,12 +48,12 @@
         },
         scripting: {
           executeScript: async ({ func, args = [] }) => {
-            const [adaptateur, requete, soumettre] = args;
+            const [adaptateur, requete, soumettre, point] = args;
             if (soumettre) onglet.url = new URL("?q=lait", onglet.url).href;
             const produit = { produit: "Lait fictif", prix_eur: "1.20" };
             const resultat = func.name === "extractProductPage" ? { items: [produit] }
               : erreurAttendue ? { erreur: erreurAttendue }
-              : { retrait: id, document: requete && !soumettre ? 2 : 1,
+              : { retrait: point?.id, document: requete && !soumettre ? 2 : 1,
                 recherche: requete === "lait", charge: true, cartes: 1 };
             if (!adaptateur) throw new Error("Un adaptateur est requis");
             return [{ documentId: "test", result: resultat }];
@@ -59,30 +62,52 @@
       },
     });
     globalThis.fetch = async (url, options) => {
+      if (new URL(url).origin !== (adresseServeur || "http://127.0.0.1:8000")
+          || options.credentials !== "omit" || options.redirect !== "error") {
+        terminer();
+        return { ok: false };
+      }
       if (url.endsWith("/prendre")) {
-        return { ok: true, json: async () => ({ id: 1, drive_id: dossier === "super-u-bruz"
-          ? "coursesu-33315" : "intermarche-05052", bail: "test", requete: "lait" }) };
+        if (!url.endsWith("/enseignes/" + enseigne + "/prendre")) {
+          terminer();
+          return { ok: false };
+        }
+        const point = catalogue[commande];
+        return { ok: true, json: async () => ({
+          id: 1, drive_id: commande, bail: "test", requete: "lait",
+          point: { id: commande.slice(enseigne.length + 1), accueil: point.accueil,
+            libelles: point.libelles },
+        }) };
       }
       depot = JSON.parse(options.body);
       terminer();
       return { ok: true };
     };
-    await import("/extensions-edge/" + dossier + "/collecteur.js");
-    declencheurs[0]();
-    await fini;
-    if (ouvertures[0] !== "onglet" || !ouvertures[1]?.startsWith("https://")) {
-      throw new Error("Aucune page marchande ouverte automatiquement pour " + dossier);
+    await import("/extensions-edge/" + dossier + "/collecteur.js?" + (adresseServeur ? "partage" : "local"));
+    for (commande of commandes) {
+      depot = null;
+      const fini = new Promise((resolve) => { terminer = resolve; });
+      declencheurs[0]();
+      await fini;
+      if (ouvertures[0] !== "onglet" || !ouvertures.includes(catalogue[commande].accueil)) {
+        throw new Error("Le bon point de retrait n’a pas été ouvert pour " + commande);
+      }
+      if (!depot || depot.drive_id !== commande || (erreurAttendue
+          ? depot.erreur !== erreurAttendue || depot.produits
+          : depot.etat !== "succes" || depot.service_observe !== commande.slice(enseigne.length + 1))) {
+        throw new Error("Réponse du collecteur incorrecte pour " + commande);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 0));
     }
-    if (erreurAttendue ? depot.erreur !== erreurAttendue || depot.produits
-        : depot.etat !== "succes" || depot.service_observe !== id) {
-      throw new Error("Réponse du collecteur incorrecte pour " + dossier);
-    }
+    if (ouvertures.filter((x) => x === "onglet").length !== 1) throw new Error("Onglet non réutilisé");
   }
 
   const rapport = document.querySelector("#rapport");
   try {
-    await tester("super-u-bruz", "33315");
-    await tester("intermarche-bruz-cap-vert", "05052", "defi");
+    await tester("super-u-bruz", ["coursesu-33315", "coursesu-hyperu-guichen"]);
+    await tester("intermarche-bruz-cap-vert", ["intermarche-05052"], "defi");
+    await tester("intermarche-bruz-cap-vert", ["intermarche-05052", "intermarche-06994"],
+      "", "https://comparateur-test.equipe.ts.net");
     rapport.textContent = "DRIVES_COLLECTEUR_OK";
   } catch (erreur) {
     rapport.textContent = "DRIVES_COLLECTEUR_ECHEC " + erreur.message;

@@ -10,6 +10,7 @@ from app.drives.modeles import (
     DRIVES,
     Depot,
     DriveId,
+    EnseigneDrive,
     ProduitObserve,
     Recherche,
     date_tri,
@@ -140,10 +141,14 @@ def _vue_drive(
     pause = bool(
         collecteur and collecteur["pause_jusqua"] and collecteur["pause_jusqua"] > horodatage
     )
-    connecte = bool(
-        collecteur
-        and collecteur["vu_le"]
-        and collecteur["vu_le"] > horodater(instant - timedelta(seconds=75))
+    presence_enseigne = cnx.execute(
+        "SELECT vu_le FROM drive_collecteur_enseigne WHERE enseigne=?",
+        (drive.split("-", 1)[0],),
+    ).fetchone()
+    seuil_presence = horodater(instant - timedelta(seconds=75))
+    connecte = any(
+        presence and presence["vu_le"] and presence["vu_le"] > seuil_presence
+        for presence in (collecteur, presence_enseigne)
     )
     mots = recherche.cle.split()
     filtre, parametres = (
@@ -185,7 +190,8 @@ def _vue_drive(
         etat, tache_id = tache["etat"], tache["id"]
     elif pause:
         etat, erreur = "pause", tache["erreur"] if tache and tache["erreur"] else None
-    elif creer and reglages.drives_jeton:
+    elif creer and reglages.collecte_drives_active:
+        duree = timedelta(days=1) if reglages.site_partage_origine else timedelta(minutes=5)
         tache_id = cnx.execute(
             "INSERT INTO drive_tache (drive_id, cle, requete, etat, expire_le) "
             "VALUES (?, ?, ?, 'attente', ?) RETURNING id",
@@ -193,7 +199,7 @@ def _vue_drive(
                 drive,
                 recherche.cle,
                 terme_marchand or recherche.q,
-                horodater(instant + timedelta(minutes=5)),
+                horodater(instant + duree),
             ),
         ).fetchone()["id"]
         etat = "attente"
@@ -207,7 +213,7 @@ def _vue_drive(
         produit.pop("date_tri")
     return {
         "drive_id": drive,
-        "nom": DRIVES[drive][0],
+        "nom": DRIVES[drive].nom,
         "etat": etat,
         "erreur": erreur,
         "tache_id": tache_id,
@@ -283,23 +289,74 @@ def rechercher(reglages: Reglages, recherche: Recherche, *, creer: bool) -> list
     return resultats
 
 
-def prendre(reglages: Reglages, drive: DriveId) -> dict | None:
+def prendre(
+    reglages: Reglages,
+    drive: DriveId,
+    collecteur: str | None = None,
+) -> dict | None:
+    return _prendre(reglages, (drive,), collecteur)
+
+
+def prendre_enseigne(
+    reglages: Reglages, enseigne: EnseigneDrive, collecteur: str | None
+) -> dict | None:
+    drives = tuple(d for d in DRIVES if d.startswith(enseigne + "-"))
+    return _prendre(reglages, drives, collecteur, enseigne=enseigne)
+
+
+def _prendre(
+    reglages: Reglages,
+    drives: tuple[DriveId, ...],
+    collecteur: str | None,
+    *,
+    enseigne: EnseigneDrive | None = None,
+) -> dict | None:
     instant = maintenant()
     horodatage = horodater(instant)
     with db.connexion(reglages.db_path) as cnx:
         cnx.execute("BEGIN IMMEDIATE")
         _expiration(cnx, horodatage)
-        pause_jusqua = _signaler(cnx, drive, horodatage)
-        if pause_jusqua and pause_jusqua > horodatage:
-            return None
+        if enseigne:
+            _signaler_enseigne(cnx, enseigne, horodatage)
+        else:
+            _signaler(cnx, drives[0], horodatage)
+        parametres = ", ".join("?" for _ in drives)
         ligne = cnx.execute(
             "UPDATE drive_tache SET etat='cours', bail=?, expire_le=? WHERE id=( "
-            "SELECT id FROM drive_tache WHERE drive_id=? AND etat='attente' AND NOT EXISTS ("
-            "SELECT 1 FROM drive_tache WHERE drive_id=? AND etat='cours') ORDER BY id LIMIT 1"
+            f"SELECT t.id FROM drive_tache t WHERE t.drive_id IN ({parametres}) AND t.etat='attente' "
+            "AND NOT EXISTS (SELECT 1 FROM drive_tache b WHERE b.drive_id=t.drive_id AND b.etat='cours') "
+            "AND NOT EXISTS (SELECT 1 FROM drive_collecteur c WHERE c.drive_id=t.drive_id "
+            "AND c.pause_jusqua > ?) ORDER BY t.id LIMIT 1"
             ") RETURNING id, drive_id, requete, bail",
-            (secrets.token_hex(24), horodater(instant + timedelta(minutes=2)), drive, drive),
+            (secrets.token_hex(24), horodater(instant + timedelta(minutes=2)), *drives, horodatage),
         ).fetchone()
-        return dict(ligne) if ligne else None
+        if ligne is None:
+            return None
+        if collecteur:
+            cnx.execute("INSERT INTO drive_attribution VALUES (?, ?)", (ligne["id"], collecteur))
+        reponse = dict(ligne)
+        if enseigne:
+            _signaler(cnx, ligne["drive_id"], horodatage)
+            point = DRIVES[ligne["drive_id"]]
+            reponse["point"] = {
+                "id": ligne["drive_id"].split("-", 1)[1],
+                "accueil": point.accueil,
+                "libelles": point.libelles,
+            }
+        return reponse
+
+
+def _signaler_enseigne(cnx: sqlite3.Connection, enseigne: EnseigneDrive, horodatage: str) -> None:
+    cnx.execute(
+        "INSERT INTO drive_collecteur_enseigne VALUES (?, ?) "
+        "ON CONFLICT (enseigne) DO UPDATE SET vu_le=excluded.vu_le",
+        (enseigne, horodatage),
+    )
+
+
+def signaler_enseigne(reglages: Reglages, enseigne: EnseigneDrive) -> None:
+    with db.connexion(reglages.db_path) as cnx:
+        _signaler_enseigne(cnx, enseigne, horodater(maintenant()))
 
 
 def _signaler(cnx: sqlite3.Connection, drive: DriveId, horodatage: str) -> str | None:
@@ -315,7 +372,7 @@ def signaler(reglages: Reglages, drive: DriveId) -> None:
         _signaler(cnx, drive, horodater(maintenant()))
 
 
-def deposer(reglages: Reglages, tache_id: int, depot: Depot) -> None:
+def deposer(reglages: Reglages, tache_id: int, depot: Depot, collecteur: str | None = None) -> None:
     instant = maintenant()
     horodatage = horodater(instant)
     with db.connexion(reglages.db_path) as cnx:
@@ -323,6 +380,12 @@ def deposer(reglages: Reglages, tache_id: int, depot: Depot) -> None:
         tache = cnx.execute("SELECT * FROM drive_tache WHERE id=?", (tache_id,)).fetchone()
         if not tache or tache["bail"] != depot.bail or tache["drive_id"] != depot.drive_id:
             raise BailInvalide("Bail ou drive incorrect.")
+        if collecteur:
+            attribution = cnx.execute(
+                "SELECT collecteur FROM drive_attribution WHERE tache_id=?", (tache_id,)
+            ).fetchone()
+            if attribution is None or attribution["collecteur"] != collecteur:
+                raise BailInvalide("Ce bail appartient à un autre collecteur.")
         if tache["etat"] not in ("cours", "attente"):
             if tache["erreur"] == "delai" and tache["expire_le"] <= horodatage:
                 raise BailInvalide("Bail expiré.")

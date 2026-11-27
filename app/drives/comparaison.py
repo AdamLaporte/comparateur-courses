@@ -61,6 +61,8 @@ def _resultat(ligne: LigneListe, drive: DriveId, vue: dict, *, hors_ligne: bool)
         remarque = "L’extension de collecte Edge ne répond pas. Vérifiez sa configuration initiale."
     elif etat == "attente":
         remarque = "Relevé en attente." if vue["connecte"] else "En attente de l’extension Edge."
+    elif etat == "differe":
+        remarque = "Relevé encore en file. Relancez la comparaison pour actualiser les prix."
     elif etat == "cours":
         remarque = "Relevé en cours dans Edge."
     elif etat == "pause":
@@ -74,7 +76,7 @@ def _resultat(ligne: LigneListe, drive: DriveId, vue: dict, *, hors_ligne: bool)
     elif etat == "vide":
         remarque = "Aucun produit trouvé lors du dernier relevé."
 
-    if etat in ("attente", "cours") and not hors_ligne:
+    if etat in ("attente", "cours", "differe") and not hors_ligne:
         statut = StatutPrix.EN_ATTENTE
     elif prix:
         statut = StatutPrix.TROUVE
@@ -121,13 +123,18 @@ async def relever_ligne(
         if suivre and vue["tache_id"] and not vue["connecte"]:
             if deconnecte_depuis is None:
                 deconnecte_depuis = monotonic()
-                if reglages.drives_demarrer_edge:
+                if reglages.drives_demarrer_edge and not reglages.site_partage_origine:
                     await asyncio.to_thread(reveiller_edge)
             hors_ligne = monotonic() - deconnecte_depuis >= ATTENTE_CONNEXION_S
         else:
             deconnecte_depuis = None
-        if suivre and precedent and vue["tache_id"] and monotonic() >= echeance and not hors_ligne:
-            vue.update(etat="echec", erreur="delai", tache_id=None)
+        if suivre and precedent and vue["tache_id"]:
+            delai_depasse = monotonic() >= echeance
+            if reglages.site_partage_origine and (delai_depasse or hors_ligne):
+                vue.update(etat="differe", tache_id=None)
+                hors_ligne = False
+            elif delai_depasse and not hors_ligne:
+                vue.update(etat="echec", erreur="delai", tache_id=None)
         resultat = _resultat(ligne, drive, vue, hors_ligne=hors_ligne)
         if resultat != precedent:
             yield resultat

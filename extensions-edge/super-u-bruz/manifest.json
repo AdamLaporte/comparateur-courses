@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Prix – Super U Bruz",
-  "version": "1.4.0",
+  "name": "Prix – Courses U",
+  "version": "1.6.0",
   "description": "Relève les prix des fiches produits ouvertes et exporte un CSV local.",
   "permissions": [
     "activeTab",
@@ -11,9 +11,10 @@
     "webRequest"
   ],
   "host_permissions": ["http://127.0.0.1/*", "https://*.coursesu.com/*"],
+  "optional_host_permissions": ["https://*.ts.net/*"],
   "background": {"service_worker": "collecteur.js", "type": "module"},
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Prix – Super U Bruz"
+    "default_title": "Prix – Courses U"
   }
 }

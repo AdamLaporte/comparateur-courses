@@ -30,11 +30,19 @@ uv run --locked uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-proxy-hea
 
 ## Charger les extensions Edge
 
+Une extension suffit par enseigne. **Comparer** envoie le point de retrait à l’extension, qui
+change de magasin dans son onglet puis vérifie le point actif avant d’enregistrer les prix.
+Le catalogue inclut Super U Bruz, Hyper U Guichen, Intermarché Bruz Cap Vert et Intermarché
+Rennes Gayeulles.
+
+Pour utiliser une seule base depuis plusieurs PC, voir le
+[hébergement du site partagé sur un PC avec Tailscale](docs/deploiement-partage.md).
+
 1. Ouvrez `edge://extensions`, activez **Mode développeur**, puis cliquez sur **Charger l’extension non
    empaquetée** pour chacun des dossiers `extensions-edge\super-u-bruz` et
    `extensions-edge\intermarche-bruz-cap-vert`. Après une mise à jour, utilisez **Recharger** sur
    chaque carte d’extension.
-2. Configurez chaque extension une seule fois depuis son popup **Collecte du comparateur local**.
+2. Configurez chaque extension une seule fois depuis son popup **Collecte du comparateur**.
    Saisissez le jeton et cliquez sur **Activer la collecte automatique**. Le popup confirme
    **Serveur connecté**. La configuration reste enregistrée au redémarrage d’Edge.
 3. Sur Windows, ajoutez `DRIVES_DEMARRER_EDGE=true` dans `.env` et redémarrez le serveur si vous
@@ -49,6 +57,15 @@ Le relevé manuel et l’export CSV restent accessibles dans les deux extensions
 comparateur affiche l’historique et indique l’attente du collecteur. La fraîcheur se règle avec
 `DRIVES_FRAICHEUR_MIN` dans `.env` (1 440 minutes par défaut). La collecte s’arrête en cas de défi ou
 de réponse 403 ou 429 et reprend après la pause de quinze minutes, lors d’une nouvelle recherche.
+
+## Ajouter un point de retrait
+
+Pour ajouter un point collectable, renseignez sa fiche dans
+[`app/drives/points_retrait.json`](app/drives/points_retrait.json) avec la référence OSM du magasin,
+l’adresse officielle du drive et le libellé attendu dans l’en-tête. Chez Intermarché, utilisez la
+référence marchande du point de retrait, celle de son adresse officielle. Chez Courses U, utilisez
+un identifiant stable pour le point associé au libellé et à l’adresse officiels. Redémarrez le
+serveur et vérifiez que le retrait peut être confirmé pendant une recherche.
 
 ## Importer les relevés existants
 

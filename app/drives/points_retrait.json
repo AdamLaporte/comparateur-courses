@@ -1,0 +1,39 @@
+{
+  "coursesu-33315": {
+    "nom": "Super U Bruz",
+    "osm": "w66805674",
+    "adresse": "109 avenue Alphonse Legault",
+    "ville": "Bruz",
+    "code_postal": "35170",
+    "coordonnees": [48.0289, -1.7282],
+    "accueil": "https://www.coursesu.com/drive-superu-bruz",
+    "libelles": ["Super U Bruz"]
+  },
+  "coursesu-hyperu-guichen": {
+    "nom": "Hyper U Guichen",
+    "osm": "n591886520",
+    "adresse": "11 rue Louis Ampère",
+    "ville": "Guichen",
+    "code_postal": "35580",
+    "accueil": "https://www.coursesu.com/drive-hyperu-guichen",
+    "libelles": ["Hyper U Guichen", "Hyper U - Guichen"]
+  },
+  "intermarche-05052": {
+    "nom": "Intermarché Super Bruz Cap Vert",
+    "osm": "n259373664",
+    "adresse": "2 place Robert Barré, CC Cap Vert",
+    "ville": "Bruz",
+    "code_postal": "35170",
+    "accueil": "https://www.intermarche.com/magasins/05052/bruz-35170/infos-pratiques",
+    "libelles": ["Bruz", "Super Bruz", "Super Bruz Cap Vert"]
+  },
+  "intermarche-06994": {
+    "nom": "Intermarché Super Rennes Gayeulles",
+    "osm": "n9781215613",
+    "adresse": "Place Lucie et Raymond Aubrac",
+    "ville": "Rennes",
+    "code_postal": "35700",
+    "accueil": "https://www.intermarche.com/magasins/06994/rennes-35700/infos-pratiques",
+    "libelles": ["Rennes", "Super Rennes", "Super Rennes Gayeulles", "Rennes Gayeulles"]
+  }
+}
