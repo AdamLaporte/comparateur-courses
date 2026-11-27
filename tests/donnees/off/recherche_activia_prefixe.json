@@ -1,0 +1,601 @@
+{
+ "hits": [
+  {
+   "code": "6111032002208",
+   "brands": [
+    "xx:danone"
+   ],
+   "quantity": "110g",
+   "unique_scans_n": 157,
+   "product_name": "Activia Céréales",
+   "product_name_fr": "Activia Céréales",
+   "_score": null
+  },
+  {
+   "code": "3033491351082",
+   "brands": [
+    "xx:danone"
+   ],
+   "quantity": "0.5 kg",
+   "unique_scans_n": 154,
+   "product_name": "Activia bifidus saveur vanille sans arome artificiel 125 g x 4",
+   "product_name_fr": "Activia bifidus saveur vanille sans arome artificiel 125 g x 4",
+   "_score": null
+  },
+  {
+   "code": "3033491402807",
+   "brands": [
+    "xx:activia"
+   ],
+   "quantity": "170 g",
+   "unique_scans_n": 140,
+   "product_name": "Activia muesli graines de chia framboise",
+   "product_name_fr": "Activia muesli graines de chia framboise",
+   "_score": null
+  },
+  {
+   "code": "3033491147067",
+   "brands": [
+    "xx:activia",
+    "xx:danone",
+    "xx:Activia yoghurt nature"
+   ],
+   "quantity": "0.5 kg",
+   "unique_scans_n": 138,
+   "product_name": "Activia bifidus nature 125g x 4",
+   "product_name_fr": "Activia bifidus nature 125g x 4",
+   "_score": null
+  },
+  {
+   "code": "3033491350795",
+   "brands": [
+    "xx:danone"
+   ],
+   "quantity": "4 x 125g",
+   "unique_scans_n": 119,
+   "product_name": "Activia bifidus saveur citron",
+   "product_name_fr": "Activia bifidus saveur citron",
+   "_score": null
+  },
+  {
+   "code": "3033491350863",
+   "brands": [
+    "xx:DANONE PRODUITS FRAIS FRANCE"
+   ],
+   "quantity": "0.5 kg",
+   "unique_scans_n": 86,
+   "product_name": "Activia bifidus saveur noix de coco sans arome artificiel 125 gx 4",
+   "product_name_fr": "Activia bifidus saveur noix de coco sans arome artificiel 125 gx 4",
+   "_score": null
+  },
+  {
+   "code": "3033491235375",
+   "brands": [
+    "xx:activia",
+    "xx:danone",
+    "xx:Activia yoghurt cereals/fibres"
+   ],
+   "quantity": "0.48 kg",
+   "unique_scans_n": 81,
+   "product_name": "Activia bifidus cereales 120 g x 4 muesli",
+   "product_name_fr": "Activia bifidus cereales 120 g x 4 muesli",
+   "_score": null
+  },
+  {
+   "code": "3033491402784",
+   "brands": [
+    "xx:Activia"
+   ],
+   "quantity": "0.17 kg",
+   "unique_scans_n": 70,
+   "product_name": "Activia muesli amande quinoa graines de chia 170 g x 1",
+   "product_name_fr": "Activia muesli amande quinoa graines de chia 170 g x 1",
+   "_score": null
+  },
+  {
+   "code": "6111032009436",
+   "brands": [
+    "xx:danone"
+   ],
+   "quantity": "240g",
+   "unique_scans_n": 67,
+   "product_name": "Activia",
+   "product_name_fr": "Activia",
+   "_score": null
+  },
+  {
+   "code": "3033491139819",
+   "brands": [
+    "xx:activia",
+    "xx:danone",
+    "xx:Activia yoghurt nature"
+   ],
+   "quantity": "2 kg",
+   "unique_scans_n": 64,
+   "product_name": "Activia bifidus nature 125 g x 16",
+   "product_name_fr": "Activia bifidus nature 125 g x 16",
+   "_score": null
+  },
+  {
+   "code": "3033491325250",
+   "brands": [
+    "xx:danone"
+   ],
+   "quantity": "500 g (4x125g)",
+   "unique_scans_n": 64,
+   "product_name": "Activia fraise",
+   "product_name_fr": "Activia fraise",
+   "_score": null
+  },
+  {
+   "code": "3033490699833",
+   "brands": [
+    "xx:activia",
+    "xx:danone",
+    "xx:Activia yoghurt nature"
+   ],
+   "quantity": "1 kg",
+   "unique_scans_n": 62,
+   "product_name": "Activia bifidus brasse nature 125 g x 8",
+   "product_name_fr": "Activia bifidus brasse nature 125 g x 8",
+   "_score": null
+  },
+  {
+   "code": "3033492058232",
+   "brands": [
+    "xx:activia"
+   ],
+   "quantity": "2 x 150 g",
+   "unique_scans_n": 59,
+   "product_name": "Yaourt Kéfir Activia",
+   "product_name_fr": "Yaourt Kéfir Activia",
+   "_score": null
+  },
+  {
+   "code": "3033490545185",
+   "brands": [
+    "xx:danone",
+    "xx:DANONE PRODUITS FRAIS FRANCE"
+   ],
+   "quantity": "1 kg",
+   "unique_scans_n": 57,
+   "product_name": "Activia bifidus nature 0% de mg 125 g x 8",
+   "product_name_fr": "Activia bifidus nature 0% de mg 125 g x 8",
+   "_score": null
+  },
+  {
+   "code": "3033491350955",
+   "brands": [
+    "xx:danone"
+   ],
+   "quantity": "2 kg",
+   "unique_scans_n": 53,
+   "product_name": "Activia bifidus saveur vanille sans arome artificielle 125 g x16",
+   "product_name_fr": "Activia bifidus saveur vanille sans arome artificielle 125 g x16",
+   "_score": null
+  },
+  {
+   "code": "3033491139444",
+   "brands": [
+    "xx:activia",
+    "xx:danone",
+    "xx:Activia yoghurt nature"
+   ],
+   "quantity": "1.5 kg",
+   "unique_scans_n": 52,
+   "product_name": "Activia bifidus nature 125 g x 12",
+   "product_name_fr": "Activia bifidus nature 125 g x 12",
+   "_score": null
+  },
+  {
+   "code": "3033491350689",
+   "brands": [
+    "xx:activia",
+    "xx:danone",
+    "xx:Activia yoghurt flavours"
+   ],
+   "quantity": "1.5 kg",
+   "unique_scans_n": 51,
+   "product_name": "Activia bifidus saveur vanille sans arome artificiel 125 g x 12",
+   "product_name_fr": "Activia bifidus saveur vanille sans arome artificiel 125 g x 12",
+   "_score": null
+  },
+  {
+   "code": "3033491325694",
+   "brands": [
+    "xx:danone",
+    "xx:Activia",
+    "xx:Activia yoghurt fruits"
+   ],
+   "quantity": "1 kg",
+   "unique_scans_n": 47,
+   "product_name": "Activia fruits 125 g x 8 abricot - fraise - mangue - kiwi",
+   "product_name_fr": "Activia fruits 125 g x 8 abricot - fraise - mangue - kiwi",
+   "_score": null
+  },
+  {
+   "code": "3033491235382",
+   "brands": [
+    "xx:activia",
+    "xx:danone",
+    "xx:Activia yoghurt cereals/fibres"
+   ],
+   "quantity": "0.48 kg",
+   "unique_scans_n": 47,
+   "product_name": "Activia bifidus cereales saveur noix 120 g x 4",
+   "product_name_fr": "Activia bifidus cereales saveur noix 120 g x 4",
+   "_score": null
+  },
+  {
+   "code": "3033491325366",
+   "brands": [
+    "xx:activia",
+    "xx:danone",
+    "xx:Activia yoghurt fruits"
+   ],
+   "quantity": "0.5 kg",
+   "unique_scans_n": 43,
+   "product_name": "Activia fruits 125 g x 4 pruneau",
+   "product_name_fr": "Activia fruits 125 g x 4 pruneau",
+   "_score": null
+  },
+  {
+   "code": "3033492119384",
+   "brands": [
+    "xx:activia"
+   ],
+   "quantity": "4x125g",
+   "unique_scans_n": 43,
+   "product_name": "Activia Kéfir fraise framboise",
+   "product_name_fr": "Activia Kéfir fraise framboise",
+   "_score": null
+  },
+  {
+   "code": "3033491235405",
+   "brands": [
+    "xx:activia",
+    "xx:danone",
+    "xx:Activia yoghurt cereals/fibres"
+   ],
+   "quantity": "0.48 kg",
+   "unique_scans_n": 40,
+   "product_name": "Activia bifidus cereales quinoa noisette 120 g x 4",
+   "product_name_fr": "Activia bifidus cereales quinoa noisette 120 g x 4",
+   "_score": null
+  },
+  {
+   "code": "3033491325724",
+   "brands": [
+    "xx:danone",
+    "xx:Activia",
+    "xx:Activia yoghurt fruits"
+   ],
+   "quantity": "0.5 kg",
+   "unique_scans_n": 37,
+   "product_name": "Activia fruits 125 g x 4 poire",
+   "product_name_fr": "Activia fruits 125 g x 4 poire",
+   "_score": null
+  },
+  {
+   "code": "3033491638336",
+   "brands": [
+    "xx:activia"
+   ],
+   "quantity": "480 g",
+   "unique_scans_n": 36,
+   "product_name": "Activia au bifidus céréales",
+   "product_name_fr": "Activia au bifidus céréales",
+   "_score": null
+  },
+  {
+   "code": "3033491638374",
+   "brands": [
+    "xx:activia"
+   ],
+   "quantity": "480 g",
+   "unique_scans_n": 36,
+   "product_name": "Activia Céréales Saveur Noix Céréales",
+   "product_name_fr": "Activia Céréales Saveur Noix Céréales",
+   "_score": null
+  },
+  {
+   "code": "3033491325519",
+   "brands": [
+    "xx:DANONE PRODUITS FRAIS FRANCE"
+   ],
+   "quantity": "0.5 kg",
+   "unique_scans_n": 36,
+   "product_name": "Activia fruits 125 g x 4 mangue",
+   "product_name_fr": "Activia fruits 125 g x 4 mangue",
+   "_score": null
+  },
+  {
+   "code": "3033491139970",
+   "brands": [
+    "xx:danone"
+   ],
+   "quantity": "1 kg",
+   "unique_scans_n": 35,
+   "product_name": "Activia bifidus nature 125 g x 8",
+   "product_name_fr": "Activia bifidus nature 125 g x 8",
+   "_score": null
+  },
+  {
+   "code": "3033490907730",
+   "brands": [
+    "xx:danone",
+    "xx:Activia"
+   ],
+   "quantity": "1.5 kg",
+   "unique_scans_n": 29,
+   "product_name": "Activia bifidus fruits 0% panache 125 g x 12",
+   "product_name_fr": "Activia bifidus fruits 0% panache 125 g x 12",
+   "_score": null
+  },
+  {
+   "code": "3033491350672",
+   "brands": [
+    "xx:activia",
+    "xx:danone",
+    "xx:Activia yoghurt flavours"
+   ],
+   "quantity": "1.5 kg",
+   "unique_scans_n": 28,
+   "product_name": "Activia bifidus saveur panache sans arome artificiel 125 g x 12",
+   "product_name_fr": "Activia bifidus saveur panache sans arome artificiel 125 g x 12",
+   "_score": null
+  },
+  {
+   "code": "3033491638350",
+   "brands": [
+    "xx:activia"
+   ],
+   "quantity": "480 g",
+   "unique_scans_n": 28,
+   "product_name": "Activia Céréales Saveur Noix Céréales",
+   "product_name_fr": "Activia Céréales Saveur Noix Céréales",
+   "_score": null
+  },
+  {
+   "code": "3033491350948",
+   "brands": [
+    "xx:activia",
+    "xx:danone",
+    "xx:Activia yoghurt flavours"
+   ],
+   "quantity": "0.5 kg",
+   "unique_scans_n": 27,
+   "product_name": "Activia bifidus saveur framboise sans arome artificiel 125 g x4",
+   "product_name_fr": "Activia bifidus saveur framboise sans arome artificiel 125 g x4",
+   "_score": null
+  },
+  {
+   "code": "3033491325403",
+   "brands": [
+    "xx:Activia",
+    "xx:Activia yoghurt fruits 132540"
+   ],
+   "quantity": "0.5 kg",
+   "unique_scans_n": 25,
+   "product_name": "Activia fruits 125 g x 4 ananas",
+   "product_name_fr": "Activia fruits 125 g x 4 ananas",
+   "_score": null
+  },
+  {
+   "code": "3033491314834",
+   "brands": [
+    "xx:activia",
+    "xx:danone"
+   ],
+   "quantity": "500 g (4 x 125 g)",
+   "unique_scans_n": 23,
+   "product_name": "Activia Fraise",
+   "product_name_fr": "Activia Fraise",
+   "_score": null
+  },
+  {
+   "code": "3033491350641",
+   "brands": [
+    "xx:activia",
+    "xx:danone"
+   ],
+   "quantity": "2 x (8 x 125 g)",
+   "unique_scans_n": 22,
+   "product_name": "Activia saveur vanille",
+   "product_name_fr": "Activia saveur vanille",
+   "_score": null
+  },
+  {
+   "code": "3033492119377",
+   "brands": [
+    "xx:danone"
+   ],
+   "quantity": "4 x 125 g",
+   "unique_scans_n": 22,
+   "product_name": "Activia Kéfir pêche passion",
+   "product_name_fr": "Activia Kéfir pêche passion",
+   "_score": null
+  },
+  {
+   "code": "59467199",
+   "brands": [
+    "xx:danone"
+   ],
+   "quantity": "125gr",
+   "unique_scans_n": 22,
+   "product_name_fr": "Activia natur",
+   "_score": null
+  },
+  {
+   "code": "3033491920349",
+   "brands": [
+    "xx:activia"
+   ],
+   "quantity": "4x115g",
+   "unique_scans_n": 22,
+   "product_name": "Activia bien-être digestif",
+   "product_name_fr": "Activia bien-être digestif",
+   "_score": null
+  },
+  {
+   "code": "3033492060532",
+   "brands": [
+    "xx:danone"
+   ],
+   "quantity": "4 x 120 g",
+   "unique_scans_n": 22,
+   "product_name": "Activia Fibres Multi céréales",
+   "product_name_fr": "Activia Fibres Multi céréales",
+   "_score": null
+  },
+  {
+   "code": "3033491325236",
+   "brands": [
+    "xx:activia",
+    "xx:danone",
+    "xx:Activia yoghurt fruits"
+   ],
+   "quantity": "2 kg",
+   "unique_scans_n": 21,
+   "product_name": "Activia bifidus fruits panache 125 g x 16 (abricot mangue rhubarbe fraise cerise figue)",
+   "product_name_fr": "Activia bifidus fruits panache 125 g x 16 (abricot mangue rhubarbe fraise cerise figue)",
+   "_score": null
+  },
+  {
+   "code": "8410500008871",
+   "brands": [
+    "xx:DANONE S.A."
+   ],
+   "quantity": "1000 g (8 x 125 g)",
+   "unique_scans_n": 20,
+   "product_name": "Activia 0% natural",
+   "product_name_fr": "Activia 0% natural",
+   "_score": null
+  },
+  {
+   "code": "3033491324574",
+   "brands": [
+    "xx:activia"
+   ],
+   "quantity": "1",
+   "unique_scans_n": 19,
+   "product_name": "Activia saveur coco",
+   "product_name_fr": "Activia saveur coco",
+   "_score": null
+  },
+  {
+   "code": "3033491351198",
+   "brands": [
+    "xx:danone",
+    "xx:Activia"
+   ],
+   "quantity": "16x 125g",
+   "unique_scans_n": 19,
+   "product_name": "Activia au bifidus saveur citron",
+   "product_name_fr": "Activia au bifidus saveur citron",
+   "_score": null
+  },
+  {
+   "code": "0034361402784",
+   "brands": [
+    "xx:activia"
+   ],
+   "quantity": "150 g",
+   "unique_scans_n": 19,
+   "product_name": "Activia Mix&Go Muesli Amandes Quinoa Graines de Chia",
+   "product_name_fr": "Activia Mix&Go Muesli Amandes Quinoa Graines de Chia",
+   "_score": null
+  },
+  {
+   "code": "3033491601736",
+   "brands": [
+    "xx:activia",
+    "xx:Activia fruits no added sugar"
+   ],
+   "quantity": "0.46 kg",
+   "unique_scans_n": 18,
+   "product_name": "Activia sans sucre ajoute mangue coco chia 115 g x 4",
+   "product_name_fr": "Activia sans sucre ajoute mangue coco chia 115 g x 4",
+   "_score": null
+  },
+  {
+   "code": "3033491360480",
+   "brands": [
+    "xx:activia"
+   ],
+   "quantity": "480 grs",
+   "unique_scans_n": 18,
+   "product_name": "Activia saveur noix cereale",
+   "product_name_fr": "Activia saveur noix cereale",
+   "_score": null
+  },
+  {
+   "code": "8410500014421",
+   "brands": [
+    "xx:DANONE S.A."
+   ],
+   "quantity": "960 g (120 g x8) e",
+   "unique_scans_n": 18,
+   "product_name": "activia por ocho natural edulcorado",
+   "product_name_fr": "Activia 0% Natural Edulcorado x8",
+   "_score": null
+  },
+  {
+   "code": "8410500017712",
+   "brands": [
+    "xx:DANONE S.A."
+   ],
+   "quantity": "480 g (120g x 4)",
+   "unique_scans_n": 18,
+   "product_name": "Activia cremoso",
+   "product_name_fr": "YOGUR ACTIVIA CREMA LIMA LIMON DANONE . PACK",
+   "_score": null
+  },
+  {
+   "code": "8410500002961",
+   "brands": [
+    "xx:DANONE S.A."
+   ],
+   "quantity": "500 g (4 x 125 g)",
+   "unique_scans_n": 18,
+   "product_name": "Activia bífidus natural desnatado 0%",
+   "product_name_fr": "ACTIVIA DANONE 0% NATURAL",
+   "_score": null
+  },
+  {
+   "code": "3033491139437",
+   "brands": [
+    "xx:danone"
+   ],
+   "quantity": "2 kg",
+   "unique_scans_n": 18,
+   "product_name": "Activia",
+   "product_name_fr": "Activia",
+   "_score": null
+  },
+  {
+   "code": "3033491350962",
+   "brands": [
+    "xx:activia",
+    "xx:danone",
+    "xx:Activia yoghurt flavours"
+   ],
+   "quantity": "1 kg",
+   "unique_scans_n": 18,
+   "product_name": "Activia bifidus saveur vanille sans arome artificiel 125 g x 8",
+   "product_name_fr": "Activia bifidus saveur vanille sans arome artificiel 125 g x 8",
+   "_score": null
+  }
+ ],
+ "aggregations": null,
+ "facets": {},
+ "charts": {},
+ "page": 1,
+ "page_size": 50,
+ "page_count": 17,
+ "took": 17,
+ "timed_out": false,
+ "count": 816,
+ "is_count_exact": true,
+ "warnings": null
+}

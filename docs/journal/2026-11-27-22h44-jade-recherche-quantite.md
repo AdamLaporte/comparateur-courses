@@ -19,11 +19,18 @@
   « spag » → Spaghetti 500 g, « nute » → Nutella, « pain de mi » → Pain de mie, « banane » → Bananes,
   « papier toil » → Papier toilette. « Œufs » est maintenant reconnu (ligature).
 
+- Suggestions nettoyées pour tous les produits (capture de Jade : « Ferrero » ou « Nutella » selon la ligne,
+  « 1 kg » et « 1000g » en double, « 400 g e ») : marque nettoyée et choisie (Nutella → Ferrero, Activia → Danone,
+  Coca-Cola unifié, Barilla sans « G. e R. Fratelli »), quantité réécrite, doublons retirés, formats rangés, mot
+  tapé exact en priorité (« pâtes » → pâtes avant pâte à tartiner). Vérifié en vrai sur 11 recherches variées.
+  Limite : les données fausses d'Open Food Facts (« Récemment consommé » comme marque) restent.
+
 ## Fichiers modifiés
 
 - `app/produits/service.py`
 - `tests/test_produits.py`, `tests/donnees/off/recherche_nutella_quantite_400.json` et
-  `tests/donnees/off/recherche_spag_prefixe.json` (réponses enregistrées le 27/11)
+  `tests/donnees/off/recherche_spag_prefixe.json`, `recherche_coca_prefixe.json`, `recherche_activia_prefixe.json`
+  (réponses enregistrées le 27/11)
 - `docs/decisions.md`
 
 ## Reste à faire
