@@ -14,7 +14,11 @@
     <nav>
       <a href="/">Code postal</a>
       <a href="/panier">Ma liste</a>
-      <a href="/comptes">Compte</a>
+      {% if request.session.get("utilisateur_id") %}
+      <a href="/comptes">Mon compte</a>
+      {% else %}
+      <a href="/comptes/connexion">Se connecter</a>
+      {% endif %}
     </nav>
   </header>
   {% if request.app.state.reglages.mode_fictif_actif %}
