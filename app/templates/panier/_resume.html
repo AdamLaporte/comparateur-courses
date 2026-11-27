@@ -46,3 +46,19 @@
     {% endfor %}
   </ol>
 </div>
+{% if economie %}
+<form action="/comptes/cagnotte" method="post" class="cagnotte-formulaire">
+  <h3>Ajouter à ma tirelire</h3>
+  <p>Moyenne des paniers complets <strong>{{ economie[1] | euros }}</strong></p>
+  {% if prix_fictifs %}<p class="note">Cette comparaison contient des prix fictifs.</p>{% endif %}
+  <input type="hidden" name="comparaison" value="{{ economie[0] }}">
+  <label for="magasin-cagnotte">Où avez-vous fait vos courses ?</label>
+  <select name="magasin_id" id="magasin-cagnotte" required>
+    {% for t in complets %}
+    {% set ecart = economie[1] - t.total_centimes %}
+    <option value="{{ t.magasin.id }}">{{ t.magasin.nom }} · {{ t.total_centimes | euros }} · {{ "+" if ecart > 0 else "" }}{{ ecart | euros }} dans la tirelire</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="principal">Enregistrer l’écart</button>
+</form>
+{% endif %}

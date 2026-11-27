@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f3ee">
-  <title>{% block titre %}Comparateur de courses{% endblock %}</title>
+  <title>{% block titre %}GrignotePrix{% endblock %}</title>
   {# Tout est servi par le site lui-même (app/static/vendor/) : la démo marche sans Internet. #}
   <link rel="preload" href="{{ url_for('static', path='vendor/polices/archivo-latin-wdth-normal.woff2') }}"
         as="font" type="font/woff2" crossorigin>
@@ -20,9 +20,9 @@
   {% set chemin = request.url.path %}
   <header class="entete">
     <div class="entete-dedans">
-      <a class="marque" href="/" aria-label="Comparateur de courses, accueil">
+      <a class="marque" href="/" aria-label="GrignotePrix, accueil">
         <span class="marque-tag" aria-hidden="true">{{ icone("etiquette") }}</span>
-        <span class="marque-nom">Comparateur <span>de courses</span></span>
+        <span class="marque-nom">GrignotePrix</span>
       </a>
       <nav class="menu" aria-label="Navigation principale">
         <a href="/" {% if chemin == "/" or chemin.startswith("/magasins") %}aria-current="page"{% endif %}>
@@ -57,7 +57,7 @@
   </main>
   <footer class="pied">
     <div class="pied-dedans">
-      <p><strong>Comparateur de courses</strong> · hackathon ENSAI 2026</p>
+      <p><strong>GrignotePrix</strong> · hackathon ENSAI 2026</p>
       <p>Chaque prix indique sa source et l'heure du relevé. Les promos fidélité ne sont pas déduites.</p>
     </div>
   </footer>

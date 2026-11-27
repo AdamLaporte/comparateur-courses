@@ -8,11 +8,12 @@ from collections.abc import AsyncIterable, AsyncIterator
 from typing import Annotated
 
 from fastapi import APIRouter, Form, HTTPException, Request, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import ValidationError
 
 from app.collecte.orchestrateur import collecter
+from app.comptes import cagnotte
 from app.config import Reglages, ReglagesDep
 from app.contrats import (
     AjoutLigne,
@@ -83,9 +84,7 @@ def _liste_maj(
 
 @router.get("/panier", response_class=HTMLResponse)
 async def page_panier(request: Request, reglages: ReglagesDep):
-    code_postal = request.session.get("code_postal")
-    if not code_postal:
-        return RedirectResponse("/", status_code=303)
+    code_postal = request.session.get("code_postal", "")
     lignes = service.lister(reglages, service.proprietaire(request))
     return templates.TemplateResponse(
         request, "panier/page.html", {"code_postal": code_postal, "lignes": lignes}
@@ -276,10 +275,16 @@ async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[Se
                 event=f"total-{resultat.magasin_id}",
                 raw_data=rendre("panier/_total.html", total=total),
             )
+        totaux = calcul.totaux(lignes, magasins, resultats)
+        utilisateur_id = request.session.get("utilisateur_id")
+        economie = cagnotte.preparer(reglages, utilisateur_id, totaux) if utilisateur_id else None
         yield ServerSentEvent(
             event="resume",
             raw_data=rendre(
-                "panier/_resume.html", totaux=calcul.totaux(lignes, magasins, resultats)
+                "panier/_resume.html",
+                totaux=totaux,
+                economie=economie,
+                prix_fictifs=any(r.prix and r.prix.est_fictif for r in resultats),
             ),
         )
     yield ServerSentEvent(event="fin", raw_data="fin")

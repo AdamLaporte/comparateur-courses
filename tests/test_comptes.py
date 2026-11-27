@@ -6,6 +6,7 @@ import sqlite3
 import pytest
 
 from app.comptes import service
+from app.gabarits import euros
 
 EMAIL = "etudiant@example.org"
 MDP = "un-bon-mot-de-passe"
@@ -226,6 +227,32 @@ def _ids_lignes(client) -> list[int]:
         int(i)
         for i in re.findall(r"/comptes/favoris/depuis-ligne/(\d+)", client.get("/panier").text)
     ]
+
+
+def test_cagnotte_enregistre_une_fois_et_cumule(client):
+    _inscrire(client)
+    _ligne_dans_la_liste(client, recherche="nutella")
+
+    def comparaison():
+        flux = client.get("/panier/prix/flux").text
+        identifiant = re.search(r'name="comparaison" value="(\w+)"', flux)[1]
+        magasins = re.findall(r'<option value="([^"]+)">.*? · (\d+,\d+) € ·', flux)
+        prix = [int(montant.replace(",", "")) for _, montant in magasins]
+        moyenne = (sum(prix) + len(prix) // 2) // len(prix)
+        return identifiant, magasins, moyenne, prix
+
+    solde = 0
+    for choix in (0, -1):
+        identifiant, magasins, moyenne, prix = comparaison()
+        donnees = {"comparaison": identifiant, "magasin_id": magasins[choix][0]}
+        invalide = client.post("/comptes/cagnotte", data={**donnees, "magasin_id": "inconnu"})
+        assert "indisponible" in invalide.text
+        page = client.post("/comptes/cagnotte", data=donnees)
+        solde += moyenne - prix[choix]
+        affichage = f'<p class="tirelire-solde">{euros(solde)}</p>'
+        assert affichage in page.text
+        doublon = client.post("/comptes/cagnotte", data=donnees)
+        assert "déjà enregistrée" in doublon.text and affichage in doublon.text
 
 
 def test_bouton_favori_seulement_si_connecte(client):

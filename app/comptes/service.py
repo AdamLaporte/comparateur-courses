@@ -10,7 +10,7 @@
 - Articles favoris : un produit précis (EAN) ou une recherche « le moins cher », sans doublon.
 - Maison : un code postal enregistré (table adresse_favorite, libellé « Maison »), proposé en un clic sur
   l'accueil et utilisé comme code postal par défaut à la connexion.
-Tables : schema.sql. Cagnotte : à venir.
+Tables : schema.sql. La cagnotte est gérée dans cagnotte.py.
 """
 
 import asyncio
@@ -214,7 +214,7 @@ async def envoyer_lien(reglages: Reglages, email: str, lien: str) -> None:
         return
     try:
         await asyncio.to_thread(
-            _envoyer_smtp, reglages, email, "Comparateur de courses : mot de passe", texte
+            _envoyer_smtp, reglages, email, "GrignotePrix : mot de passe", texte
         )
     except (OSError, smtplib.SMTPException):
         logger.exception("Envoi de l'e-mail de réinitialisation impossible")

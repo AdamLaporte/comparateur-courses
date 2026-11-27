@@ -23,3 +23,14 @@ CREATE TABLE IF NOT EXISTS article_favori (
     recherche TEXT NOT NULL,
     libelle TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS comparaison_cagnotte (
+    id TEXT PRIMARY KEY,
+    utilisateur_id INTEGER NOT NULL REFERENCES utilisateur (id) ON DELETE CASCADE,
+    ecarts_json TEXT NOT NULL,
+    montant_centimes INTEGER,
+    cree_le TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS comparaison_cagnotte_utilisateur
+    ON comparaison_cagnotte (utilisateur_id);

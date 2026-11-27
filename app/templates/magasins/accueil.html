@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% from "_icones.html" import icone %}
-{% block titre %}Comparateur de courses · même liste, pas le même prix{% endblock %}
+{% block titre %}GrignotePrix · Remplis ton panier, grignote l'addition.{% endblock %}
 {% block contenu %}
 {% set reglages = request.app.state.reglages %}
 <div class="accueil">
   <section aria-labelledby="titre-accueil">
     <p class="surtitre">Carrefour · Intermarché · Courses U · E.Leclerc</p>
-    <h1 id="titre-accueil" class="titre-geant">Même liste,<br><em>pas le même prix.</em></h1>
+    <h1 id="titre-accueil" class="titre-geant">Remplis ton panier,<br><em>grignote l&#39;addition.</em></h1>
     <p class="chapeau">
       Dites-nous où vous faites vos courses. On relève le prix de votre liste dans les supermarchés
       autour de vous, promos comprises, et on vous montre le ticket le moins cher.
@@ -60,7 +60,7 @@
 
   <aside class="ticket" aria-label="Comment ça marche">
     <div class="ticket-entete">
-      <strong>Comparateur de courses</strong>
+      <strong>GrignotePrix</strong>
       <span>Mode d'emploi · ticket n° 0001</span>
     </div>
     <hr>

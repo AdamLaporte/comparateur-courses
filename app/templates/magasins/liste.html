@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "_icones.html" import icone %}
 {% set lieu = reponse.ville or reponse.code_postal %}
-{% block titre %}Magasins autour de {{ lieu }} · Comparateur de courses{% endblock %}
+{% block titre %}Magasins autour de {{ lieu }} · GrignotePrix{% endblock %}
 {% block tete %}
 <link rel="stylesheet" href="{{ url_for('static', path='vendor/leaflet-1.9.4/leaflet.css') }}">
 <script src="{{ url_for('static', path='vendor/leaflet-1.9.4/leaflet.js') }}" defer></script>
