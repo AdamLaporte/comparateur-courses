@@ -1,0 +1,40 @@
+[project]
+name = "comparateur-courses"
+version = "0.1.0"
+description = "Comparateur du prix d'un panier de courses entre les supermarchés proches d'un étudiant (hackathon ENSAI 2026)"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.165.0",
+    "httpx>=0.29.0",
+    "itsdangerous>=2.2.0",
+    "jinja2>=3.1.6",
+    "pwdlib[argon2]>=0.4.2",
+    "pydantic-settings>=2.16.3",
+    "python-multipart>=0.0.34",
+    "tzdata>=2026.6",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.6",
+]
+
+[tool.uv]
+# Application, pas une bibliothèque : uv n'a pas à construire de paquet.
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "ASYNC"]
+# La longueur des lignes de code est gérée par `ruff format` ; les docstrings peuvent dépasser.
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
