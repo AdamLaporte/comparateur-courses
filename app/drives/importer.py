@@ -23,9 +23,9 @@ def importer(chemin_db: Path, chemin_csv: Path) -> tuple[int, int]:
             try:
                 drive = next(
                     d
-                    for d, (nom, _, _) in DRIVES.items()
+                    for d, point in DRIVES.items()
                     if d.split("-", 1)[1] == ligne["service_drive"].strip()
-                    and normaliser(nom) == normaliser(ligne["drive"])
+                    and normaliser(point.nom) == normaliser(ligne["drive"])
                 )
                 champs = {
                     champ: (ligne[champ] or "").strip()

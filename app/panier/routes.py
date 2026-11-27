@@ -41,7 +41,7 @@ INEXISTANT = "inexistant"  # valeur du choix « Inexistant en magasins » dans l
 
 def comparables(lignes: list[LigneListe]) -> list[LigneListe]:
     """Lignes à comparer : toutes. Un article « inexistant » dans notre catalogue est cherché sur la
-    site des drives de Bruz par les extensions (app/drives/comparaison.py)."""
+    site des drives répertoriés par les extensions (app/drives/comparaison.py)."""
     return list(lignes)
 
 
@@ -400,7 +400,7 @@ async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[Se
     """Une case du tableau par événement « prix-<ligne>-<magasin> », le total du magasin par
     « total-<magasin> », le classement par « resume », puis « fin » (le navigateur ferme alors).
 
-    Ensuite, pour les drives de Bruz : chaque article sans prix y est cherché par l'extension du drive
+    Ensuite, pour les drives répertoriés : chaque article sans prix y est cherché par l'extension
     (relevé récent, sinon nouvelle recherche) ; les cases et le classement se mettent à jour quand les
     prix arrivent, pendant DRIVES_ATTENTE_S secondes au plus."""
     lignes = comparables(

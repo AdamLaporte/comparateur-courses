@@ -1,5 +1,5 @@
 // Cette fonction s'exécute dans l'onglet marchand. Seuls les signaux nécessaires en sortent.
-export function lirePage(adaptateur, requete = "", soumettre = false) {
+export function lirePage(adaptateur, requete, soumettre, point) {
   const compacte = (texte) => (texte || "").replace(/\s+/g, " ").trim();
   const normalise = (texte) => compacte(texte).normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
   const visible = (element) => Boolean(element?.getClientRects().length)
@@ -24,23 +24,24 @@ export function lirePage(adaptateur, requete = "", soumettre = false) {
     [...element.querySelectorAll('[aria-selected="true"], [aria-checked="true"], input:checked')]
       .some((mode) => visible(mode) && /livraison/i.test(mode.innerText || mode.value || "")));
   let retrait = "";
-  if (intermarche && /^(bruz|super bruz(?: cap vert)?)$/i.test(libelle) && !livraison) {
+  const libellesAttendus = point.libelles.map(normalise);
+  if (intermarche && libellesAttendus.includes(normalise(libelle)) && !livraison) {
     // Ce champ du document hydraté alimente le panier du magasin actif.
     const refs = new Set();
     for (const script of document.scripts) {
       if (!script.textContent.trimStart().startsWith("self.__next_f.push([1,")) continue;
-      for (const ref of script.textContent.matchAll(/\\?"pdvRefFicheMagasin\\?"\s*:\s*\\?"(\d{5})\\?"/g)) {
+      for (const ref of script.textContent.matchAll(/\\?"pdvRefFicheMagasin\\?"\s*:\s*\\?"(\d{5}(?:_\d+)?)\\?"/g)) {
         refs.add(ref[1]);
       }
     }
     if (refs.size === 1) retrait = [...refs][0];
   } else if (!intermarche && !livraison && entete.some((element) =>
-    element.innerText.split("\n").some((ligne) => /^super u bruz$/i.test(compacte(ligne))))) {
-    retrait = "33315";
+    element.innerText.split("\n").some((ligne) => libellesAttendus.includes(normalise(ligne))))) {
+    retrait = point.id;
   }
 
   if (soumettre) {
-    if (retrait !== "33315") return { erreur: "mauvais_drive" };
+    if (retrait !== point.id) return { erreur: "mauvais_drive" };
     const champs = [...document.querySelectorAll('input[type="search"], [role="search"] input, input[role="searchbox"]')]
       .filter((champ) => visible(champ) && !champ.disabled && !champ.readOnly);
     if (champs.length !== 1) return { erreur: "page_inattendue" };

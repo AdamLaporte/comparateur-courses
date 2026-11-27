@@ -24,11 +24,12 @@
 | Ma liste | Recherche Open Food Facts, produit précis ou « le moins cher », quantités, vider et annuler, listes nommées, favoris | Adam, Ilona, Jade |
 | Ticket de caisse | Photo lue par OCR local, articles rapprochés du catalogue, « inexistant » sinon | Adam |
 | Comparaison | Prix en direct (SSE), verdict (même sans panier complet), classement, prix périmés signalés | Adam |
-| Prix réels | Cache, Open Prices ; Super U et Intermarché de Bruz relevés par les extensions Edge (`extensions-edge/`) quand un prix manque | Jade, Raph |
+| Prix réels | Cache, Open Prices et relevés Edge par point de retrait répertorié, dont Bruz, Guichen et Rennes Gayeulles | Jade, Raph |
+| Site partagé | Base commune sur le PC de Raph via Tailscale, avec accès privé et jetons de collecte. Réutilisation réelle sur le second PC à valider | Raph, Adam |
 | Comptes | Inscription, connexion, mot de passe perdu, maison, favoris, tirelire (écart avec la moyenne) | Jade, Ilona |
 | Interface | GrignotePrix (nom, logo, couleurs), animations, mobile, fonctionne sans Internet (sauf fonds de carte) | Adam, Ilona |
 
-Les prix des autres magasins (Carrefour, Leclerc, et les Super U et Intermarché hors Bruz) restent fictifs ou viennent
+Les prix des magasins hors catalogue de retrait restent fictifs ou viennent
 d'Open Prices : la collecte directe de ces sites est abandonnée (403 Cloudflare / DataDome).
 
 ## Ce qui reste avant la démo
