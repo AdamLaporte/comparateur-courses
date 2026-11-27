@@ -8,7 +8,13 @@ import pytest
 
 from app import db
 from app.produits import service
-from app.produits.service import mots_recherche, produit_par_ean, rechercher
+from app.produits.service import (
+    lire_quantite,
+    mots_recherche,
+    produit_par_ean,
+    rechercher,
+    separer_quantite,
+)
 
 pytestmark = pytest.mark.anyio
 DONNEES = Path(__file__).parent / "donnees" / "off"
@@ -16,6 +22,7 @@ FICHIERS = {
     "nutella": "recherche_nutella.json",
     "lait demi-écrémé": "recherche_lait_demi-ecreme.json",
     "oeufs": "recherche_oeufs.json",
+    "(nutella) AND quantity:(400*)": "recherche_nutella_quantite_400.json",
 }
 
 
@@ -104,3 +111,60 @@ async def test_recherche_trop_courte(reglages_off):
     faux = FauxOFF()
     assert await _chercher(" n ", reglages_off, faux) == []
     assert faux.requetes == []
+
+
+# --- Quantité dans la recherche (« nutella 400 g ») ---
+
+
+@pytest.mark.parametrize(
+    ("texte", "attendu"),
+    [
+        ("400 g e", (400, "g")),
+        ("1000g", (1000, "g")),
+        ("1 kg", (1000, "g")),
+        ("0.25 kg", (250, "g")),
+        ("825 gr", (825, "g")),
+        ("1,5 L", (1500, "ml")),
+        ("1.5 Lts", (1500, "ml")),
+        ("50 cl", (500, "ml")),
+        ("6 x 1 L", (6000, "ml")),
+        ("150 cl (6*25 cl)", (1500, "ml")),
+        ("6", None),
+        ("10 pcs", None),
+        (None, None),
+    ],
+)
+def test_lire_quantite(texte, attendu):
+    assert lire_quantite(texte) == attendu
+
+
+def test_separer_quantite():
+    assert separer_quantite("nutella 400 g") == ("nutella", (400, "g"))
+    assert separer_quantite("Lait demi-écrémé 1L") == ("Lait demi-écrémé", (1000, "ml"))
+    assert separer_quantite("nutella") == ("nutella", None)
+
+
+async def test_nutella_400_g_en_tete(reglages_off):
+    faux = FauxOFF()
+    produits = await _chercher("nutella 400 g", reglages_off, faux)
+    assert produits, "la quantité ne doit pas vider la recherche"
+    assert lire_quantite(produits[0].quantite) == (400, "g")
+    assert produits[0].ean == "3017620422003"  # Nutella 400 g vendu en France
+    # Recherche ciblée (7 résultats) complétée par la recherche générale.
+    assert [r.url.params["q"] for r in faux.requetes] == [
+        "(nutella) AND quantity:(400*)",
+        "nutella",
+    ]
+    assert len(produits) == 8
+
+
+async def test_quantite_ecrite_autrement(reglages_off):
+    # « 1 kg » trouve aussi les produits marqués « 1000g ».
+    produits = await _chercher("nutella 1 kg", reglages_off, FauxOFF())
+    assert lire_quantite(produits[0].quantite) == (1000, "g")
+
+
+async def test_sans_quantite_rien_ne_change(reglages_off):
+    faux = FauxOFF()
+    await _chercher("nutella", reglages_off, faux)
+    assert [r.url.params["q"] for r in faux.requetes] == ["nutella"]
