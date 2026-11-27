@@ -9,6 +9,8 @@
     "mot_de_passe_change": "Mot de passe enregistré.",
     "maison": "Maison enregistrée : elle vous sera proposée sur l'accueil.",
     "maison_retiree": "Maison retirée.",
+    "lieu_enregistre": "Lieu enregistré.",
+    "lieu_supprime": "Lieu supprimé.",
     "cagnotte_ajoutee": "Écart enregistré dans votre tirelire.",
   } %}
   {% if message in messages %}<p class="note succes">{{ messages[message] }}</p>{% endif %}
@@ -81,6 +83,7 @@
   </form>
 
   <h2>Mon compte</h2>
+  {% include "comptes/_lieux.html" %}
   <p class="actions">
     <a class="bouton" href="/panier">Ma liste</a>
     <a class="bouton" href="/comptes/mot-de-passe">Changer de mot de passe</a>

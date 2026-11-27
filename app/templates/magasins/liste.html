@@ -14,7 +14,7 @@
     <h1>Autour de {{ lieu }}</h1>
     <p>
       {{ nb }} magasin{{ "s" if nb > 1 }}
-      {% if reponse.rayon_km %}à moins de {{ reponse.rayon_km|int }} km{% else %}: les plus proches de chaque enseigne{% endif %}.
+      {% if reponse.rayon_km %}à moins de {{ ("%g"|format(reponse.rayon_km)).replace(".", ",") }} km{% else %}: les plus proches de chaque enseigne{% endif %}.
     </p>
   </div>
   {% set maison = request.session.get("maison") %}
@@ -30,6 +30,14 @@
     {% endif %}
   {% endif %}
 </div>
+<form action="/magasins" method="get" class="reglages-trajet">
+  <input type="hidden" name="code_postal" value="{{ reponse.code_postal }}">
+  <input type="hidden" name="rayon_km" value="{{ '' if trajet_actif else reponse.rayon_km or '' }}">
+  {% include "magasins/_trajet.html" %}
+</form>
+{% if trajet_actif %}
+<p class="note note-trajet">{{ nom_mode }} · Distance à vol d’oiseau et durée approximative. Le badge indique la proximité pour ce mode. Les itinéraires, horaires et accès PMR restent à vérifier.</p>
+{% endif %}
 
 {% if reponse.magasins %}
 <div class="magasins-grille">
@@ -42,7 +50,11 @@
         <span class="nom">{{ m.nom }}</span>
         {% if m.adresse %}<span class="adresse">{{ m.adresse }}</span>{% endif %}
         <span class="cote">
-          <span class="distance">{{ ('%.1f' % m.distance_km).replace('.', ',') }} km</span>
+          {% if trajet_actif %}
+          {% set estimation = estimations_trajet[m.id] %}
+          <span class="distance">{{ ('%.1f' % estimation.distance).replace('.', ',') }} km · ≈ {{ estimation.minutes }} min</span>
+          <span class="badge-trajet">{{ estimation.badge }}</span>
+          {% endif %}
           <a class="itineraire" target="_blank" rel="noopener"
              href="https://www.google.com/maps/dir/?api=1&amp;destination={{ m.position.lat }},{{ m.position.lon }}"
              aria-label="Itinéraire vers {{ m.nom }} (nouvel onglet)">{{ icone("itineraire") }}<span>Itinéraire</span></a>

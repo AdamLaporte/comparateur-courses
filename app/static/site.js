@@ -131,6 +131,28 @@
   // ------------------------------------------------------------------------------------------------
   // Accueil : « Me localiser » remplit le lieu avec la position du navigateur, puis envoie.
   // ------------------------------------------------------------------------------------------------
+  document.querySelectorAll("form .panneau-trajet").forEach((panneau) => {
+    const actif = panneau.querySelector('[name="trajet"]');
+    const mode = panneau.querySelector('[name="mode_trajet"]');
+    const rayon = panneau.querySelector('[name="rayon_trajet"]');
+    const saisie = panneau.closest("form").querySelector('#code_postal');
+    const lieuSaisi = panneau.querySelector('[name="lieu_trajet"][value=""]');
+    const actualiser = () => {
+      const favori = panneau.querySelector('[name="lieu_trajet"]:checked');
+      const choix = mode.value || favori?.dataset.modeFavori || "voiture";
+      const option = [...mode.options].find((element) => element.value === choix);
+      rayon.placeholder = option.dataset.rayon.replace(".", ",");
+      rayon.disabled = !actif.checked;
+      mode.disabled = !actif.checked;
+    };
+    panneau.addEventListener("change", actualiser);
+    saisie?.addEventListener("input", () => {
+      if (lieuSaisi) lieuSaisi.checked = true;
+      actualiser();
+    });
+    actualiser();
+  });
+
   const boutonLocaliser = document.getElementById("me-localiser");
   if (boutonLocaliser) {
     const champ = document.getElementById("code_postal");
@@ -156,6 +178,7 @@
       navigator.geolocation.getCurrentPosition(
         (position) => {
           champ.value = `${position.coords.latitude.toFixed(5)},${position.coords.longitude.toFixed(5)}`;
+          champ.dispatchEvent(new Event("input"));
           if (libelle) libelle.textContent = "Recherche des magasins…";
           champ.form.submit();
         },

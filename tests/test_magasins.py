@@ -86,3 +86,17 @@ def test_page_magasins_avec_rayon(client):
     page = client.get("/magasins", params={"code_postal": "35170", "rayon_km": "5"})
     assert page.status_code == 200
     assert "moins de 5 km" in page.text
+    assert 'class="badge-trajet"' not in page.text
+
+
+@pytest.mark.parametrize(
+    ("mode", "rayon"), [("voiture", "15"), ("transport", "6"), ("velo", "3"), ("pied", "1,5")]
+)
+def test_trajet_rayon_du_mode_et_badge_de_proximite(client, mode, rayon):
+    params = {"code_postal": "35170", "trajet": "true", "mode_trajet": mode}
+    page = client.get("/magasins", params=params)
+    assert f"moins de {rayon} km" in page.text
+    perso = client.get("/magasins", params={**params, "rayon_trajet": "10.5"})
+    assert "moins de 10,5 km" in perso.text
+    assert 'class="badge-trajet"' in perso.text
+    assert "≈ " in perso.text

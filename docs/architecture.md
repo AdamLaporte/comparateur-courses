@@ -376,6 +376,9 @@ erDiagram
 - Après 5 échecs de connexion pour un e-mail, blocage de 15 min (en mémoire : remis à zéro au redémarrage).
 - Avec un compte : articles favoris (`article_favori`, page `/comptes/favoris`) et « maison » (`adresse_favorite`,
   libellé « Maison ») ; la maison est gardée dans la session (`maison`) et sert de code postal par défaut.
+- Les lieux supplémentaires sont stockés dans `lieu_trajet` avec leur adresse, leurs coordonnées et leur mode
+  favori. Le panneau de recherche réutilise ces coordonnées, propose un rayon par mode et estime la durée
+  à partir de la distance de Haversine. L’affichage du trajet dépend de l’interrupteur dans le formulaire.
 
 ## 12. Fonctionnalités secondaires : points d'accroche
 

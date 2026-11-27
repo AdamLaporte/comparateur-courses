@@ -1,0 +1,40 @@
+{% macro champs_lieu(lieu, modes) %}
+  <label>Nom du lieu
+    <input name="nom" value="{{ lieu.nom }}" maxlength="60" placeholder="Ex. Maison ou Campus" required>
+  </label>
+  <label>Adresse ou coordonnées
+    <input name="adresse" value="{{ lieu.adresse }}" maxlength="160"
+           placeholder="Ex. 35170 Bruz ou 48.025,-1.748" required>
+  </label>
+  <label>Mode favori
+    <select name="mode">
+      {% for identifiant, mode in modes.items() %}
+      <option value="{{ identifiant }}" {% if lieu.mode == identifiant %}selected{% endif %}>{{ mode.nom }}</option>
+      {% endfor %}
+    </select>
+  </label>
+{% endmacro %}
+
+<details class="panneau-trajet" id="lieux-enregistres" {% if message and message.startswith("lieu_") %}open{% endif %}>
+  <summary>{{ icone("repere") }} Lieux enregistrés</summary>
+  <div class="panneau-trajet-champs">
+    {% if message == "lieu_invalide" %}<p class="erreur" role="alert">Impossible d’enregistrer ce lieu. Vérifiez le nom, l’adresse ou les coordonnées et le mode choisi.</p>{% endif %}
+    {% for lieu in lieux_favoris %}
+    <details class="lieu-enregistre">
+      <summary>{{ lieu.nom }} · {{ modes_trajet[lieu.mode].nom }}</summary>
+      <form action="/comptes/lieux" method="post" class="champs-lieu-favori">
+        <input type="hidden" name="lieu_id" value="{{ lieu.id }}">
+        {{ champs_lieu(lieu, modes_trajet) }}
+        <button type="submit">Enregistrer les modifications</button>
+      </form>
+      <form action="/comptes/lieux/{{ lieu.id }}/supprimer" method="post">
+        <button type="submit" class="lien">Supprimer {{ lieu.nom }}</button>
+      </form>
+    </details>
+    {% endfor %}
+    <form action="/comptes/lieux" method="post" class="champs-lieu-favori">
+      {{ champs_lieu({}, modes_trajet) }}
+      <button type="submit" class="principal">Ajouter un lieu</button>
+    </form>
+  </div>
+</details>

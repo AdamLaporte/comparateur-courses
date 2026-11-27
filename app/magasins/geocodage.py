@@ -29,7 +29,7 @@ CODES_POSTAUX_CONNUS: dict[str, tuple[str, Position]] = {
     "35700": ("Rennes", Position(lat=48.124217, lon=-1.657203)),
 }
 
-_deja_geocodes: dict[str, tuple[str, Position]] = {}
+_deja_geocodes: dict[tuple[bool, str], tuple[str, Position]] = {}
 
 
 async def _api_adresse(chemin: str, params: dict, reglages: Reglages) -> list[dict]:
@@ -45,18 +45,23 @@ async def _api_adresse(chemin: str, params: dict, reglages: Reglages) -> list[di
         return []
 
 
-async def geocoder(lieu: str, reglages: Reglages) -> tuple[str, Position]:
+async def geocoder(lieu: str, reglages: Reglages, *, adresse: bool = False) -> tuple[str, Position]:
     lieu = " ".join(lieu.split())
-    if not lieu or len(lieu) > 80:
+    if not lieu or len(lieu) > (160 if adresse else 80):
         raise CodePostalInvalide(lieu)
     if lieu in CODES_POSTAUX_CONNUS:
         return CODES_POSTAUX_CONNUS[lieu]
-    if lieu in _deja_geocodes:
-        return _deja_geocodes[lieu]
+    cle = (adresse, lieu)
+    if cle in _deja_geocodes:
+        return _deja_geocodes[cle]
 
     coordonnees = re.fullmatch(r"(-?\d{1,2}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)", lieu)
     if coordonnees:
         position = Position(lat=float(coordonnees[1]), lon=float(coordonnees[2]))
+        if not (-90 <= position.lat <= 90 and -180 <= position.lon <= 180):
+            raise CodePostalInvalide(lieu)
+        if adresse:
+            return "Votre position", position
         trouves = await _api_adresse(
             "reverse", {"lat": position.lat, "lon": position.lon, "limit": 1}, reglages
         )
@@ -68,12 +73,14 @@ async def geocoder(lieu: str, reglages: Reglages) -> tuple[str, Position]:
     elif re.fullmatch(r"\d+", lieu):
         raise CodePostalInvalide(lieu)
     else:
-        params = {"q": lieu, "type": "municipality", "limit": 1}
+        params = {"q": lieu, "limit": 1}
+        if not adresse:
+            params["type"] = "municipality"
     trouves = await _api_adresse("search", params, reglages)
     if not trouves:
         raise CodePostalInconnu(lieu)
 
     lon, lat = trouves[0]["geometry"]["coordinates"]
     ville = trouves[0]["properties"].get("city", "")
-    _deja_geocodes[lieu] = (ville, Position(lat=lat, lon=lon))
-    return _deja_geocodes[lieu]
+    _deja_geocodes[cle] = (ville, Position(lat=lat, lon=lon))
+    return _deja_geocodes[cle]

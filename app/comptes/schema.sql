@@ -24,6 +24,18 @@ CREATE TABLE IF NOT EXISTS article_favori (
     libelle TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS lieu_trajet (
+    id INTEGER PRIMARY KEY,
+    utilisateur_id INTEGER NOT NULL REFERENCES utilisateur (id) ON DELETE CASCADE,
+    nom TEXT NOT NULL,
+    adresse TEXT NOT NULL,
+    lat REAL NOT NULL,
+    lon REAL NOT NULL,
+    mode TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS lieu_trajet_utilisateur ON lieu_trajet (utilisateur_id);
+
 CREATE TABLE IF NOT EXISTS comparaison_cagnotte (
     id TEXT PRIMARY KEY,
     utilisateur_id INTEGER NOT NULL REFERENCES utilisateur (id) ON DELETE CASCADE,

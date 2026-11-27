@@ -31,7 +31,7 @@
       <label for="code_postal">Ville ou code postal</label>
       <div class="champ-lieu">
         <input id="code_postal" name="code_postal" value="{{ code_postal }}" maxlength="80"
-               placeholder="Bruz, Rennes ou 35170" required autocomplete="address-level2"
+               placeholder="Bruz, Rennes ou 35170" autocomplete="address-level2"
                aria-describedby="erreur-lieu">
         <button type="button" id="me-localiser">{{ icone("localiser") }}<span>Me localiser</span></button>
       </div>
@@ -57,20 +57,13 @@
         </p>
       </fieldset>
 
+      {% include "magasins/_trajet.html" %}
       <p class="erreur" id="erreur-lieu" role="alert" {% if not erreur %}hidden{% endif %}>
         {{ icone("alerte") }}<span>{{ erreur or "" }}</span>
       </p>
       <button type="submit" class="principal">Voir les magasins {{ icone("fleche") }}</button>
     </form>
 
-    {% set maison = request.session.get("maison") %}
-    {% if maison %}
-    <p class="raccourci-maison">
-      <a class="bouton maison" href="/magasins?code_postal={{ maison.code_postal|urlencode }}">
-        {{ icone("maison") }}<span>Maison · {{ maison.code_postal }} {{ maison.ville }}</span>
-      </a>
-    </p>
-    {% endif %}
   </section>
 
   <aside class="ticket" aria-label="Comment ça marche">

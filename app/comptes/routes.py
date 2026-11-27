@@ -18,11 +18,13 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import ValidationError
 
-from app.comptes import cagnotte, service
+from app.comptes import cagnotte, lieux, service
 from app.comptes.service import ErreurCompte
 from app.config import ReglagesDep
 from app.contrats import AjoutLigne
 from app.gabarits import templates
+from app.magasins.geocodage import CodePostalInvalide
+from app.magasins.trajets import MODES
 from app.panier import service as service_panier
 
 router = APIRouter(prefix="/comptes", tags=["comptes"])
@@ -69,8 +71,38 @@ async def page_compte(request: Request, reglages: ReglagesDep):
         email=email,
         maison=request.session.get("maison") if email else None,
         solde_cagnotte=cagnotte.solde(reglages, utilisateur_id) if email else 0,
+        lieux_favoris=lieux.lister(reglages, utilisateur_id) if email else [],
+        modes_trajet=MODES,
         message=request.query_params.get("message"),
     )
+
+
+@router.post("/lieux")
+async def enregistrer_lieu(
+    request: Request,
+    reglages: ReglagesDep,
+    nom: Champ = "",
+    adresse: Champ = "",
+    mode: Champ = "",
+    lieu_id: Annotated[int | None, Form()] = None,
+):
+    utilisateur_id = request.session.get("utilisateur_id")
+    if not utilisateur_id:
+        return _vers("/comptes/connexion?suivant=/comptes")
+    try:
+        await lieux.enregistrer(reglages, utilisateur_id, nom, adresse, mode, lieu_id)
+    except (CodePostalInvalide, LookupError):
+        return _vers("/comptes?message=lieu_invalide#lieux-enregistres")
+    return _vers("/comptes?message=lieu_enregistre#lieux-enregistres")
+
+
+@router.post("/lieux/{lieu_id}/supprimer")
+async def supprimer_lieu(request: Request, reglages: ReglagesDep, lieu_id: int):
+    utilisateur_id = request.session.get("utilisateur_id")
+    if not utilisateur_id:
+        return _vers("/comptes/connexion?suivant=/comptes")
+    lieux.supprimer(reglages, utilisateur_id, lieu_id)
+    return _vers("/comptes?message=lieu_supprime#lieux-enregistres")
 
 
 @router.post("/cagnotte")
@@ -318,6 +350,8 @@ async def enregistrer_maison(
             email=service.email_utilisateur(reglages, utilisateur_id),
             maison=request.session.get("maison"),
             solde_cagnotte=cagnotte.solde(reglages, utilisateur_id),
+            lieux_favoris=lieux.lister(reglages, utilisateur_id),
+            modes_trajet=MODES,
             erreur_maison=str(erreur),
             code_postal_saisi=code_postal,
         )

@@ -162,7 +162,7 @@ Fin :
 |---|---|---|
 | Mode « fin de mois » (équivalents moins chers) | `app/collecte/orchestrateur.py` (`choisir_equivalent`), `app/produits/` | lot 4 |
 | Cartes de fidélité, avantages étudiants | `app/panier/calcul.py` (`cartes`), profil dans `app/comptes/` | lots 1 et 2 |
-| Trajet (mode de transport, temps) | nouveau module `app/trajets/` | premier lot disponible |
+| Trajet (lieux enregistrés, mode de transport, temps estimé) | `app/magasins/trajets.py`, `app/comptes/lieux.py` | fait |
 | Répartition sur N magasins | `app/panier/calcul.py` ou nouveau module | lot 1 |
 
 ## Jalons (proposition)

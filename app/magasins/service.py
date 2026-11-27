@@ -42,7 +42,7 @@ def distance_km(a: Position, b: Position) -> float:
     dphi = phi2 - phi1
     dlambda = math.radians(b.lon - a.lon)
     h = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
-    return 2 * rayon_terre * math.asin(math.sqrt(h))
+    return 2 * rayon_terre * math.asin(math.sqrt(min(1.0, h)))
 
 
 def _limites(rayon_km: float | None, reglages: Reglages) -> tuple[float, int]:
@@ -122,10 +122,14 @@ async def _magasins_enseigne(
 
 
 async def magasins_proches(
-    lieu: str, reglages: Reglages, rayon_km: float | None = None
+    lieu: str,
+    reglages: Reglages,
+    rayon_km: float | None = None,
+    *,
+    lieu_enregistre: tuple[str, Position] | None = None,
 ) -> MagasinsReponse:
     """Lève CodePostalInvalide ou CodePostalInconnu si le lieu ne convient pas."""
-    ville, position = await geocoder(lieu, reglages)
+    ville, position = lieu_enregistre or await geocoder(lieu, reglages)
     rayon, maximum = _limites(rayon_km, reglages)
     sources = sources_actives(reglages)
     if reglages.magasins_osm and FICHIER_OSM.exists():

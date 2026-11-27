@@ -320,6 +320,25 @@ def test_favoris_demandent_une_connexion(client):
 # --- Maison ---
 
 
+def test_lieux_enregistres_mode_favori_et_gestion(client):
+    _inscrire(client)
+    campus = {"nom": "Campus", "adresse": "35170", "mode": "velo"}
+    maison = {"nom": "Maison", "adresse": "35000", "mode": "pied"}
+    assert "Lieu enregistré" in client.post("/comptes/lieux", data=campus).text
+    compte = client.post("/comptes/lieux", data=maison)
+    assert "Campus · Vélo" in compte.text and "Maison · À pied" in compte.text
+    accueil = client.get("/").text
+    identifiant = re.search(r'value="(\d+)" data-mode-favori="velo"', accueil)[1]
+    assert re.search(r'data-mode-favori="pied"\s+checked', accueil)
+    reponse = client.get("/magasins", params={"trajet": "true", "lieu_trajet": identifiant})
+    assert "Autour de Campus" in reponse.text and "moins de 3 km" in reponse.text
+
+    compte = client.post("/comptes/lieux", data={**campus, "nom": "Fac", "lieu_id": identifiant})
+    assert "Fac · Vélo" in compte.text and "Campus · Vélo" not in compte.text
+    assert "Lieu supprimé" in client.post(f"/comptes/lieux/{identifiant}/supprimer").text
+    assert "Fac · " not in client.get("/").text
+
+
 def test_maison(client):
     assert "Maison · " not in client.get("/").text
     _inscrire(client)

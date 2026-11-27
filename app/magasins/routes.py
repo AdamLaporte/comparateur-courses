@@ -3,11 +3,13 @@
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
+from app.comptes import lieux
 from app.config import ReglagesDep
-from app.contrats import MagasinsReponse
+from app.contrats import MagasinsReponse, Position
 from app.gabarits import templates
 from app.magasins.geocodage import CodePostalInconnu, CodePostalInvalide
 from app.magasins.service import magasins_proches
+from app.magasins.trajets import MODES, estimer
 from app.panier import service as panier
 
 router = APIRouter(tags=["magasins"])
@@ -31,8 +33,41 @@ def nb_articles(request: Request, reglages) -> int:
     return len(panier.lister(reglages, panier.cle_liste(request, reglages, creer=False)))
 
 
+def contexte_trajet(request: Request, reglages) -> dict:
+    favoris = {
+        str(lieu["id"]): lieu
+        for lieu in lieux.lister(reglages, request.session.get("utilisateur_id"))
+    }
+    maison = request.session.get("maison")
+    defaut = next(
+        (
+            identifiant
+            for identifiant, lieu in favoris.items()
+            if lieu["nom"].casefold() == "maison"
+        ),
+        "",
+    )
+    if maison and not defaut:
+        favoris["maison"] = {
+            "nom": "Maison",
+            "adresse": maison["code_postal"],
+            "detail": f"{maison['code_postal']} {maison['ville']}",
+            "mode": "voiture",
+        }
+        defaut = "maison"
+    return {
+        "lieux_trajet": favoris,
+        "lieu_defaut": defaut,
+        "modes_trajet": MODES,
+    }
+
+
 @router.get("/", response_class=HTMLResponse)
 async def accueil(request: Request, reglages: ReglagesDep):
+    contexte = contexte_trajet(request, reglages)
+    actif = request.session.get("lieu_trajet")
+    if actif in contexte["lieux_trajet"]:
+        contexte["lieu_trajet"] = actif
     return templates.TemplateResponse(
         request,
         "magasins/accueil.html",
@@ -41,32 +76,74 @@ async def accueil(request: Request, reglages: ReglagesDep):
             "rayon_km": request.session.get("rayon_km"),
             "rayons": RAYONS_KM,
             "nb_articles": nb_articles(request, reglages),
+            **contexte,
         },
     )
 
 
 @router.get("/magasins", response_class=HTMLResponse)
 async def page_magasins(
-    request: Request, reglages: ReglagesDep, code_postal: str = "", rayon_km: str = ""
+    request: Request,
+    reglages: ReglagesDep,
+    code_postal: str = "",
+    rayon_km: str = "",
+    lieu_trajet: str = "",
+    trajet: bool = False,
+    mode_trajet: str = "",
+    rayon_trajet: str = "",
 ):
-    rayon = lire_rayon(rayon_km)
+    contexte = contexte_trajet(request, reglages)
+    favori = contexte["lieux_trajet"].get(lieu_trajet)
+    lieu_enregistre = None
+    if favori:
+        code_postal = favori["adresse"]
+        if "lat" in favori:
+            position = Position(lat=favori["lat"], lon=favori["lon"])
+            code_postal = f"{position.lat:.7f},{position.lon:.7f}"
+            lieu_enregistre = (favori["nom"], position)
+    identifiant_mode = (
+        mode_trajet if mode_trajet in MODES else (favori or {}).get("mode", "voiture")
+    )
+    mode = MODES[identifiant_mode] if trajet else None
+    rayon = (lire_rayon(rayon_trajet) or mode.rayon) if mode else lire_rayon(rayon_km)
+    contexte.update(
+        lieu_trajet=lieu_trajet if favori else "",
+        trajet_actif=trajet,
+        mode_trajet=mode_trajet if mode else "",
+        rayon_trajet=rayon_trajet,
+    )
     try:
-        reponse = await magasins_proches(code_postal, reglages, rayon)
+        reponse = await magasins_proches(
+            code_postal, reglages, rayon, lieu_enregistre=lieu_enregistre
+        )
     except (CodePostalInvalide, CodePostalInconnu) as erreur:
         message = MESSAGE_INVALIDE if isinstance(erreur, CodePostalInvalide) else MESSAGE_INCONNU
-        contexte = {
-            "code_postal": code_postal,
-            "rayon_km": rayon,
-            "rayons": RAYONS_KM,
-            "erreur": message,
-        }
+        contexte.update(
+            {
+                "code_postal": code_postal,
+                "rayon_km": rayon,
+                "rayons": RAYONS_KM,
+                "erreur": message,
+            }
+        )
         return templates.TemplateResponse(request, "magasins/accueil.html", contexte)
     request.session["code_postal"] = reponse.code_postal
     request.session["rayon_km"] = rayon
+    if favori:
+        reponse.ville = favori["nom"]
+        request.session["lieu_trajet"] = lieu_trajet
+    else:
+        request.session.pop("lieu_trajet", None)
+    if mode:
+        contexte["estimations_trajet"] = {
+            magasin.id: estimer(reponse.position, magasin.position, mode, rayon)
+            for magasin in reponse.magasins
+        }
+        contexte["nom_mode"] = mode.nom
     return templates.TemplateResponse(
         request,
         "magasins/liste.html",
-        {"reponse": reponse, "nb_articles": nb_articles(request, reglages)},
+        {"reponse": reponse, "nb_articles": nb_articles(request, reglages), **contexte},
     )
 
 
