@@ -5,6 +5,7 @@ Clés de session utilisées : "sid" (identifiant de session anonyme), "code_post
 """
 
 import uuid
+from pathlib import Path
 
 from fastapi import Request
 
@@ -25,6 +26,23 @@ def proprietaire(request: Request, creer: bool = True) -> str | None:
         sid = uuid.uuid4().hex
         request.session["sid"] = sid
     return f"session:{sid}"
+
+
+def migrer(chemin_db: Path) -> None:
+    """Bases créées avant le mode « inexistant » : on recrée ligne_liste avec la nouvelle contrainte
+    (SQLite ne sait pas modifier un CHECK), en gardant toutes les lignes."""
+    with db.connexion(chemin_db) as cnx:
+        ligne = cnx.execute("SELECT sql FROM sqlite_master WHERE name = 'ligne_liste'").fetchone()
+        if ligne is None or "'inexistant'" in ligne["sql"]:
+            return
+        nouvelle = ligne["sql"].replace("'equivalent')", "'equivalent', 'inexistant')")
+        cnx.execute("ALTER TABLE ligne_liste RENAME TO ligne_liste_avant")
+        cnx.execute(nouvelle)
+        cnx.execute("INSERT INTO ligne_liste SELECT * FROM ligne_liste_avant")
+        cnx.execute("DROP TABLE ligne_liste_avant")
+        cnx.execute(
+            "CREATE INDEX IF NOT EXISTS idx_ligne_liste_proprietaire ON ligne_liste (proprietaire)"
+        )
 
 
 def lister(reglages: Reglages, proprietaire: str | None) -> list[LigneListe]:

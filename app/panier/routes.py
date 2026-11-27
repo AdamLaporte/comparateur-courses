@@ -3,6 +3,7 @@ flux SSE des prix et des totaux, et calcul complet en JSON (sans session)."""
 
 import asyncio
 import logging
+import re
 from collections.abc import AsyncIterable, AsyncIterator
 from typing import Annotated
 
@@ -26,11 +27,38 @@ from app.gabarits import rendre, templates
 from app.magasins.geocodage import CodePostalInconnu, CodePostalInvalide
 from app.magasins.service import magasins_proches
 from app.panier import calcul, service, ticket
+from app.produits.service import rechercher
 from app.sources.registre import sources_actives
 
 router = APIRouter(tags=["panier"])
 logger = logging.getLogger(__name__)
 TAILLE_MAX_TICKET = 10 * 1024 * 1024
+_UNITES = {"g", "kg", "l", "cl", "ml", "x", "lot", "de"}
+INEXISTANT = "inexistant"  # valeur du choix « Inexistant en magasins » dans le formulaire du ticket
+
+
+def comparables(lignes: list[LigneListe]) -> list[LigneListe]:
+    """Lignes à comparer : un article « inexistant en magasins » reste dans la liste, sans prix."""
+    return [ligne for ligne in lignes if ligne.mode != ModeLigne.INEXISTANT]
+
+
+async def correspondances(recherche: str, reglages: Reglages) -> list:
+    """Produits du catalogue qui correspondent à un article lu sur le ticket (le premier est proposé).
+    Le texte d'un ticket est approximatif : on réessaie sans les tailles (« 400 g », « 1 l »), puis
+    avec le premier mot seul s'il est assez long."""
+    mots = [m for m in recherche.split() if not re.search(r"\d", m) and m.lower() not in _UNITES]
+    essais = dict.fromkeys(
+        e for e in (recherche, " ".join(mots), mots[0] if mots and len(mots[0]) >= 4 else "") if e
+    )
+    for essai in essais:
+        try:
+            produits = [p for p in await rechercher(essai, reglages, limite=5) if p.ean]
+        except Exception:
+            logger.exception("Recherche impossible pour « %s »", essai)
+            continue
+        if produits:
+            return produits
+    return []
 
 
 async def comparer(
@@ -89,8 +117,9 @@ async def ajouter_ligne(
 
 
 @router.post("/panier/ticket", response_class=HTMLResponse)
-async def lire_ticket(request: Request, image: UploadFile):
-    """Photo d'un ticket de caisse → articles lus, à vérifier avant de les ajouter."""
+async def lire_ticket(request: Request, reglages: ReglagesDep, image: UploadFile):
+    """Photo d'un ticket de caisse → articles lus, chacun rapproché d'un produit vendu en magasin,
+    à vérifier avant de les ajouter."""
     contexte: dict = {"articles": [], "erreur": None}
     contenu = await image.read(TAILLE_MAX_TICKET + 1)
     if not (image.content_type or "").startswith("image/") or len(contenu) > TAILLE_MAX_TICKET:
@@ -104,7 +133,23 @@ async def lire_ticket(request: Request, image: UploadFile):
             logger.exception("Lecture du ticket impossible")
         if not contexte["articles"]:
             contexte["erreur"] = "Aucun article lu sur ce ticket : essayez une photo plus nette."
+    contexte["articles"] = [
+        (recherche, quantite, await correspondances(recherche, reglages))
+        for recherche, quantite in contexte["articles"]
+    ]
     return templates.TemplateResponse(request, "panier/_ticket.html", contexte)
+
+
+@router.get("/panier/ticket/correspondances", response_class=HTMLResponse)
+async def nouvelles_correspondances(
+    request: Request, reglages: ReglagesDep, recherche: str = "", n: int = 0
+):
+    """Après correction du libellé d'un article du ticket : nouvelle liste de produits."""
+    return templates.TemplateResponse(
+        request,
+        "panier/_ticket_choix.html",
+        {"n": n, "recherche": recherche, "produits": await correspondances(recherche, reglages)},
+    )
 
 
 @router.post("/panier/ticket/ajouter", response_class=HTMLResponse)
@@ -113,17 +158,29 @@ async def ajouter_ticket(
     reglages: ReglagesDep,
     recherche: Annotated[list[str], Form()] = [],  # noqa: B006 (FastAPI copie la valeur)
     quantite: Annotated[list[str], Form()] = [],  # noqa: B006
+    choix: Annotated[list[str], Form()] = [],  # noqa: B006
 ):
-    """Ajoute les articles du ticket gardés et corrigés par l'utilisateur."""
+    """Ajoute les articles du ticket gardés par l'utilisateur : chacun est soit le produit choisi
+    (« <ean>|<libellé> »), soit « inexistant » (gardé dans la liste mais jamais comparé)."""
     proprietaire = service.proprietaire(request)
     ignores = 0
-    for texte, nombre in zip(recherche, quantite, strict=False):
+    for texte, nombre, produit in zip(recherche, quantite, choix, strict=False):
         if not texte.strip():
             continue
+        ean, _, libelle = produit.partition("|")
         try:
-            ajout = AjoutLigne(
-                mode=ModeLigne.EQUIVALENT, recherche=texte.strip(), quantite=nombre or 1
-            )
+            if produit != INEXISTANT and ean.isdigit():
+                ajout = AjoutLigne(
+                    mode=ModeLigne.PRODUIT,
+                    ean=ean,
+                    recherche=texte.strip(),
+                    libelle=libelle.strip() or None,
+                    quantite=nombre or 1,
+                )
+            else:
+                ajout = AjoutLigne(
+                    mode=ModeLigne.INEXISTANT, recherche=texte.strip(), quantite=nombre or 1
+                )
         except ValidationError:
             ignores += 1
             continue
@@ -146,6 +203,8 @@ async def tableau_resultats(request: Request, reglages: ReglagesDep):
     contexte: dict = {"lignes": lignes, "magasins": [], "message": None}
     if not lignes:
         contexte["message"] = "Ajoutez au moins un article à votre liste."
+    elif not comparables(lignes):
+        contexte["message"] = "Aucun article de votre liste n'existe en magasin : rien à comparer."
     else:
         try:
             contexte["magasins"] = (
@@ -161,8 +220,9 @@ async def tableau_resultats(request: Request, reglages: ReglagesDep):
 @router.get("/panier/prix/flux", response_class=EventSourceResponse)
 async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[ServerSentEvent]:
     """Une case du tableau par événement « prix-<ligne>-<magasin> », le total du magasin par
-    « total-<magasin> », le classement par « resume », puis « fin » (le navigateur ferme alors)."""
-    lignes = service.lister(reglages, service.proprietaire(request, creer=False))
+    « total-<magasin> », le classement par « resume », puis « fin » (le navigateur ferme alors).
+    Les articles « inexistant en magasins » ne sont ni cherchés ni comptés."""
+    lignes = comparables(service.lister(reglages, service.proprietaire(request, creer=False)))
     try:
         magasins = (
             await magasins_proches(
@@ -225,6 +285,7 @@ async def api_totaux(demande: DemandeTotaux, reglages: ReglagesDep):
         )
         for numero, ajout in enumerate(demande.lignes, start=1)
     ]
+    lignes = comparables(lignes)
     resultats = [resultat async for resultat in comparer(lignes, magasins, reglages)]
     return TotauxReponse(
         lignes=lignes,

@@ -1,18 +1,30 @@
-{# Articles lus sur le ticket : l'utilisateur corrige, retire, puis ajoute le tout à sa liste. #}
+{# Articles lus sur le ticket, chacun rapproché d'un produit vendu en magasin. L'utilisateur corrige le
+   texte (la liste de produits se met à jour), choisit le produit ou « Inexistant en magasins », retire
+   ce qu'il ne veut pas, puis ajoute le tout à sa liste. #}
+{% from "_icones.html" import icone %}
 {% if erreur %}
-<p class="erreur" role="alert">{{ erreur }}</p>
+<p class="erreur" role="alert">{{ icone("alerte") }}<span>{{ erreur }}</span></p>
 {% else %}
 <form hx-post="/panier/ticket/ajouter" hx-target="#liste" hx-swap="outerHTML" class="ticket-lu">
-  <p class="aide">{{ articles | length }} article(s) lu(s). Corrigez ou retirez-les, puis ajoutez-les :</p>
+  <p class="aide">
+    {{ articles | length }} article(s) lu(s). Vérifiez le produit associé à chacun : un article
+    « inexistant en magasins » reste dans la liste mais n'est pas comparé.
+  </p>
   <ul>
-    {% for recherche, quantite in articles %}
+    {% for recherche, quantite, produits in articles %}
+    {% set n = loop.index %}
     <li>
-      <label class="masque" for="ticket-q-{{ loop.index }}">Quantité</label>
-      <input id="ticket-q-{{ loop.index }}" name="quantite" type="number" min="1" max="99" value="{{ quantite }}">
-      <label class="masque" for="ticket-r-{{ loop.index }}">Article</label>
-      <input id="ticket-r-{{ loop.index }}" name="recherche" value="{{ recherche }}" maxlength="120">
+      <label class="masque" for="ticket-q-{{ n }}">Quantité</label>
+      <input id="ticket-q-{{ n }}" name="quantite" type="number" min="1" max="99" value="{{ quantite }}">
+      <div class="ticket-article">
+        <label class="masque" for="ticket-r-{{ n }}">Article lu sur le ticket</label>
+        <input id="ticket-r-{{ n }}" name="recherche" value="{{ recherche }}" maxlength="120"
+               hx-get="/panier/ticket/correspondances" hx-trigger="change"
+               hx-vals='{"n": {{ n }}}' hx-target="#ticket-choix-{{ n }}" hx-swap="outerHTML">
+        {% include "panier/_ticket_choix.html" %}
+      </div>
       <button type="button" class="bouton-icone" onclick="this.closest('li').remove()"
-              aria-label="Retirer {{ recherche }}" title="Retirer">✕</button>
+              aria-label="Retirer {{ recherche }}" title="Retirer">{{ icone("croix") }}</button>
     </li>
     {% endfor %}
   </ul>

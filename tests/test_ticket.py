@@ -3,6 +3,8 @@ import numpy as np
 
 from app.panier import ticket
 
+NUTELLA = "3017620422003"
+
 LIGNES = [
     "CARREFOUR MARKET",
     "NUTELLA400G 3,49",
@@ -26,23 +28,63 @@ def test_analyser_garde_les_articles_et_les_quantites():
 
 def test_ticket_lu_puis_ajoute_apres_verification(client, monkeypatch):
     monkeypatch.setattr(ticket, "lire_texte", lambda image: LIGNES)
+    client.get("/magasins", params={"code_postal": "35170"})
     page = client.post("/panier/ticket", files={"image": ("t.jpg", b"jpeg", "image/jpeg")})
     assert 'value="nutella 400 g"' in page.text and "Ajouter à ma liste" in page.text
+    # Chaque article est rapproché d'un produit vendu en magasin (catalogue fictif dans les tests).
+    assert f'value="{NUTELLA}|' in page.text
     assert "lait demi-écrémé" not in client.get("/panier/resultats").text  # rien d'ajouté encore
 
-    # L'utilisateur retire le lait (champ vidé) et corrige la quantité des pâtes.
+    # L'utilisateur retire le lait (champ vidé), garde le Nutella proposé et corrige les pâtes.
     page = client.post(
         "/panier/ticket/ajouter",
-        data={"recherche": ["nutella 400 g", "", "pâtes spaghetti"], "quantite": ["1", "1", "3"]},
+        data={
+            "recherche": ["nutella 400 g", "", "pâtes spaghetti"],
+            "quantite": ["1", "1", "3"],
+            "choix": [f"{NUTELLA}|Nutella 400 g", "inexistant", "inexistant"],
+        },
     )
-    assert "nutella 400 g" in page.text and "pâtes spaghetti" in page.text
+    assert "Nutella 400 g" in page.text and "pâtes spaghetti" in page.text
     assert "lait demi-écrémé" not in page.text
     assert "3×" in page.text and 'id="ticket-lu" hx-swap-oob="true"' in page.text
+    assert "produit précis" in page.text and "inexistant en magasins" in page.text
+
+
+def test_article_inexistant_garde_mais_pas_compare(client, monkeypatch):
+    monkeypatch.setattr(ticket, "lire_texte", lambda image: ["XYZQWERTYU 2,00", "TOTAL 2,00"])
+    client.get("/magasins", params={"code_postal": "35170"})
+    page = client.post("/panier/ticket", files={"image": ("t.jpg", b"jpeg", "image/jpeg")})
+    assert 'name="choix" value="inexistant"' in page.text  # aucun produit trouvé
+
+    client.post(
+        "/panier/ticket/ajouter",
+        data={"recherche": ["xyzqwertyu"], "quantite": ["1"], "choix": ["inexistant"]},
+    )
+    assert (
+        "Aucun article de votre liste n&#39;existe en magasin"
+        in client.get("/panier/resultats").text
+    )
+
+    client.post("/panier/lignes", data={"mode": "equivalent", "recherche": "riz"})
+    tableau = client.get("/panier/resultats").text
+    assert "Inexistant en magasins : pas de comparaison" in tableau
+    assert tableau.count('sse-swap="prix-') == 8  # seule la ligne « riz » est comparée
+    with client.stream("GET", "/panier/prix/flux") as flux:
+        texte = "".join(flux.iter_text())
+    assert texte.count("event: prix-") == 8
 
 
 def test_ticket_quantite_invalide_signalee(client):
-    page = client.post("/panier/ticket/ajouter", data={"recherche": ["lait"], "quantite": ["500"]})
+    page = client.post(
+        "/panier/ticket/ajouter",
+        data={"recherche": ["lait"], "quantite": ["500"], "choix": ["inexistant"]},
+    )
     assert "1 article(s) non ajouté(s)" in page.text
+
+
+def test_nouvelles_correspondances_apres_correction(client):
+    page = client.get("/panier/ticket/correspondances", params={"recherche": "nutella", "n": 2})
+    assert 'id="ticket-choix-2"' in page.text and f'value="{NUTELLA}|' in page.text
 
 
 def test_decoupage_des_mots_colles():

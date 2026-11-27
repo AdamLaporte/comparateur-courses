@@ -1,0 +1,17 @@
+{# Produit associé à un article du ticket (n = numéro de la ligne). Valeur « <ean>|<libellé> » ou
+   « inexistant ». Rendu dans _ticket.html et, après correction du texte, par /panier/ticket/correspondances. #}
+<span id="ticket-choix-{{ n }}" class="ticket-choix">
+  {% if produits %}
+  <label class="masque" for="ticket-c-{{ n }}">Produit en magasin pour « {{ recherche }} »</label>
+  <select id="ticket-c-{{ n }}" name="choix">
+    {% for p in produits %}
+    {% set libelle = p.libelle ~ (" · " ~ p.marque if p.marque else "") ~ (" " ~ p.quantite if p.quantite else "") %}
+    <option value="{{ p.ean }}|{{ libelle }}" {% if loop.first %}selected{% endif %}>{{ libelle }}</option>
+    {% endfor %}
+    <option value="inexistant">Inexistant en magasins</option>
+  </select>
+  {% else %}
+  <input type="hidden" name="choix" value="inexistant">
+  <span class="mode inexistant">Inexistant en magasins</span>
+  {% endif %}
+</span>

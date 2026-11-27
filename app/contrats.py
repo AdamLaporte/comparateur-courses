@@ -41,6 +41,7 @@ class TypeSource(StrEnum):
 class ModeLigne(StrEnum):
     PRODUIT = "produit"  # produit précis, identifié par son EAN
     EQUIVALENT = "equivalent"  # le moins cher qui correspond à la recherche, dans chaque magasin
+    INEXISTANT = "inexistant"  # lu sur un ticket, introuvable en magasin : gardé dans la liste, jamais comparé
 
 
 class StatutPrix(StrEnum):

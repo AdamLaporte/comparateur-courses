@@ -10,10 +10,9 @@
       <div class="ligne-corps">
         <span class="libelle">{{ l.libelle }}</span>
         <span class="ligne-meta">
-          <span class="mode {{ l.mode.value }}">
-            {{ "produit précis" if l.mode.value == "produit" else "le moins cher" }}
-          </span>
-          {% if request.session.get("utilisateur_id") %}
+          {% set libelles = {"produit": "produit précis", "equivalent": "le moins cher", "inexistant": "inexistant en magasins"} %}
+          <span class="mode {{ l.mode.value }}">{{ libelles[l.mode.value] }}</span>
+          {% if request.session.get("utilisateur_id") and l.mode.value != "inexistant" %}
           <button class="lien favori" hx-post="/comptes/favoris/depuis-ligne/{{ l.id }}" hx-swap="outerHTML"
                   title="Ajouter à mes favoris">☆ Favori</button>
           {% endif %}

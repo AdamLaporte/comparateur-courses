@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS ligne_liste (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     proprietaire TEXT NOT NULL,
-    mode TEXT NOT NULL CHECK (mode IN ('produit', 'equivalent')),
+    mode TEXT NOT NULL CHECK (mode IN ('produit', 'equivalent', 'inexistant')),
     ean TEXT,
     recherche TEXT NOT NULL,
     libelle TEXT NOT NULL,

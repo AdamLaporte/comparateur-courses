@@ -21,6 +21,7 @@ from app.config import Reglages
 from app.gabarits import templates
 from app.magasins import routes as routes_magasins
 from app.panier import routes as routes_panier
+from app.panier.service import migrer as migrer_panier
 from app.produits import routes as routes_produits
 
 DOSSIER_APP = Path(__file__).resolve().parent
@@ -37,6 +38,7 @@ def creer_app(reglages: Reglages | None = None) -> FastAPI:
     @asynccontextmanager
     async def cycle_de_vie(app: FastAPI):
         db.initialiser(reglages.db_path)
+        migrer_panier(reglages.db_path)
         yield
 
     app = FastAPI(
