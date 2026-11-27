@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block titre %}Ma liste · Comparateur de courses{% endblock %}
+{% block contenu %}
+<h1>Ma liste de courses</h1>
+<p class="note">
+  Autour de {{ code_postal }} ·
+  <a href="/magasins?code_postal={{ code_postal }}">voir les magasins</a> ·
+  <a href="/">changer de code postal</a>
+</p>
+
+<section class="carte">
+  <label for="q"><strong>Ajouter un article</strong></label>
+  <input id="q" name="q" type="search" autocomplete="off"
+         placeholder="ex. nutella, lait demi-écrémé, spaghetti"
+         hx-get="/produits/recherche" hx-trigger="input changed delay:300ms, search"
+         hx-target="#suggestions">
+  <div id="suggestions"></div>
+</section>
+
+<section class="carte">
+  <h2>Ma liste</h2>
+  {% include "panier/_liste.html" %}
+  <button class="principal" hx-get="/panier/resultats" hx-target="#resultats">Comparer les prix</button>
+</section>
+
+<section id="resultats"></section>
+{% endblock %}

@@ -1,0 +1,157 @@
+/* Style minimal du squelette (le lot Interface le remplacera). */
+:root {
+  --fond: #f6f7f9;
+  --carte: #ffffff;
+  --texte: #1d2330;
+  --doux: #5d6675;
+  --bord: #dde1e7;
+  --accent: #1f7a4d;
+  --accent-clair: #e6f4ec;
+  --alerte: #b42318;
+  --fictif: #fff4d6;
+  --carrefour: #1e5bc6;
+  --intermarche: #d0021b;
+  --coursesu: #e2001a;
+  --leclerc: #0066b3;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--texte);
+  background: var(--fond);
+  line-height: 1.5;
+}
+
+a { color: var(--accent); }
+
+.entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1.5rem;
+  background: var(--carte);
+  border-bottom: 1px solid var(--bord);
+}
+.entete .logo { font-weight: 700; font-size: 1.15rem; text-decoration: none; color: var(--texte); }
+.entete nav { display: flex; gap: 1.2rem; }
+.entete nav a { text-decoration: none; color: var(--doux); }
+.entete nav a:hover { color: var(--accent); }
+
+.bandeau-fictif {
+  padding: 0.5rem 1.5rem;
+  background: var(--fictif);
+  border-bottom: 1px solid #f0d78a;
+  font-size: 0.9rem;
+}
+
+.contenu { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+.pied { text-align: center; color: var(--doux); font-size: 0.85rem; padding: 2rem 1rem; }
+
+h1 { font-size: 1.6rem; margin: 0 0 0.8rem; }
+h2 { font-size: 1.2rem; margin: 0 0 0.6rem; }
+
+.carte {
+  background: var(--carte);
+  border: 1px solid var(--bord);
+  border-radius: 10px;
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 1.2rem;
+}
+
+.note { color: var(--doux); }
+.erreur { color: var(--alerte); font-weight: 600; }
+.masque { position: absolute; left: -9999px; }
+
+input, button { font: inherit; }
+input[type="search"], input[name="code_postal"] {
+  width: 100%;
+  max-width: 28rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--bord);
+  border-radius: 8px;
+  margin: 0.4rem 0;
+}
+input[type="number"] { width: 4.2rem; padding: 0.3rem; border: 1px solid var(--bord); border-radius: 6px; }
+
+button, .bouton {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--bord);
+  border-radius: 8px;
+  background: var(--carte);
+  color: var(--texte);
+  text-decoration: none;
+  cursor: pointer;
+}
+button.principal, .bouton.principal { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.lien { border: none; background: none; color: var(--alerte); padding: 0 0.3rem; }
+
+.formulaire-ligne { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.formulaire-ligne input { max-width: 10rem; }
+
+.badge {
+  display: inline-block;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--doux);
+}
+.badge.carrefour { background: var(--carrefour); }
+.badge.intermarche { background: var(--intermarche); }
+.badge.coursesu { background: var(--coursesu); }
+.badge.leclerc { background: var(--leclerc); }
+
+.magasins, .lignes, .suggestions, .classement { padding-left: 0; list-style: none; }
+.magasins li, .lignes li { padding: 0.45rem 0; border-bottom: 1px solid var(--bord); }
+.classement { list-style: decimal; padding-left: 1.5rem; }
+.classement li { padding: 0.25rem 0; }
+.classement li.gagnant { font-weight: 700; color: var(--accent); }
+
+.suggestion form {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--bord);
+}
+.suggestion form span { flex: 1; }
+.suggestion.equivalent { background: var(--accent-clair); border-radius: 8px; padding: 0 0.5rem; }
+
+.mode { font-size: 0.8rem; padding: 0.05rem 0.45rem; border-radius: 6px; background: var(--fond); color: var(--doux); }
+.mode.equivalent { background: var(--accent-clair); color: var(--accent); }
+.quantite { color: var(--doux); }
+
+.tableau-prix { background: var(--carte); border: 1px solid var(--bord); border-radius: 10px; padding: 1rem; }
+.defilement { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--bord); padding: 0.5rem; vertical-align: top; text-align: left; }
+thead th { font-weight: 600; min-width: 9rem; }
+tbody th { font-weight: 500; min-width: 12rem; }
+tfoot th, tfoot td { border-top: 2px solid var(--texte); font-size: 1rem; }
+.prix, .total { display: flex; flex-direction: column; gap: 0.1rem; }
+td.total { display: table-cell; }
+td.total small, .prix small { display: block; }
+.attente { color: var(--doux); }
+.absent, .indisponible { color: var(--doux); font-style: italic; }
+.source { color: var(--doux); font-size: 0.75rem; }
+.source.fictif { color: #8a6d00; }
+.produit { color: var(--doux); }
+.promo {
+  display: inline-block;
+  width: fit-content;
+  font-size: 0.72rem;
+  padding: 0 0.35rem;
+  border-radius: 4px;
+  background: var(--accent-clair);
+  color: var(--accent);
+}
+.promo.fidelite { background: #eef0ff; color: #3949ab; }
+.manquants { color: var(--alerte); }
+.economies { color: var(--accent); }
+.resume { margin-top: 1rem; }

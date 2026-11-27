@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block titre %}Magasins autour de {{ reponse.code_postal }} · Comparateur de courses{% endblock %}
+{% block contenu %}
+<h1>Magasins autour de {{ reponse.code_postal }} {{ reponse.ville }}</h1>
+{% if reponse.magasins %}
+<ul class="magasins">
+  {% for m in reponse.magasins %}
+  <li>
+    <span class="badge {{ m.enseigne.value }}">{{ m.enseigne.nom }}</span>
+    <strong>{{ m.nom }}</strong>
+    <span class="note">{{ m.adresse }} · {{ ('%.1f' % m.distance_km).replace('.', ',') }} km</span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="note">Aucun magasin trouvé autour de ce code postal.</p>
+{% endif %}
+{% if reponse.enseignes_sans_magasin %}
+<p class="note">
+  Pas de magasin trouvé pour :
+  {% for e in reponse.enseignes_sans_magasin %}{{ e.nom }}{% if not loop.last %}, {% endif %}{% endfor %}.
+</p>
+{% endif %}
+<p>
+  <a class="bouton principal" href="/panier">Composer ma liste</a>
+  <a class="bouton" href="/">Changer de code postal</a>
+</p>
+{% endblock %}

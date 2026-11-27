@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block contenu %}
+<section class="carte">
+  <h1>Où faites-vous vos courses ?</h1>
+  <p>
+    Saisissez votre code postal : on cherche les magasins Carrefour, Intermarché, Courses U et
+    E.Leclerc Drive autour de vous, puis on compare le prix de votre liste de courses.
+  </p>
+  <form action="/magasins" method="get" class="formulaire-ligne">
+    <label for="code_postal" class="masque">Code postal</label>
+    <input id="code_postal" name="code_postal" value="{{ code_postal }}" inputmode="numeric"
+           pattern="[0-9]{5}" maxlength="5" placeholder="35170" required autofocus>
+    <button type="submit" class="principal">Trouver les magasins</button>
+  </form>
+  {% if erreur %}<p class="erreur">{{ erreur }}</p>{% endif %}
+</section>
+{% endblock %}

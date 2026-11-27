@@ -1,0 +1,20 @@
+<div id="liste">
+  {% if erreur %}<p class="erreur">{{ erreur }}</p>{% endif %}
+  {% if lignes %}
+  <ul class="lignes">
+    {% for l in lignes %}
+    <li>
+      <span class="quantite">{{ l.quantite }} ×</span>
+      <span class="libelle">{{ l.libelle }}</span>
+      <span class="mode {{ l.mode.value }}">
+        {{ "produit précis" if l.mode.value == "produit" else "le moins cher" }}
+      </span>
+      <button class="lien" hx-delete="/panier/lignes/{{ l.id }}" hx-target="#liste"
+              hx-swap="outerHTML">Retirer</button>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="note">Votre liste est vide : cherchez un article ci-dessus.</p>
+  {% endif %}
+</div>

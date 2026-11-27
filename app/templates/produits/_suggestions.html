@@ -1,0 +1,30 @@
+{% if q|length >= 2 %}
+<ul class="suggestions">
+  <li class="suggestion equivalent">
+    <form hx-post="/panier/lignes" hx-target="#liste" hx-swap="outerHTML">
+      <input type="hidden" name="mode" value="equivalent">
+      <input type="hidden" name="recherche" value="{{ q }}">
+      <input type="hidden" name="libelle" value="{{ q }}">
+      <span><strong>Le moins cher</strong> pour « {{ q }} » dans chaque magasin</span>
+      <input type="number" name="quantite" value="1" min="1" max="99" aria-label="Quantité">
+      <button type="submit">Ajouter</button>
+    </form>
+  </li>
+  {% for p in produits %}
+  <li class="suggestion">
+    <form hx-post="/panier/lignes" hx-target="#liste" hx-swap="outerHTML">
+      <input type="hidden" name="mode" value="produit">
+      <input type="hidden" name="ean" value="{{ p.ean }}">
+      <input type="hidden" name="recherche" value="{{ q }}">
+      <input type="hidden" name="libelle" value="{{ p.libelle }} · {{ p.marque }} {{ p.quantite }}">
+      <span>{{ p.libelle }} <small class="note">{{ p.marque }} · {{ p.quantite }}</small></span>
+      <input type="number" name="quantite" value="1" min="1" max="99" aria-label="Quantité">
+      <button type="submit">Ajouter</button>
+    </form>
+  </li>
+  {% endfor %}
+  {% if not produits %}
+  <li class="note">Aucun produit précis trouvé : choisissez « le moins cher ».</li>
+  {% endif %}
+</ul>
+{% endif %}

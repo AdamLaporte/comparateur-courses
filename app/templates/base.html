@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titre %}Comparateur de courses{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/htmx-ext-sse@2.2.2/sse.js" defer></script>
+</head>
+<body>
+  <header class="entete">
+    <a class="logo" href="/">Comparateur de courses</a>
+    <nav>
+      <a href="/">Code postal</a>
+      <a href="/panier">Ma liste</a>
+      <a href="/comptes">Compte</a>
+    </nav>
+  </header>
+  {% if request.app.state.reglages.mode_fictif_actif %}
+  <div class="bandeau-fictif">
+    Mode démonstration : les prix marqués « Données fictives » sont inventés.
+  </div>
+  {% endif %}
+  <main class="contenu">
+    {% block contenu %}{% endblock %}
+  </main>
+  <footer class="pied">
+    Chaque prix indique sa source et l'heure du relevé · Hackathon ENSAI 2026
+  </footer>
+</body>
+</html>

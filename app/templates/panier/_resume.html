@@ -1,0 +1,25 @@
+{# Classement final des paniers (envoyé par SSE à la fin de la collecte). #}
+{% set complets = totaux | selectattr("complet") | list %}
+<h2>Classement</h2>
+<ol class="classement">
+  {% for t in totaux %}
+  <li class="{{ 'gagnant' if loop.first and t.complet }}">
+    <span class="badge {{ t.magasin.enseigne.value }}">{{ t.magasin.enseigne.nom }}</span>
+    {{ t.magasin.nom }} : <strong>{{ t.total_centimes | euros }}</strong>
+    {% if not t.complet %}
+    <small class="manquants">
+      {{ t.nb_manquants }} article{{ "s" if t.nb_manquants > 1 }} manquant{{ "s" if t.nb_manquants > 1 }}
+    </small>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ol>
+{% if complets | length >= 2 %}
+<p>
+  Panier complet le moins cher : <strong>{{ complets[0].magasin.nom }}</strong>, soit
+  <strong>{{ (complets[-1].total_centimes - complets[0].total_centimes) | euros }}</strong>
+  de moins que le plus cher ({{ complets[-1].magasin.nom }}).
+</p>
+{% elif not complets %}
+<p class="note">Aucun magasin n'a tous les articles : comparez les totaux avec les manquants.</p>
+{% endif %}

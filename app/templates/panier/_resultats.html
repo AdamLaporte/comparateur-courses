@@ -1,0 +1,42 @@
+{# Tableau articles × magasins, rempli case par case par le flux SSE /panier/prix/flux. #}
+{% if message %}
+<p class="note">{{ message }}</p>
+{% else %}
+<div class="tableau-prix" hx-ext="sse" sse-connect="/panier/prix/flux" sse-close="fin">
+  <div class="defilement">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Article</th>
+          {% for m in magasins %}
+          <th scope="col">
+            <span class="badge {{ m.enseigne.value }}">{{ m.enseigne.nom }}</span><br>
+            {{ m.nom }}<br>
+            <small class="note">{{ ('%.1f' % m.distance_km).replace('.', ',') }} km</small>
+          </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in lignes %}
+        <tr>
+          <th scope="row">{{ l.quantite }} × {{ l.libelle }}</th>
+          {% for m in magasins %}
+          <td class="case" sse-swap="prix-{{ l.id }}-{{ m.id }}"><span class="attente">…</span></td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th scope="row">Total</th>
+          {% for m in magasins %}
+          <td class="total" sse-swap="total-{{ m.id }}"><span class="attente">…</span></td>
+          {% endfor %}
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <div class="resume" sse-swap="resume"><p class="note">Recherche des prix en cours…</p></div>
+</div>
+{% endif %}

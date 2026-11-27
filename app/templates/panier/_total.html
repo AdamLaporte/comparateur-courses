@@ -1,0 +1,9 @@
+{# Total d'un magasin, recalculé à chaque prix reçu (envoyé par SSE). #}
+<strong>{{ total.total_centimes | euros }}</strong>
+{% if total.nb_en_attente %}<small class="note">{{ total.nb_en_attente }} en attente…</small>{% endif %}
+{% if total.nb_manquants %}
+<small class="manquants">{{ total.nb_manquants }} manquant{{ "s" if total.nb_manquants > 1 }}</small>
+{% endif %}
+{% if total.economies_centimes %}
+<small class="economies">dont {{ total.economies_centimes | euros }} d'économies</small>
+{% endif %}
