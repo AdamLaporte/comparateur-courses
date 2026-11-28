@@ -19,9 +19,19 @@ from pydantic_core import PydanticCustomError
 
 from app.gabarits import PARIS
 
-EnseigneDrive = Literal["coursesu", "intermarche"]
-DOMAINES = {"coursesu": ("coursesu.com",), "intermarche": ("intermarche.com", "intermarche.fr")}
-REFERENCES = {"coursesu": r"[0-9]{1,12}", "intermarche": r"[0-9]{5}(?:_[0-9]{1,8})?"}
+EnseigneDrive = Literal["coursesu", "intermarche", "carrefour", "leclerc"]
+DOMAINES = {
+    "coursesu": ("coursesu.com",),
+    "intermarche": ("intermarche.com", "intermarche.fr"),
+    "carrefour": ("carrefour.fr",),
+    "leclerc": ("leclercdrive.fr",),
+}
+REFERENCES = {
+    "coursesu": r"[0-9]{1,12}",
+    "intermarche": r"[0-9]{5}(?:_[0-9]{1,8})?",
+    "carrefour": r"[0-9]{1,12}",
+    "leclerc": r"[0-9]{6}",
+}
 
 
 class PointRetrait(BaseModel):
@@ -113,7 +123,9 @@ DRIVES = {
     ).items()
 }
 for identifiant, point in DRIVES.items():
-    if not re.fullmatch(r"(?:coursesu|intermarche)-[a-z0-9_-]+", identifiant):
+    if identifiant.split("-", 1)[0] not in DOMAINES or not re.fullmatch(
+        r"[a-z]+-[a-z0-9_-]+", identifiant
+    ):
         raise ValueError(f"Identifiant de retrait invalide : {identifiant}")
     if url_marchande(identifiant, point.accueil) != point.accueil:
         raise ValueError(f"Adresse de retrait non canonique : {identifiant}")
@@ -148,11 +160,13 @@ class InscriptionRetrait(BaseModel):
     def accueil_canonique(self, enseigne: EnseigneDrive) -> str:
         accueil = url_marchande(self.identifiant(enseigne), self.accueil)
         chemin = urlsplit(accueil).path.rstrip("/")
-        if enseigne == "intermarche":
-            attendu = rf"/magasins/{self.reference}/[^/\s]+-{self.code_postal}/infos-pratiques"
-        else:
-            attendu = r"/drive-(?:hyperu|superu|uexpress|utile)-[a-z0-9-]+"
-        if not re.fullmatch(attendu, chemin, flags=re.I):
+        attendus = {
+            "intermarche": rf"/magasins/{self.reference}/[^/\s]+-{self.code_postal}/infos-pratiques",
+            "coursesu": r"/drive-(?:hyperu|superu|uexpress|utile)-[a-z0-9-]+",
+            "carrefour": rf"/set-store/{self.reference}",
+            "leclerc": rf"/magasin-{self.reference}-[^/\s]+\.aspx",
+        }
+        if not re.fullmatch(attendus[enseigne], chemin, flags=re.I):
             raise ValueError("Adresse de la page du magasin invalide.")
         return accueil
 

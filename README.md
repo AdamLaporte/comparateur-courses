@@ -15,7 +15,7 @@ notepad .env
 ```
 
 Dans `.env`, renseignez `DRIVES_JETON` avec une valeur locale aléatoire. Cette commande en génère une
-à copier dans le fichier, puis dans les deux extensions. Sur la machine de développement, une valeur a
+à copier dans le fichier, puis dans les extensions utilisées. Sur la machine de développement, une valeur a
 déjà été générée.
 
 ```powershell
@@ -33,16 +33,16 @@ uv run --locked uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-proxy-hea
 Une extension suffit par enseigne. **Comparer** envoie le point de retrait à l’extension, qui
 change de magasin dans son onglet puis vérifie le point actif avant d’enregistrer les prix.
 Le catalogue initial inclut Super U Bruz, Hyper U Guichen, Intermarché Bruz Cap Vert et Intermarché
-Rennes Gayeulles. Les mêmes extensions permettent d’ajouter d’autres points de retrait U et
-Intermarché partout en France depuis leur catalogue en ligne.
+Rennes Gayeulles. Les extensions permettent d’ajouter des points de retrait des quatre enseignes
+depuis leur catalogue en ligne.
 
 Pour utiliser une seule base depuis plusieurs PC, voir le
 [hébergement du site partagé sur un PC avec Tailscale](docs/deploiement-partage.md).
 
 1. Ouvrez `edge://extensions`, activez **Mode développeur**, puis cliquez sur **Charger l’extension non
-   empaquetée** pour chacun des dossiers `extensions-edge\super-u-bruz` et
-   `extensions-edge\intermarche-bruz-cap-vert`. Après une mise à jour, utilisez **Recharger** sur
-   chaque carte d’extension. Pour les modifications du catalogue, redémarrez aussi le serveur.
+   empaquetée** pour les enseignes souhaitées. Les dossiers sont `extensions-edge\super-u-bruz`,
+   `extensions-edge\intermarche-bruz-cap-vert`, `extensions-edge\carrefour` et
+   `extensions-edge\leclerc`. Après une mise à jour, utilisez **Recharger** sur leur carte.
 2. Configurez chaque extension une seule fois depuis son popup **Collecte du comparateur**.
    Saisissez le jeton et cliquez sur **Activer la collecte automatique**. Le popup confirme
    **Serveur connecté**. La configuration reste enregistrée au redémarrage d’Edge.
@@ -67,12 +67,14 @@ de réponse 403 ou 429 et reprend après la pause de quinze minutes, lors d’un
 ## Ajouter un point de retrait
 
 1. Choisissez le magasin et le **retrait** sur le site de l’enseigne, puis ouvrez son catalogue
-   dans Edge. Les annuaires officiels permettent de retrouver la fiche du magasin.
-   [Courses U](https://www.coursesu.com/drive-france) · [Intermarché](https://www.intermarche.com/enseigne/magazine/tous-les-magasins)
+   dans Edge. Pour Carrefour et E.Leclerc Drive, ouvrez un rayon ou cherchez un produit de façon à
+   afficher ses prix pour le drive choisi.
+   [Courses U](https://www.coursesu.com/drive-france) · [Intermarché](https://www.intermarche.com/enseigne/magazine/tous-les-magasins) · [Carrefour](https://www.carrefour.fr/magasin) · [E.Leclerc Drive](https://www.leclercdrive.fr/)
 2. Dans l’extension configurée, ouvrez **Ajouter un magasin au comparateur** puis cliquez sur
    **Détecter le retrait actif**. Vérifiez le nom et complétez l’adresse et le code postal.
-   Si le lien est vide, collez la fiche officielle du magasin. Chez Intermarché, c’est la
-   page **Infos pratiques** du magasin. Chez Courses U, c’est sa page d’accueil Drive.
+   Si l’extension U ou Intermarché demande un lien, collez la page d’accueil Drive ou la page
+   **Infos pratiques**, respectivement. Les extensions Carrefour et E.Leclerc déduisent le lien du
+   catalogue marchand ouvert.
 3. Cliquez sur **Ajouter ce point de retrait**. Le serveur le géolocalise et l’enregistre dans sa
    base. Actualisez le comparateur, cherchez le lieu en mode **Données réelles**, puis lancez
    une comparaison. Le même point de retrait est disponible pour tous les visiteurs du serveur.
@@ -121,7 +123,6 @@ et l’arrêt sur défi simulé. Il affiche `DRIVES_COLLECTEUR_OK`.
 uv run --locked python -m http.server 8765 --bind 127.0.0.1
 ```
 
-Les sites ont présenté des défis dans la session Edge isolée utilisée pour la vérification. Le
-fonctionnement des recherches marchandes en conditions réelles reste à confirmer dans la session Edge
-utilisateur, notamment le formulaire de Super U, l’état sans résultat des deux sites et l’identité du
-retrait sur la page de résultats.
+Les scénarios locaux couvrent les changements de drive et les refus de prix d’un autre magasin.
+L’ajout et le premier relevé en conditions réelles restent à vérifier sur le poste de collecte
+pour Carrefour et E.Leclerc.

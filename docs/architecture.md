@@ -75,7 +75,7 @@ aux mêmes fichiers. L'arborescence exacte et les commandes sont dans [`AGENTS.m
 | `app/produits/` | Recherche d'un article pour composer la liste (Open Food Facts) | lot données et fiabilité |
 | `app/panier/` | Liste de courses (listes nommées, quantités, vider et annuler, « produit précis » / « le moins cher »), flux SSE des prix, `calcul.py` (totaux, fonctions pures), `ticket.py` (photo d'un ticket lue par OCR local) | interface + cœur |
 | `app/comptes/` | Inscription, connexion, mot de passe perdu, favoris, « maison », `cagnotte.py` (tirelire : écart entre le magasin choisi et la moyenne) | comptes |
-| `app/drives/` | Prix réels des points de retrait U et Intermarché répertoriés, relevés par les extensions Edge (`extensions-edge/`) : file de recherches, observations, `comparaison.py` (prix manquants pendant la comparaison), `navigateur.py` (démarrage d'Edge sous Windows), `importer.py` (CSV) | voir §15 |
+| `app/drives/` | Prix réels des points de retrait des quatre enseignes, relevés par les extensions Edge (`extensions-edge/`) : file de recherches, observations, `comparaison.py` (prix manquants pendant la comparaison), `navigateur.py` (démarrage d'Edge sous Windows), `importer.py` (CSV) | voir §15 |
 | `app/templates/` | `base.html`, `erreur.html` + un sous-dossier par fonctionnalité (`magasins/`, `produits/`, `panier/`, `comptes/`) | lot interface |
 | `app/static/` | `style.css` : charte GrignotePrix (variables CSS en tête de fichier, animations en fin). `site.js` : « Me localiser », carte, messages avec « Annuler », clavier dans la recherche, progression et mise en avant de la comparaison (le site reste utilisable sans). `vendor/` : htmx, Leaflet, polices copiés (démo sans Internet). CSS et JS appelés avec `?v=<date>` (`version_statique`) | interface |
 | `app/<fonctionnalite>/schema.sql` | Tables SQLite de la fonctionnalité, créées au démarrage | la fonctionnalité concernée |
@@ -448,10 +448,15 @@ Modèle dans `.env.example`.
   le numéro fourni par le site quand il est présent dans la page et utilise le libellé de l’en-tête
   en son absence. Le relevé manuel lit le même catalogue via
   `POST /api/drives/enseignes/{enseigne}/points-retrait`, avec le jeton de collecte.
+- Carrefour ouvre le drive via `/set-store/<référence>`. Il lit le prix dans les offres
+  du canal Drive en exigeant une référence unique sur le document de résultats. E.Leclerc
+  vérifie la référence à six chiffres dans le chemin de son catalogue et lit les prix dans
+  les cartes de produits. Ces extensions associent l’identité du drive et les prix au même
+  document du navigateur.
 - `app/drives/schema.sql` déclare les références marchandes, les observations et la file des recherches.
   Les tâches actives sont uniques par drive et requête normalisée. La prise de tâche et le dépôt utilisent
   des transactions SQLite. Chaque dépôt doit correspondre au bail actif et au point de retrait.
-- Les deux extensions Edge, configurées une fois, ouvrent leurs onglets à la demande. Elles
+- Les extensions Edge, configurées une fois par enseigne, ouvrent leurs onglets à la demande. Elles
   vérifient le retrait et déposent les observations via `/api/drives/`. Sur Windows,
   `DRIVES_DEMARRER_EDGE=true` autorise le serveur local à ouvrir le navigateur en cas d’absence
   de collecteur.

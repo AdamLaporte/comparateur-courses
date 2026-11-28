@@ -5,6 +5,13 @@
 <output id="rapport">Tests en cours</output>
 <script type="module">
   const catalogue = await (await fetch("/app/drives/points_retrait.json")).json();
+  Object.assign(catalogue, {
+    "carrefour-retrait-136": { accueil: "https://www.carrefour.fr/set-store/136", reference: "136" },
+    "carrefour-retrait-777": { accueil: "https://www.carrefour.fr/set-store/777", reference: "777" },
+    "leclerc-retrait-095705": {
+      accueil: "https://fd2-courses.leclercdrive.fr/magasin-095705-095705-stiring-wendel.aspx", reference: "095705",
+    },
+  });
 
   async function tester(dossier, commandes, erreurAttendue = "", adresseServeur) {
     const evenement = () => ({ addListener() {} });
@@ -17,6 +24,8 @@
     let depot;
     let terminer;
     const enseigne = commandes[0].split("-")[0];
+    const prixParPage = ["carrefour", "leclerc"].includes(enseigne);
+    let documentOnglet = 1;
     Object.defineProperty(globalThis, "chrome", {
       configurable: true,
       value: {
@@ -43,6 +52,7 @@
           get: async () => onglet,
           update: async (_id, { url }) => {
             ouvertures.push(url);
+            documentOnglet++;
             onglet.url = url === catalogue["intermarche-06994"].accueil
               ? url.replace("/rennes-", "/Rennes-") + "?pdvref=06994"
               : url;
@@ -51,6 +61,21 @@
         },
         scripting: {
           executeScript: async ({ func, args = [] }) => {
+            if (prixParPage) {
+              const [requete] = args;
+              const point = catalogue[commande];
+              const prix = { produit: "Lait fictif", prix_eur: "1.20" };
+              return [{
+                documentId: String(documentOnglet),
+                result: erreurAttendue === "defi" ? { erreur: "defi" } : {
+                  reference: requete && erreurAttendue === "mauvais_drive" ? "111111" : point.reference,
+                  document: documentOnglet,
+                  recherche: requete === "lait",
+                  charge: true,
+                  items: requete ? [prix] : [],
+                },
+              }];
+            }
             if (!args.length) return [{ result: ++clicsGayeulles > 1 }];
             const [adaptateur, requete, soumettre, [point] = []] = args;
             if (soumettre) onglet.url = new URL("?q=lait", onglet.url).href;
@@ -113,6 +138,10 @@
     await tester("intermarche-bruz-cap-vert", ["intermarche-05052"], "defi");
     await tester("intermarche-bruz-cap-vert", ["intermarche-05052", "intermarche-06994"],
       "", "https://comparateur-test.equipe.ts.net");
+    await tester("carrefour", ["carrefour-retrait-136", "carrefour-retrait-777"]);
+    await tester("carrefour", ["carrefour-retrait-136"], "mauvais_drive", "https://comparateur-test.equipe.ts.net");
+    await tester("leclerc", ["leclerc-retrait-095705"]);
+    await tester("leclerc", ["leclerc-retrait-095705"], "defi", "https://comparateur-test.equipe.ts.net");
     rapport.textContent = "DRIVES_COLLECTEUR_OK";
   } catch (erreur) {
     rapport.textContent = "DRIVES_COLLECTEUR_ECHEC " + erreur.message;

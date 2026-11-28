@@ -32,7 +32,12 @@ def edge(reglages, monkeypatch):
 
 
 def produit(drive=U, **champs):
-    hote = "www.coursesu.com" if drive.startswith("coursesu-") else "www.intermarche.com"
+    hote = {
+        "coursesu": "www.coursesu.com",
+        "intermarche": "www.intermarche.com",
+        "carrefour": "www.carrefour.fr",
+        "leclerc": "fd2-courses.leclercdrive.fr",
+    }[drive.split("-", 1)[0]]
     return {
         "produit": "Lait Lactel demi-écrémé",
         "marque": "Lactel",
@@ -287,6 +292,18 @@ def test_magasins_point_de_retrait_hors_bruz():
             "https://www.coursesu.com/drive-superu-grigny",
             "Super U Grigny",
         ),
+        (
+            "carrefour",
+            "136",
+            "https://www.carrefour.fr/set-store/136",
+            "Carrefour Drive",
+        ),
+        (
+            "leclerc",
+            "095705",
+            "https://fd2-courses.leclercdrive.fr/magasin-095705-stiring-wendel.aspx",
+            "E.Leclerc Drive",
+        ),
     ],
 )
 def test_un_nouveau_retrait_est_utilisable_depuis_la_comparaison(
@@ -324,6 +341,14 @@ def test_un_nouveau_retrait_est_utilisable_depuis_la_comparaison(
         ).status_code
         == 422
     )
+    if enseigne in {"carrefour", "leclerc"}:
+        fiche_autre_drive = accueil.replace(reference, "1" * len(reference))
+        assert (
+            client.post(
+                route, headers=JETON, json={**inscription, "accueil": fiche_autre_drive}
+            ).status_code
+            == 422
+        )
     assert (
         client.post(URL + "/recherches", json={"q": "lait", "drives": [identifiant]}).status_code
         == 422

@@ -36,9 +36,8 @@ continue d’utiliser sa propre base.
 - Ouvrez l’adresse HTTPS Tailscale dans chaque navigateur. Dans `.env.partage`, la variable
   `SITE_PARTAGE_COMPTES` contient les identifiants `raphael` et `adam` et leurs mots de passe.
   Donnez à Adam uniquement son mot de passe et son jeton, via un canal privé.
-- Chargez ou rechargez les deux extensions Edge **1.6.0** sur chaque poste qui collecte.
-  L’extension Courses U et l’extension Intermarché traitent chacune tous les points répertoriés
-  pour leur enseigne.
+- Chargez ou rechargez les [extensions Edge des enseignes souhaitées](../README.md#charger-les-extensions-edge)
+  sur chaque poste qui collecte. Chaque extension traite les points répertoriés pour son enseigne.
   Dans **Collecte du comparateur**, entrez l’adresse HTTPS et votre jeton de `DRIVES_COLLECTEURS`
   (`edge-raphael` ou `edge-adam`). Cliquez sur **Activer la collecte automatique** et autorisez
   l’accès à l’adresse. Le popup doit afficher **Serveur connecté**.

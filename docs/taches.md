@@ -24,7 +24,7 @@
 | Ma liste | Recherche Open Food Facts, produit précis ou « le moins cher », quantités, vider et annuler, listes nommées, favoris | Adam, Ilona, Jade |
 | Ticket de caisse | Photo lue par OCR local, articles rapprochés du catalogue, « inexistant » sinon | Adam |
 | Comparaison | Prix en direct (SSE), verdict (même sans panier complet), classement, prix périmés signalés | Adam |
-| Prix réels | Cache, Open Prices et relevés Edge U et Intermarché. L’extension accepte l’ajout de points en France depuis le magasin actif | Jade, Raph |
+| Prix réels | Cache, Open Prices et relevés Edge. Carrefour et E.Leclerc Drive rejoignent U et Intermarché avec le même catalogue et la même file | Jade, Raph |
 | Mode des données | Bouton dans le bandeau pour passer de prix fictifs sans Edge aux relevés réels des points connus ou ajoutés. Défaut `MODE_DONNEES_DEFAUT` | Jade |
 | Site partagé | Base commune sur le PC de Raph via Tailscale, avec accès privé et jetons de collecte. Réutilisation réelle sur le second PC à valider | Raph, Adam |
 | Comptes | Inscription, connexion, mot de passe perdu, maison, favoris, tirelire (écart avec la moyenne) | Jade, Ilona |
@@ -37,7 +37,7 @@ d'Open Prices : la collecte directe de ces sites est abandonnée (403 Cloudflare
 
 | Tâche | Qui | Statut |
 |---|---|---|
-| Vérifier les relevés Edge 1.7.0 à Guichen, Rennes Gayeulles et dans un nouveau point de retrait par enseigne | Raph | inscription et comparaison vérifiées en simulation |
+| Vérifier un relevé réel après ajout d’un point de retrait pour chaque enseigne | Raph | inscription et comparaison vérifiées en simulation |
 | Valider un relevé réel avec les deux extensions sur l'ordinateur de démo (`DRIVES_JETON` identique dans `.env` et les popups) | Raph | Intermarché réussi le 27/11 à 22h12 |
 | Scénario de démo : lieu (Bruz), 6 à 8 articles bien couverts, ordre de ce qu'on montre | Adam, Jade | à faire |
 | Préchauffage du cache sur ces articles (`uv run python -m app.collecte.prechauffer data/demo/recherches.txt --code-postal 35170`) samedi matin | Jade | à faire |

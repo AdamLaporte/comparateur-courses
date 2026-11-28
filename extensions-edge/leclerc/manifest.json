@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Prix – E.Leclerc Drive",
+  "version": "1.0.0",
+  "description": "Relève les prix de votre E.Leclerc Drive pour GrignotePrix et exporte un CSV.",
+  "permissions": ["activeTab", "scripting", "storage", "alarms", "webRequest"],
+  "host_permissions": ["http://127.0.0.1/*", "https://*.leclercdrive.fr/*"],
+  "optional_host_permissions": ["https://*.ts.net/*"],
+  "background": {"service_worker": "collecteur.js", "type": "module"},
+  "action": {"default_popup": "popup.html", "default_title": "Prix – E.Leclerc Drive"}
+}

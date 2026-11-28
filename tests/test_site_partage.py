@@ -127,6 +127,10 @@ def test_site_partage_protege_le_site_et_revoque_jeton(reglages):
         assert visiteur.get("/", headers=EDGE_ADAM).status_code == 401
         assert visiteur.get("http://comparateur-test.equipe.ts.net/").status_code == 400
         assert visiteur.get("https://autre.equipe.ts.net/", auth=ADAM).status_code == 400
+        for enseigne in ("carrefour", "leclerc"):
+            route = f"{API}/enseignes/{enseigne}/connexion"
+            assert visiteur.post(route).status_code == 401
+            assert visiteur.post(route, headers=EDGE_ADAM).status_code == 204
         assert visiteur.post(f"{API}/{INTER}/connexion", headers=EDGE_RAPHAEL).status_code == 401
         assert visiteur.post(f"{API}/{INTER}/connexion", auth=ADAM).status_code == 401
         assert visiteur.post(f"{API}/{INTER}/connexion", headers=EDGE_ADAM).status_code == 204

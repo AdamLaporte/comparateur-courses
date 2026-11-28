@@ -11,6 +11,10 @@
   import { lirePage as lireInter } from "/extensions-edge/intermarche-bruz-cap-vert/navigation.js";
   import { extractProductPage as extraireU } from "/extensions-edge/super-u-bruz/extract.js";
   import { extractProductPage as extraireInter } from "/extensions-edge/intermarche-bruz-cap-vert/extract.js";
+  import { lirePage as lireCarrefour } from "/extensions-edge/carrefour/navigation.js";
+  import { lirePage as lireLeclerc } from "/extensions-edge/leclerc/navigation.js";
+  import { urlRecherche as rechercheCarrefour } from "/extensions-edge/carrefour/drive.js";
+  import { urlRecherche as rechercheLeclerc } from "/extensions-edge/leclerc/drive.js";
 
   function verifier(condition, description) {
     if (!condition) throw new Error(description);
@@ -29,6 +33,75 @@
   const lireRetraitInter = (point = bruzInter) => lireInter("intermarche", "lait", false, [point]);
 
   window.addEventListener("load", tester, { once: true });
+
+  function verifierCommerces() {
+    const ean = "3276554163158";
+    const reference = "0039-150-136";
+    const offre = { attributes: {
+      price: { price: 1.05, perUnit: 1.05, unitOfMeasure: "L" },
+      promotions: [{ label: "Le 2e à −50 %" }],
+    } };
+    const offres = { [reference]: offre, "0039-100-333": { attributes: { price: { price: 0.45 } } } };
+    const publierPrix = () => {
+      const table = [];
+      function indexer(valeur) {
+        const i = table.push(null) - 1;
+        if (Array.isArray(valeur)) table[i] = valeur.map(indexer);
+        else if (typeof valeur === "object" && valeur !== null) {
+          table[i] = Object.fromEntries(Object.entries(valeur).map(([cle, contenu]) => [cle, indexer(contenu)]));
+        } else table[i] = valeur;
+        return i;
+      }
+      indexer({ data: [{ attributes: { ean, title: "Lait demi-écrémé", brand: "Carrefour", offers: { [ean]: offres } } }] });
+      etat.textContent = JSON.stringify({ routeData: JSON.stringify(table) });
+    };
+    history.replaceState(null, "", "/s?q=lait");
+    entete.innerHTML = '<span data-store-name>Rennes Centre Alma</span>';
+    resultats.innerHTML = '<h1>Résultats de recherche</h1><article class="product-list-card-plp-grid-new" data-testid="' + ean
+      + '"><a data-testid="product-card-primary-link" href="/p/lait-' + ean + '">Lait</a>'
+      + '<span class="product-list-card-plp-grid-new__meta--shimzone">1 L</span></article>';
+    publierPrix();
+    const carrefour = lireCarrefour("lait");
+    const [lait] = carrefour.items;
+    verifier(carrefour.reference === "136" && carrefour.recherche && carrefour.libelle === "Rennes Centre Alma"
+      && new URL(carrefour.accueil).pathname === "/set-store/136", "Détection du Drive Carrefour");
+    verifier(lait.ean === ean && lait.prix_eur === "1.05" && lait.prix_par_unite_eur === "1.05"
+      && lait.format === "1 L" && lait.promos.includes("50 %") && lait.url.endsWith(ean), "Offre Carrefour du bon Drive");
+    verifier(!lireCarrefour("pâtes").recherche, "Requête Carrefour différente");
+    offres["0039-150-777"] = offre;
+    publierPrix();
+    verifier(!lireCarrefour("lait").items.length, "Deux références Drive Carrefour sont ambiguës");
+    delete offres["0039-150-777"];
+    publierPrix();
+    entete.innerHTML += '<button aria-selected="true">Livraison</button>';
+    verifier(!lireCarrefour("lait").reference, "Livraison Carrefour refusée");
+    verifier(new URL(rechercheCarrefour("https://www.carrefour.fr/set-store/136", "pâtes & riz")).searchParams.get("q")
+      === "pâtes & riz", "Adresse de recherche Carrefour");
+
+    const urlLeclerc = rechercheLeclerc("https://fd2-courses.leclercdrive.fr/magasin-095705-095705-stiring-wendel.aspx", "lait");
+    const destinationLeclerc = new URL(urlLeclerc);
+    history.replaceState(null, "", destinationLeclerc.pathname + destinationLeclerc.search);
+    entete.innerHTML = "";
+    resultats.innerHTML = '<ul><li class="liWCRS310_Product" data-ean="' + ean
+      + '"><div class="pWCRS310_Desc"><p>Lait demi-écrémé</p><p>1 L</p></div>'
+      + '<span class="pWCRS310_PrixUnitairePartieEntiere">1</span>'
+      + '<span class="pWCRS310_PrixUnitairePartieDecimale">,25</span><span>1,25 €/L</span>'
+      + '<img alt="Avantage fidélité"></li></ul>';
+    const leclerc = lireLeclerc("lait");
+    verifier(leclerc.reference === "095705" && leclerc.recherche && /stiring wendel/i.test(leclerc.libelle)
+      && new URL(leclerc.accueil).pathname.endsWith("095705-095705-stiring-wendel.aspx")
+      && destinationLeclerc.searchParams.get("TexteRecherche") === "lait", "Détection du Drive E.Leclerc");
+    const [bouteille] = leclerc.items;
+    verifier(bouteille.ean === ean && bouteille.prix_eur === "1.25" && bouteille.prix_par_unite_eur === "1.25"
+      && bouteille.format === "1 L" && bouteille.promos === "Avantage fidélité", "Carte E.Leclerc et prix");
+    history.replaceState(null, "", "/recherche.aspx?TexteRecherche=lait");
+    verifier(!lireLeclerc("lait").items.length, "Un prix E.Leclerc sans magasin dans l'adresse est refusé");
+    history.replaceState(null, "", destinationLeclerc.pathname + destinationLeclerc.search);
+    resultats.innerHTML = "<p>Aucun produit trouvé pour cette recherche</p>";
+    verifier(lireLeclerc("lait").vide, "Absence confirmée chez E.Leclerc");
+    document.title = "Just a moment";
+    verifier(lireCarrefour("lait").erreur === "defi" && lireLeclerc("lait").erreur === "defi", "Arrêt sur défi");
+  }
 
   function tester() {
     try {
@@ -123,6 +196,8 @@
     verifier(lireRetraitInter().vide, "Absence confirmée");
     document.title = "Attention Required! | Cloudflare";
     verifier(lireRetraitInter().erreur === "defi", "Défi détecté");
+    document.title = "Vérification des extracteurs Edge";
+    verifierCommerces();
     rapport.textContent = "DRIVES_BROWSER_OK";
     } catch (erreur) {
       rapport.textContent = "DRIVES_BROWSER_ECHEC " + erreur.message;
