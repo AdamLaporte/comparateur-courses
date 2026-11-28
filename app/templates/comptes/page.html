@@ -115,14 +115,14 @@
     <p class="note">
       Mode actuel :
       <span class="mode-pastille mode-{{ mode_choisi }}">{{ "Réel" if mode_choisi == "reel" else "Démo" }}</span>
-      {{ "données réelles : seulement les drives répertoriés, prix relevés par les extensions Edge."
-         if mode_choisi == "reel" else "prix fictifs, marqués « Données fictives », sans requête aux drives." }}
+      {{ "données réelles, prix relevés par les extensions Edge."
+         if mode_choisi == "reel" else "prix fictifs, marqués « Données fictives »." }}
     </p>
     <form action="/mode-donnees" method="post">
       <input type="hidden" name="suivant" value="/comptes">
       <input type="hidden" name="mode" value="{{ 'demo' if mode_choisi == 'reel' else 'reel' }}">
       <button type="submit">
-        {{ "Passer en démo (prix fictifs)" if mode_choisi == "reel" else "Passer aux données réelles (drives)" }}
+        {{ "Passer en démo (prix fictifs)" if mode_choisi == "reel" else "Passer aux données réelles" }}
       </button>
     </form>
   </details>
