@@ -61,7 +61,7 @@ Détails et diagrammes : [`docs/architecture.md`](docs/architecture.md). Décisi
 │   ├── sources/               # interface SourcePrix + une source par fichier
 │   │   ├── base.py            # interface commune (partagé, modification concertée)
 │   │   ├── registre.py        # quelle source pour quelle enseigne
-│   │   ├── fictive.py         # données fictives (toujours marquées)
+│   │   ├── fictive.py         # données fictives (marquées en interne, neutres à l'écran)
 │   │   ├── intermarche.py     # API officielle (aucune requête sans clé)
 │   │   ├── carrefour.py, leclerc.py, coursesu.py   # collecte en direct
 │   │   └── open_prices.py     # source de secours
@@ -126,8 +126,12 @@ propres.
 - **Tables SQLite** : chaque fonctionnalité déclare les siennes (`CREATE TABLE IF NOT EXISTS`) dans son module.
 - **Tests** : `tests/test_<fonctionnalite>.py`. **Aucun appel réseau dans les tests** : on utilise la source fictive
   ou des réponses enregistrées dans `tests/donnees/`.
-- **Affichage des prix** : chaque prix indique sa source et l'heure du relevé. Les données fictives sont toujours
-  marquées (`est_fictif=True`, mention « Données fictives »). Jamais d'erreur brute affichée à l'utilisateur.
+- **Affichage des prix** : chaque prix indique sa source et l'heure du relevé. Jamais d'erreur brute affichée à
+  l'utilisateur.
+- **Données fictives (mode démo)** : toujours marquées **en interne** (`est_fictif=True`, `source=TypeSource.FICTIVE`) :
+  jamais en cache, jamais mêlées aux prix réels, jamais envoyées à Open Prices. **À l'écran, rien ne les distingue** :
+  libellé neutre « Relevé en magasin », marques et magasins sans mention « fictif » (décision du 28/11). Seul le
+  bouton « Passer en démo » / « Quitter la démo » (page Compte, « Options de démonstration ») signale le mode.
 
 ## Git
 

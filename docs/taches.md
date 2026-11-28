@@ -25,7 +25,7 @@
 | Ticket de caisse | Photo lue par OCR local, articles rapprochés du catalogue, « inexistant » sinon | Adam |
 | Comparaison | Prix en direct (SSE), verdict (même sans panier complet), classement, prix périmés signalés | Adam |
 | Prix réels | Cache, Open Prices et relevés Edge. Carrefour Drive Chartres-de-Bretagne et E.Leclerc Drive Bruz – Ker Lann sont proposés par le catalogue autour de Bruz | Jade, Raph |
-| Mode des données | Réglage dans « Options de démonstration », en bas de la page Compte, accessible sans connexion. Permet de passer des prix fictifs aux relevés réels. Défaut `MODE_DONNEES_DEFAUT` | Jade |
+| Mode des données | Réglage dans « Options de démonstration », en bas de la page Compte, accessible sans connexion. Permet de passer des prix fictifs aux relevés réels. En démo, rien n'indique à l'écran que les prix sont fictifs (28/11). Défaut `MODE_DONNEES_DEFAUT` | Jade, Claude |
 | Site partagé | Base commune sur le PC de Raph via Tailscale, avec accès privé et jetons de collecte. Réutilisation réelle sur le second PC à valider | Raph, Adam |
 | Comptes | Inscription, connexion, mot de passe perdu, maison, favoris, tirelire (écart avec la moyenne) | Jade, Ilona |
 | Interface | GrignotePrix (nom, logo, couleurs), animations, mobile, fonctionne sans Internet (sauf fonds de carte) | Adam, Ilona |
@@ -57,5 +57,5 @@ d'Open Prices : la collecte directe de ces sites est abandonnée (403 Cloudflare
 | Risque | Parade |
 |---|---|
 | Une extension ne relève pas pendant la démo (défi anti-robots, mauvais drive, pas de réseau) | Préchauffer la veille : les prix récents restent affichés avec leur date ; sinon cache et Open Prices |
-| Peu de prix réels hors Bruz | Faire la démo à Bruz (35170) avec les articles préchauffés ; les prix fictifs restent marqués |
+| Peu de prix réels hors Bruz | Faire la démo à Bruz (35170) avec les articles préchauffés ; annoncer à l'oral le passage en mode démo |
 | Conflits Git de dernière minute | Petits commits, `git pull --rebase` avant chaque push, gel à 11h |
