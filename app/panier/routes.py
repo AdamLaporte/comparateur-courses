@@ -554,6 +554,7 @@ async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[Se
             raw_data=rendre(
                 "panier/_resume.html",
                 totaux=totaux,
+                gain=calcul.economie_du_meilleur(totaux, resultats.values()),
                 economie=economie,
             ),
         )

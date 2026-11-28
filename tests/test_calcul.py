@@ -111,3 +111,33 @@ def test_totaux_en_cours_de_collecte():
     total = calcul.totaux(lignes, magasins, resultats)[0]
     assert total.nb_en_attente == 1
     assert not total.complet
+
+
+def test_economie_entre_magasins_qui_ont_les_memes_articles():
+    lignes = [_ligne(1), _ligne(2)]
+    magasins = [_magasin(f"carrefour-{n}") for n in (1, 2, 3, 4)]
+
+    def trouve(ligne: int, numero: int, centimes: int) -> ResultatLigne:
+        return ResultatLigne(
+            ligne_id=ligne,
+            magasin_id=f"carrefour-{numero}",
+            statut=StatutPrix.TROUVE,
+            prix=_prix(centimes),
+            sous_total_centimes=centimes,
+        )
+
+    # 1 et 2 : l'article 1 seul. 3 : l'article 2 seul, plus cher mais non comparable.
+    resultats = [trouve(1, 1, 100), trouve(1, 2, 175), trouve(2, 3, 900)]
+    for numero, ligne in ((1, 2), (2, 2), (3, 1), (4, 1), (4, 2)):
+        resultats.append(
+            ResultatLigne(
+                ligne_id=ligne,
+                magasin_id=f"carrefour-{numero}",
+                statut=StatutPrix.INTROUVABLE,
+            )
+        )
+    totaux = calcul.totaux(lignes, magasins, resultats)
+    assert totaux[0].magasin.id == "carrefour-1"
+    assert calcul.economie_du_meilleur(totaux, resultats) == 75
+    assert calcul.economie_du_meilleur(totaux[:1], resultats) == 0
+    assert calcul.economie_du_meilleur([], []) == 0

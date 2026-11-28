@@ -1,42 +1,15 @@
 {# Verdict et classement des paniers (envoyés par SSE à la fin de la collecte). #}
-{% from "_icones.html" import icone %}
-{% set complets = totaux | selectattr("complet") | list %}
-{# Sans panier complet, on désigne quand même le meilleur : les totaux sont déjà triés (le moins de
-   manquants, puis le moins cher). #}
-{% set g = complets[0] if complets else (totaux[0] if totaux else none) %}
+{# Les totaux sont déjà triés (paniers complets d'abord, puis le moins de manquants, puis le moins cher) :
+   le premier est le meilleur, même sans panier complet. #}
+{% set g = totaux[0] if totaux else none %}
 <div class="verdict" {% if g %}data-gagnant="{{ g.magasin.id }}"{% endif %}>
   {% if g %}
-  {% set ecart = complets[-1].total_centimes - g.total_centimes if complets else 0 %}
-  <div class="verdict-gagnant{% if not complets %} incomplet{% endif %}">
-    {% if complets | length >= 2 and ecart > 0 %}<span class="sticker" aria-hidden="true">−{{ ecart | euros }}</span>{% endif %}
-    {% if complets %}
-    <p class="surtitre">Panier complet le moins cher</p>
-    {% else %}
-    <p class="surtitre">Aucun magasin n'a tout · le plus complet</p>
-    {% endif %}
-    <span class="badge {{ g.magasin.enseigne.value }}">{{ g.magasin.enseigne.nom }}</span>
-    <p class="verdict-magasin">
-      {{ g.magasin.nom }}
-      {% if g.magasin.distance_km is not none %}
-      <span class="distance">· {{ ('%.1f' % g.magasin.distance_km).replace('.', ',') }} km</span>
-      {% endif %}
-    </p>
+  <div class="verdict-gagnant{% if not g.complet %} incomplet{% endif %}">
+    <p class="verdict-magasin">{{ g.magasin.nom }}</p>
     <p class="verdict-prix" data-centimes="{{ g.total_centimes }}">{{ g.total_centimes | etiquette }}</p>
-    {% if not complets %}
-    <p class="verdict-ecart">
-      Il y manque <strong class="manque">{{ g.nb_manquants }} article{{ "s" if g.nb_manquants > 1 }}</strong> :
-      le total ne les compte pas. Les lignes du tableau montrent lesquels.
-    </p>
+    {% if gain %}
+    <p class="verdict-gain"><strong>{{ gain | euros }}</strong> économisés</p>
     {% endif %}
-    {% if complets | length >= 2 %}
-    <p class="verdict-ecart">
-      Soit <strong>{{ ecart | euros }} de moins</strong> que le plus cher ({{ complets[-1].magasin.nom }}).
-    </p>
-    {% endif %}
-    <a class="itineraire" target="_blank" rel="noopener"
-       href="https://www.google.com/maps/dir/?api=1&amp;destination={{ g.magasin.position.lat }},{{ g.magasin.position.lon }}">
-      {{ icone("itineraire") }}<span>Itinéraire vers ce magasin</span>
-    </a>
   </div>
   {% endif %}
 
@@ -60,6 +33,7 @@
   </ol>
 </div>
 {% if economie %}
+{% set complets = totaux | selectattr("complet") | list %}
 <form action="/comptes/cagnotte" method="post" class="cagnotte-formulaire">
   <h3>Ajouter à ma tirelire</h3>
   <p>Moyenne des paniers complets <strong>{{ economie[1] | euros }}</strong></p>

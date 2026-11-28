@@ -2,6 +2,7 @@
 
 import json
 import re
+from html import unescape
 
 NUTELLA = "3017620422003"
 
@@ -85,28 +86,47 @@ def test_la_comparaison_ne_part_que_sur_clic(client):
     assert "comparer=1" not in client.get("/").text
 
 
-def test_verdict_meme_sans_panier_complet():
+def _total(numero: str, centimes: int, manquants: int):
     from app.contrats import Enseigne, Magasin, Position, TotalMagasin
+
+    magasin = Magasin(
+        id=f"carrefour-{numero}",
+        enseigne=Enseigne.CARREFOUR,
+        id_enseigne=numero,
+        nom=f"Magasin {numero}",
+        position=Position(lat=48.0, lon=-1.7),
+        distance_km=0.6,
+    )
+    return TotalMagasin(
+        magasin=magasin,
+        total_centimes=centimes,
+        economies_centimes=0,
+        nb_trouves=3,
+        nb_manquants=manquants,
+        complet=manquants == 0,
+    )
+
+
+def test_meilleur_magasin_nom_total_et_economie_seulement():
     from app.gabarits import rendre
 
-    def total(numero: str, centimes: int, manquants: int) -> TotalMagasin:
-        magasin = Magasin(
-            id=f"carrefour-{numero}",
-            enseigne=Enseigne.CARREFOUR,
-            id_enseigne=numero,
-            nom=f"Magasin {numero}",
-            position=Position(lat=48.0, lon=-1.7),
-        )
-        return TotalMagasin(
-            magasin=magasin,
-            total_centimes=centimes,
-            economies_centimes=0,
-            nb_trouves=3,
-            nb_manquants=manquants,
-            complet=manquants == 0,
-        )
+    totaux = [_total("1", 4073, 1), _total("2", 4200, 1)]
+    html = rendre("panier/_resume.html", totaux=totaux, gain=127)
+    carte = html.split('<ol class="classement"')[0]
+    texte = " ".join(unescape(re.sub(r"<[^>]+>", " ", carte)).split())
+    assert texte == "Magasin 1 40 ,73 € 1,27 € économisés"
+    assert 'data-gagnant="carrefour-1"' in carte and 'data-centimes="4073"' in carte
+    assert "1 manquant" in html  # reste signalé dans le classement
 
-    html = rendre("panier/_resume.html", totaux=[total("1", 4073, 1), total("2", 3269, 4)])
-    assert 'data-gagnant="carrefour-1"' in html and "le plus complet" in html
-    assert "1 article</strong>" in html and 'data-centimes="4073"' in html
-    assert "sticker" not in html
+
+def test_meilleur_magasin_sans_economie_comparable():
+    from app.gabarits import rendre
+
+    html = rendre("panier/_resume.html", totaux=[_total("1", 4073, 1)], gain=0)
+    assert "économisé" not in html
+
+
+def test_resultats_sous_le_tableau_des_prix(client):
+    _liste_avec_deux_articles(client)
+    page = client.get("/panier/resultats").text
+    assert page.index('class="tableau-prix"') < page.index('sse-swap="resume"')

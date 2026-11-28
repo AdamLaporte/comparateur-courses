@@ -116,3 +116,21 @@ def totaux(
         )
     liste.sort(key=lambda t: (not t.complet, t.nb_manquants + t.nb_en_attente, t.total_centimes))
     return [t.model_copy(update={"rang": rang}) for rang, t in enumerate(liste, start=1)]
+
+
+def economie_du_meilleur(totaux: list[TotalMagasin], resultats: Iterable[ResultatLigne]) -> int:
+    """Centimes économisés dans le premier magasin du classement par rapport au plus cher de ceux qui ont
+    trouvé exactement les mêmes articles (un total avec d'autres articles ne se compare pas). 0 sinon."""
+    articles: dict[str, set[int]] = {}
+    for r in resultats:
+        if r.statut == StatutPrix.TROUVE and r.sous_total_centimes is not None:
+            articles.setdefault(r.magasin_id, set()).add(r.ligne_id)
+    if not totaux or not articles.get(totaux[0].magasin.id):
+        return 0
+    meilleur = totaux[0]
+    comparables = [
+        t.total_centimes
+        for t in totaux
+        if articles.get(t.magasin.id) == articles[meilleur.magasin.id]
+    ]
+    return max(comparables) - meilleur.total_centimes
