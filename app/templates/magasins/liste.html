@@ -107,16 +107,11 @@
 </div>
 {% endif %}
 
-{% if mode_reel %}
-<p class="note">Un magasin manque ? Sélectionnez son point de retrait sur le site marchand, puis ouvrez « Ajouter un magasin au comparateur » dans l’extension Edge de l’enseigne.</p>
-{% endif %}
-
 <div class="barre-suite">
   {% if reponse.magasins and nb_articles %}
-  <a class="bouton principal" href="/panier?comparer=1">
-    Comparer ma liste ici ({{ nb_articles }} article{{ "s" if nb_articles > 1 }}) {{ icone("fleche") }}
+  <a class="bouton principal" href="/panier">
+    Voir ma liste ({{ nb_articles }} article{{ "s" if nb_articles > 1 }}) {{ icone("fleche") }}
   </a>
-  <a class="bouton" href="/panier">{{ icone("liste") }}<span>Modifier ma liste</span></a>
   {% elif reponse.magasins %}
   <a class="bouton principal" href="/panier">Composer ma liste {{ icone("fleche") }}</a>
   {% endif %}

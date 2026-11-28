@@ -52,13 +52,13 @@
   <div class="accueil-ticket">
     {% if code_postal and nb_articles %}
     {% set est_position = code_postal.replace(",", "").replace(".", "").replace("-", "").replace(" ", "").isdigit() and "," in code_postal %}
-    <a class="reprendre" href="/panier?comparer=1">
+    <a class="reprendre" href="/panier">
       <span class="reprendre-icone">{{ icone("liste") }}</span>
       <span class="reprendre-texte">
         <strong>Reprendre ma liste</strong>
         <span>{{ nb_articles }} article{{ "s" if nb_articles > 1 }} · autour de {{ ville or ("ta position" if est_position else code_postal) }}</span>
       </span>
-      <span class="reprendre-action">Comparer {{ icone("fleche") }}</span>
+      <span class="reprendre-action">Ouvrir {{ icone("fleche") }}</span>
     </a>
     {% endif %}
     <aside class="ticket" aria-label="Comment ça marche">

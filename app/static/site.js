@@ -327,7 +327,7 @@
   const viderRecherche = () => {
     if (!recherche) return;
     recherche.value = "";
-    recherche.focus();
+    recherche.focus({ preventScroll: true });
   };
 
   // Après un ajout depuis les suggestions : on vide la recherche pour enchaîner l'article suivant.

@@ -191,9 +191,6 @@ async def page_panier(request: Request, reglages: ReglagesDep):
             },
             "liste_active": "principale" if active == compte else active,
             "erreur_liste": request.query_params.get("erreur") == "nom",
-            "comparer": bool(
-                code_postal and lignes and request.query_params.get("comparer") == "1"
-            ),
         },
     )
 

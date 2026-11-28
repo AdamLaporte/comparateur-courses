@@ -72,10 +72,17 @@ def test_reprendre_sa_liste_depuis_l_accueil_et_les_magasins(client):
     _liste_avec_deux_articles(client)
     assert "Reprendre ma liste" in client.get("/").text
     page = client.get("/magasins", params={"code_postal": "35170"}).text
-    assert "Comparer ma liste ici (2 articles)" in page
-    page = client.get("/panier", params={"comparer": "1"}).text
-    assert 'hx-get="/panier/resultats" hx-trigger="load"' in page
-    assert 'hx-trigger="load"' not in client.get("/panier").text
+    assert "Voir ma liste (2 articles)" in page and "comparer=1" not in page
+
+
+def test_la_comparaison_ne_part_que_sur_clic(client):
+    _liste_avec_deux_articles(client)
+    # Même avec un ancien lien « ?comparer=1 », rien ne se lance et la page ne défile pas toute seule.
+    for page in (client.get("/panier").text, client.get("/panier?comparer=1").text):
+        assert '<section id="resultats" aria-label="Comparaison des prix"></section>' in page
+        assert 'hx-trigger="load"' not in page
+        assert page.count('hx-get="/panier/resultats"') == 1  # le bouton « Comparer les prix »
+    assert "comparer=1" not in client.get("/").text
 
 
 def test_verdict_meme_sans_panier_complet():

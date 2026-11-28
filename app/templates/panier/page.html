@@ -98,10 +98,9 @@
   </section>
 </div>
 
-{# ?comparer=1 (depuis l'accueil ou les magasins) : la comparaison part d'elle-même. #}
-<section id="resultats" aria-label="Comparaison des prix"
-         {% if comparer %}hx-get="/panier/resultats" hx-trigger="load"
-         hx-headers='{{ {"X-Liste-Courses": liste_active}|tojson }}' hx-swap="innerHTML show:#resultats:top"{% endif %}></section>
+{# Rempli seulement au clic sur « Comparer les prix ». Aucun attribut htmx ici : les cases arrivant
+   par SSE en hériteraient, et la page défilerait à chaque prix. #}
+<section id="resultats" aria-label="Comparaison des prix"></section>
 
 {# Sur téléphone, le bouton « Comparer » reste à portée de pouce quand on fait défiler (site.js). #}
 <div class="barre-comparer" hidden>
