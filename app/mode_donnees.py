@@ -1,6 +1,7 @@
 """Mode des données, choisi par chaque visiteur (gardé dans sa session).
 
-- « demo » : tous les magasins, prix fictifs (toujours marqués), aucune requête aux extensions Edge.
+- « demo » : tous les magasins, prix fictifs (marqués en interne : est_fictif, source FICTIVE ;
+  rien ne l'indique à l'écran), aucune requête aux extensions Edge.
 - « reel » : seulement les points de retrait connus (catalogue initial et ajouts Edge), prix relevés par les
   extensions Edge, aucune donnée fictive.
 Valeur par défaut : MODE_DONNEES_DEFAUT dans `.env` (« demo » si absent).
@@ -13,7 +14,7 @@ from fastapi.responses import RedirectResponse
 
 DEMO = "demo"
 REEL = "reel"
-MODES = {DEMO: "Démo (prix fictifs)", REEL: "Données réelles (drives)"}
+MODES = {DEMO: "Démo", REEL: "Données réelles (drives)"}
 
 router = APIRouter(tags=["mode"])
 

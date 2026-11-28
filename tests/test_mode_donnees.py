@@ -39,7 +39,8 @@ def _taches(reglages) -> int:
 def test_demo_par_defaut_tous_les_magasins_prix_fictifs_sans_edge(site, reglages):
     assert "Passer aux données réelles" not in site.get("/").text  # plus dans le menu ni en bandeau
     page = site.get("/comptes").text  # replié en bas de la page Compte
-    assert "Options de démonstration" in page and "Passer aux données réelles" in page
+    assert "Options de démonstration" in page and "Quitter la démo" in page
+    assert "fictif" not in page.lower()
 
     _preparer(site)
     magasins = _magasins_affiches(site)
@@ -47,7 +48,8 @@ def test_demo_par_defaut_tous_les_magasins_prix_fictifs_sans_edge(site, reglages
     assert any(m not in DRIVES for m in magasins)  # … avec les autres magasins
 
     flux = site.get("/panier/prix/flux").text
-    assert "Données fictives" in flux  # drives compris : prix fictifs
+    assert "Relevé en magasin" in flux  # drives compris : prix fictifs…
+    assert "fictif" not in flux.lower()  # … mais rien ne l'indique à l'écran
     assert "Recherche sur le drive" not in flux
     assert _taches(reglages) == 0  # aucune requête aux extensions Edge
 
@@ -57,7 +59,8 @@ def test_reel_seulement_les_drives_releves_edge_rien_de_fictif(site, reglages):
         "/mode-donnees", data={"mode": "reel", "suivant": "/panier"}, follow_redirects=False
     )
     assert reponse.status_code == 303 and reponse.headers["location"] == "/panier"
-    assert "Passer en démo" in site.get("/comptes").text
+    page = site.get("/comptes").text
+    assert "Passer en démo" in page and "prix fictifs" not in page
 
     _preparer(site, rayon="5")
     magasins = _magasins_affiches(site)
@@ -65,7 +68,7 @@ def test_reel_seulement_les_drives_releves_edge_rien_de_fictif(site, reglages):
     assert {"carrefour-retrait-267", "leclerc-retrait-113511"} <= magasins
 
     flux = site.get("/panier/prix/flux").text
-    assert "Données fictives" not in flux
+    assert "Relevé en magasin" not in flux  # aucun prix de la source fictive
     assert _taches(reglages) > 0  # une recherche a été demandée aux extensions
     for enseigne, reference in (("carrefour", "267"), ("leclerc", "113511")):
         tache = site.post(
@@ -112,9 +115,11 @@ def test_retour_en_demo(site, reglages):
 
 def test_mode_par_defaut_reglable_et_choix_invalide_ignore(site, reglages):
     reglages.mode_donnees_defaut = "reel"
-    assert "Passer en démo" in site.get("/comptes").text
+    page = site.get("/comptes").text
+    assert "Passer en démo" in page and "prix fictifs" not in page
     site.post("/mode-donnees", data={"mode": "n-importe-quoi"})
-    assert "Passer en démo" in site.get("/comptes").text
+    page = site.get("/comptes").text
+    assert "Passer en démo" in page and "prix fictifs" not in page
 
 
 def test_pas_de_redirection_hors_du_site(site):

@@ -558,7 +558,6 @@ async def flux_prix(request: Request, reglages: ReglagesDep) -> AsyncIterable[Se
                 "panier/_resume.html",
                 totaux=totaux,
                 economie=economie,
-                prix_fictifs=any(r.prix and r.prix.est_fictif for r in resultats.values()),
             ),
         )
     yield ServerSentEvent(event="fin", raw_data="fin")

@@ -110,20 +110,13 @@
   {% if mode_choisi not in ("demo", "reel") %}
     {% set mode_choisi = reglages_site.mode_donnees_defaut if reglages_site.mode_donnees_defaut in ("demo", "reel") else "demo" %}
   {% endif %}
+  {# En démo, rien n'indique que les prix sont fictifs (décision du 28/11) : seul ce bouton permet d'en sortir. #}
   <details class="options-demo">
     <summary>Options de démonstration</summary>
-    <p class="note">
-      Mode actuel :
-      <span class="mode-pastille mode-{{ mode_choisi }}">{{ "Réel" if mode_choisi == "reel" else "Démo" }}</span>
-      {{ "données réelles, prix relevés par les extensions Edge."
-         if mode_choisi == "reel" else "prix fictifs, marqués « Données fictives »." }}
-    </p>
     <form action="/mode-donnees" method="post">
       <input type="hidden" name="suivant" value="/comptes">
       <input type="hidden" name="mode" value="{{ 'demo' if mode_choisi == 'reel' else 'reel' }}">
-      <button type="submit">
-        {{ "Passer en démo (prix fictifs)" if mode_choisi == "reel" else "Passer aux données réelles" }}
-      </button>
+      <button type="submit">{{ "Passer en démo" if mode_choisi == "reel" else "Quitter la démo" }}</button>
     </form>
   </details>
 </section>

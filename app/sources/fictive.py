@@ -1,6 +1,9 @@
 """Source de données FICTIVES, pour le développement, les tests et la démo de secours.
 
-Tout ce qu'elle produit est marqué `est_fictif=True` et affiché « Données fictives ».
+Tout ce qu'elle produit est marqué `est_fictif=True` et `source=TypeSource.FICTIVE` : ce marquage interne
+empêche le fictif d'entrer dans le cache, de se mêler aux prix réels ou de partir vers Open Prices.
+À l'écran, en mode démo, rien ne le distingue d'un relevé réel (libellé neutre, marques sans mention) :
+décision du 28/11, voir docs/decisions.md.
 Les prix sont stables d'un lancement à l'autre (calculés à partir d'une empreinte) et varient
 selon l'enseigne et le magasin. Quelques produits manquent dans certains magasins, et certains
 ont une promotion (immédiate, « le 2e à -50 % » ou fidélité).
@@ -29,7 +32,8 @@ from app.contrats import (
 )
 from app.sources.base import SourcePrix
 
-LIBELLE_SOURCE = "Données fictives"
+LIBELLE_SOURCE = "Données fictives"  # nom interne de la source (journaux), jamais affiché
+LIBELLE_AFFICHE = "Relevé en magasin"  # ce que voit le visiteur en mode démo
 
 
 @dataclass(frozen=True)
@@ -107,7 +111,7 @@ _CATALOGUE_BASE = [
     ArticleFictif(
         "2000000000011",
         "Lait demi-écrémé UHT",
-        "Laiterie du Bocage (fictif)",
+        "Laiterie du Bocage",
         "1 L",
         119,
         "lait demi ecreme",
@@ -117,7 +121,7 @@ _CATALOGUE_BASE = [
     ArticleFictif(
         "2000000000028",
         "Spaghetti n°5",
-        "Pastissimo (fictif)",
+        "Pastissimo",
         "500 g",
         135,
         "pates spaghetti",
@@ -127,20 +131,18 @@ _CATALOGUE_BASE = [
     ArticleFictif(
         "2000000000035",
         "Penne rigate",
-        "Pastissimo (fictif)",
+        "Pastissimo",
         "500 g",
         135,
         "pates penne",
         0.5,
         "kg",
     ),
-    ArticleFictif(
-        "2000000000042", "Riz long grain", "Rizière d'Or (fictif)", "1 kg", 229, "riz", 1.0, "kg"
-    ),
+    ArticleFictif("2000000000042", "Riz long grain", "Rizière d'Or", "1 kg", 229, "riz", 1.0, "kg"),
     ArticleFictif(
         "2000000000059",
         "Œufs de poules élevées en plein air x12",
-        "Ferme des Prés (fictif)",
+        "Ferme des Prés",
         "12 œufs",
         389,
         "oeufs",
@@ -148,7 +150,7 @@ _CATALOGUE_BASE = [
     ArticleFictif(
         "2000000000066",
         "Beurre doux",
-        "Laiterie du Bocage (fictif)",
+        "Laiterie du Bocage",
         "250 g",
         279,
         "beurre",
@@ -158,7 +160,7 @@ _CATALOGUE_BASE = [
     ArticleFictif(
         "2000000000073",
         "Yaourts nature x8",
-        "Laiterie du Bocage (fictif)",
+        "Laiterie du Bocage",
         "8 x 125 g",
         189,
         "yaourt nature",
@@ -168,7 +170,7 @@ _CATALOGUE_BASE = [
     ArticleFictif(
         "2000000000080",
         "Pain de mie complet",
-        "Bonjour Matin (fictif)",
+        "Bonjour Matin",
         "500 g",
         219,
         "pain de mie",
@@ -178,7 +180,7 @@ _CATALOGUE_BASE = [
     ArticleFictif(
         "2000000000097",
         "Emmental râpé",
-        "Fromagerie Comtoise (fictif)",
+        "Fromagerie Comtoise",
         "200 g",
         239,
         "fromage rape emmental",
@@ -188,7 +190,7 @@ _CATALOGUE_BASE = [
     ArticleFictif(
         "2000000000103",
         "Sauce tomate au basilic",
-        "Pastissimo (fictif)",
+        "Pastissimo",
         "400 g",
         189,
         "sauce tomate",
@@ -198,7 +200,7 @@ _CATALOGUE_BASE = [
     ArticleFictif(
         "2000000000110",
         "Bananes",
-        "Vergers du Sud (fictif)",
+        "Vergers du Sud",
         "1 kg",
         199,
         "banane fruit",
@@ -208,7 +210,7 @@ _CATALOGUE_BASE = [
     ArticleFictif(
         "2000000000127",
         "Papier toilette x12",
-        "Douceur (fictif)",
+        "Douceur",
         "12 rouleaux",
         449,
         "papier toilette",
@@ -240,7 +242,7 @@ CATALOGUE: list[ArticleFictif] = _CATALOGUE_BASE + [
     ArticleFictif(
         f"2000000{code}{num}00",
         libelle,
-        f"Marque distributeur {enseigne.nom} (fictif)",
+        f"Marque distributeur {enseigne.nom}",
         quantite,
         prix,
         mots,
@@ -267,6 +269,8 @@ _NOMS_MAGASINS = {
     Enseigne.COURSES_U: ["Super U", "Hyper U", "U Express"],
     Enseigne.LECLERC: ["E.Leclerc Drive", "E.Leclerc Relais Drive", "E.Leclerc Drive piéton"],
 }
+
+_RUES = ["rue de Rennes", "avenue du Général de Gaulle", "rue de la Gare", "route de Nantes"]
 
 
 def empreinte(*parties: object) -> int:
@@ -319,14 +323,14 @@ class SourceFictive(SourcePrix):
             lon = position.lon + distance_km / (111.0 * math.cos(math.radians(position.lat))) * (
                 math.sin(angle)
             )
-            id_enseigne = f"fictif-{h % 100000}"
+            id_enseigne = f"m{h % 100000}"
             magasins.append(
                 Magasin(
                     id=Magasin.fabriquer_id(self.enseigne, id_enseigne),
                     enseigne=self.enseigne,
                     id_enseigne=id_enseigne,
-                    nom=f"{nom} (fictif)",
-                    adresse=f"{1 + h % 90} rue imaginaire",
+                    nom=nom,
+                    adresse=f"{1 + h % 90} {_RUES[h % len(_RUES)]}",
                     position=Position(lat=lat, lon=lon),
                     est_fictif=True,
                 )
@@ -350,7 +354,7 @@ class SourceFictive(SourcePrix):
         if article is None:
             # EAN hors catalogue (ex. produit venu d'Open Food Facts) : prix fictif générique.
             article = ArticleFictif(
-                ean, f"Article {ean}", "Marque inconnue (fictif)", "", 150 + empreinte(ean) % 500
+                ean, f"Article {ean}", "Marque inconnue", "", 150 + empreinte(ean) % 500
             )
         return self._prix_article(magasin, article)
 
@@ -405,7 +409,7 @@ class SourceFictive(SourcePrix):
             unite=article.unite,
             promotions=promotions,
             source=TypeSource.FICTIVE,
-            source_detail=LIBELLE_SOURCE,
+            source_detail=LIBELLE_AFFICHE,
             releve_le=datetime.now(UTC),
             est_fictif=True,
         )

@@ -121,9 +121,9 @@ def test_totaux_par_magasin_json(client):
         assert total.nb_trouves + total.nb_manquants == 2
     for resultat in totaux.resultats:
         if resultat.prix is not None:
-            # Chaque prix indique sa source et l'heure du relevé, et le fictif est marqué.
+            # Chaque prix indique sa source et l'heure du relevé ; le fictif est marqué en interne.
             assert resultat.prix.est_fictif
-            assert resultat.prix.source_detail == "Données fictives"
+            assert resultat.prix.source_detail == "Relevé en magasin"
             assert resultat.prix.releve_le is not None
 
 
@@ -212,7 +212,8 @@ def test_parcours_html_et_flux_sse(client):
     assert texte.count("event: total-") == 2 * 8
     assert "event: resume" in texte
     assert texte.rstrip().endswith("data: fin")
-    assert "Données fictives" in texte
+    assert "Relevé en magasin" in texte
+    assert "fictif" not in texte.lower()  # mode démo : rien n'indique des prix fictifs
 
 
 def test_suppression_de_ligne(client):

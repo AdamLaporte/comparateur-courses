@@ -63,7 +63,6 @@
 <form action="/comptes/cagnotte" method="post" class="cagnotte-formulaire">
   <h3>Ajouter à ma tirelire</h3>
   <p>Moyenne des paniers complets <strong>{{ economie[1] | euros }}</strong></p>
-  {% if prix_fictifs %}<p class="note">Cette comparaison contient des prix fictifs.</p>{% endif %}
   <input type="hidden" name="comparaison" value="{{ economie[0] }}">
   {# Une carte par magasin au lieu d'un menu déroulant : tout se lit d'un coup d'œil, un clic suffit. #}
   <fieldset class="choix-magasin">
