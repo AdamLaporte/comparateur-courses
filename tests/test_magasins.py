@@ -71,6 +71,23 @@ async def test_rayon_choisi(osm):
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize("rayon", [2, 5])
+async def test_petit_rayon_cinq_magasins_au_plus_dont_chaque_enseigne(osm, monkeypatch, rayon):
+    # Quatre enseignes, trois Carrefour plus proches que les autres : aucune enseigne ne doit disparaître.
+    distances = {Enseigne.CARREFOUR: (0.1, 0.2, 0.3)}
+    faux = {
+        e: [_magasin(e, i, km) for i, km in enumerate(distances.get(e, (1, 1.5, 1.8)))]
+        for e in Enseigne
+    }
+    monkeypatch.setattr(service, "magasins_osm", lambda: faux)
+    reponse = await service.magasins_proches("35170", osm, rayon_km=rayon)
+    assert len(reponse.magasins) == 5
+    assert {m.enseigne for m in reponse.magasins} == set(Enseigne)
+    assert [m.distance_km for m in reponse.magasins] == [0.1, 0.2, 1, 1, 1]
+    assert reponse.enseignes_sans_magasin == []
+
+
+@pytest.mark.anyio
 async def test_position_du_navigateur(reglages, monkeypatch):
     async def sans_reseau(*args):
         return []

@@ -2,7 +2,8 @@
 
 Deux modes de recherche :
 - rayon_km=None : les plus proches de chaque enseigne (MAX_MAGASINS_PAR_ENSEIGNE, jusqu'à 50 km) ;
-- rayon_km=N : tous les magasins à moins de N km (au plus MAX_MAGASINS_PAR_ENSEIGNE_RAYON par enseigne).
+- rayon_km=N : tous les magasins à moins de N km (au plus MAX_MAGASINS_PAR_ENSEIGNE_RAYON par enseigne) ;
+  jusqu'à 5 km, 5 magasins au plus : le plus proche de chaque enseigne, puis les plus proches des autres.
 
 Les magasins viennent de data/magasins/osm.json (OpenStreetMap, voir import_osm.py) si MAGASINS_OSM est
 vrai et que le fichier existe ; sinon de trouver_magasins() de chaque source (magasins fictifs).
@@ -28,6 +29,8 @@ from app.sources.registre import sources_actives
 logger = logging.getLogger(__name__)
 
 RAYON_PLUS_PROCHES_KM = 50.0
+RAYON_COURT_KM = 5.0
+MAX_MAGASINS_RAYON_COURT = 5
 
 
 def distance_km(a: Position, b: Position) -> float:
@@ -96,6 +99,18 @@ def magasins_osm() -> dict[Enseigne, list[Magasin]]:
     return par_enseigne
 
 
+def _selection_courte(listes: list[list[Magasin]]) -> list[Magasin]:
+    """MAX_MAGASINS_RAYON_COURT magasins au plus, sans faire disparaître une enseigne.
+    Chaque liste (une par enseigne) est déjà triée par distance."""
+
+    def distance(magasin: Magasin) -> float:
+        return magasin.distance_km
+
+    premiers = sorted((liste[0] for liste in listes if liste), key=distance)
+    autres = sorted(chain.from_iterable(liste[1:] for liste in listes), key=distance)
+    return (premiers + autres)[:MAX_MAGASINS_RAYON_COURT]
+
+
 async def _magasins_enseigne(
     enseigne: Enseigne,
     source: SourcePrix,
@@ -151,11 +166,15 @@ async def magasins_proches(
                 for e, s in sources.items()
             )
         )
+    if rayon_km is not None and rayon_km <= RAYON_COURT_KM:
+        magasins = _selection_courte(listes)
+    else:
+        magasins = list(chain.from_iterable(listes))
     return MagasinsReponse(
         code_postal=" ".join(lieu.split()),
         ville=ville,
         position=position,
-        magasins=sorted(chain.from_iterable(listes), key=lambda m: m.distance_km),
+        magasins=sorted(magasins, key=lambda m: m.distance_km),
         enseignes_sans_magasin=[e for e, liste in zip(sources, listes, strict=True) if not liste],
         rayon_km=rayon_km,
     )
