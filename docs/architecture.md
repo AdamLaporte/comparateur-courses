@@ -437,15 +437,11 @@ Modèle dans `.env.example`.
   Le total est recalculé à partir du dernier état de chaque couple article et magasin.
 - Le catalogue initial contient des points géolocalisés et peut les associer à une fiche OSM.
   Carrefour Drive Chartres-de-Bretagne reprend sa fiche OSM et E.Leclerc Drive Bruz – Ker Lann
-  apparaît grâce à ses coordonnées dans le catalogue. Pour ajouter un autre
-  point, l’extension lit la référence et le libellé du magasin actif, puis transmet la fiche
-  officielle et l’adresse confirmées par l’opérateur à
-  `POST /api/drives/enseignes/{enseigne}/inscrire-point-retrait`. Le serveur exige le jeton de
-  collecte, vérifie la fiche et géolocalise l’adresse dans le code postal fourni.
-- La table `drive_point_retrait` conserve les points ajoutés. Leur identifiant associe l’enseigne
-  et la référence marchande. Ils apparaissent en mode réel dès l’enregistrement. Chaque extension
-  prend les tâches par enseigne et reçoit le point précis à ouvrir. Les relevés, leur cache et
-  leurs pauses sont associés au point de retrait.
+  apparaît grâce à ses coordonnées dans le catalogue. La liste est fixe : les extensions n’ajoutent
+  pas de magasin. Chaque extension prend les tâches par enseigne et reçoit le point précis à ouvrir.
+  Les relevés, leur cache et leurs pauses sont associés au point de retrait.
+- « Le moins cher » : un relevé récent ne dispense d’un nouveau que si au moins un produit a la
+  recherche pour sujet (« pâte à tartiner sans lait » ne répond pas à « lait »).
 - La référence marchande peut différer de l’identifiant utilisé dans SQLite. Courses U vérifie
   le numéro fourni par le site quand il est présent dans la page et utilise le libellé de l’en-tête
   en son absence. Le relevé manuel lit le même catalogue via
@@ -485,7 +481,7 @@ défaut : `MODE_DONNEES_DEFAUT`, « demo »).
 
 | | Démo | Données réelles |
 |---|---|---|
-| Magasins (`magasins_proches(..., seulement_drives=...)`) | tous (OpenStreetMap), drives compris | points de retrait du catalogue initial et points ajoutés depuis Edge |
+| Magasins (`magasins_proches(..., seulement_drives=...)`) | tous (OpenStreetMap), drives compris | points de retrait d’`app/drives/points_retrait.json` |
 | Prix (`collecter(..., drives_par_edge=...)`) | source de l'enseigne (fictive, marquée), drives compris | relevés des extensions Edge, rien de fictif |
 | Requêtes aux extensions Edge | aucune | oui (`suivre_edge=True`) |
 
