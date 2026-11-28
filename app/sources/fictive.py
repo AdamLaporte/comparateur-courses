@@ -5,8 +5,9 @@ empêche le fictif d'entrer dans le cache, de se mêler aux prix réels ou de pa
 À l'écran, en mode démo, rien ne le distingue d'un relevé réel (libellé neutre, marques sans mention) :
 décision du 28/11, voir docs/decisions.md.
 Les prix sont stables d'un lancement à l'autre (calculés à partir d'une empreinte) et varient
-selon l'enseigne et le magasin. Quelques produits manquent dans certains magasins, et certains
-ont une promotion (immédiate, « le 2e à -50 % » ou fidélité).
+selon l'enseigne et le magasin ; certains ont une promotion (immédiate, « le 2e à -50 % » ou fidélité).
+Chaque article a un prix dans chaque magasin : une recherche ou un EAN hors catalogue reçoit un article
+générique. Les marques distributeur ne sortent des recherches que dans leur enseigne.
 
 Les cinq premiers articles du catalogue ont de vrais EAN (Open Food Facts, Carrefour) ; les autres
 ont des EAN fictifs commençant par 2 (plage réservée à l'usage interne) et des marques inventées.
@@ -16,6 +17,7 @@ import asyncio
 import hashlib
 import math
 import random
+import re
 import unicodedata
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -35,6 +37,9 @@ from app.sources.base import SourcePrix
 
 LIBELLE_SOURCE = "Données fictives"  # nom interne de la source (journaux), jamais affiché
 LIBELLE_AFFICHE = "Relevé en magasin"  # source_detail (API) ; l'écran n'affiche que la date
+# Seules les premières requêtes attendent (affichage progressif) : une longue liste ne dépasse jamais
+# le temps laissé à une enseigne.
+REQUETES_RETARDEES = 12
 
 
 @dataclass(frozen=True)
@@ -51,7 +56,10 @@ class ArticleFictif:
 
     def produit(self) -> Produit:
         return Produit(
-            ean=self.ean, libelle=self.libelle, marque=self.marque, quantite=self.quantite
+            ean=self.ean,
+            libelle=self.libelle,
+            marque=self.marque or None,
+            quantite=self.quantite or None,
         )
 
 
@@ -218,6 +226,54 @@ _CATALOGUE_BASE = [
     ),
 ]
 
+# Courses courantes, EAN et marques fictifs : (libellé, marque, quantité, prix, mots-clés, contenance,
+# unité). Le premier mot du libellé est le produit lui-même (règle du « moins cher »).
+_COURANTS = [
+    ("Avocat x2", "Vergers du Sud", "2 pièces", 229, "avocats fruit", None, None),
+    ("Pommes golden", "Vergers du Sud", "1 kg", 249, "fruit", 1.0, "kg"),
+    ("Patates (pommes de terre)", "Vergers du Sud", "2,5 kg", 349, "legume", 2.5, "kg"),
+    ("Tomates grappe", "Vergers du Sud", "1 kg", 279, "legume", 1.0, "kg"),
+    ("Carottes", "Vergers du Sud", "1 kg", 149, "legume", 1.0, "kg"),
+    ("Oignons jaunes", "Vergers du Sud", "1 kg", 179, "legume", 1.0, "kg"),
+    ("Salade verte", "Vergers du Sud", "1 pièce", 119, "laitue legume", None, None),
+    ("Crème fraîche épaisse", "Laiterie du Bocage", "20 cl", 119, "", 0.2, "L"),
+    ("Fromage blanc nature", "Laiterie du Bocage", "1 kg", 239, "", 1.0, "kg"),
+    ("Carré frais 0 %", "Fromagerie Comtoise", "8 x 25 g", 219, "fromage", 0.2, "kg"),
+    ("Jambon blanc 4 tranches", "Maison Kerlan", "160 g", 269, "porc", 0.16, "kg"),
+    ("Poulet en filets", "Maison Kerlan", "500 g", 599, "viande blanc", 0.5, "kg"),
+    ("Steaks hachés x4", "Maison Kerlan", "400 g", 499, "steak viande boeuf", 0.4, "kg"),
+    ("Thon au naturel", "Marée Haute", "140 g", 219, "poisson conserve", 0.14, "kg"),
+    ("Pizza jambon fromage", "Bella Notte", "400 g", 329, "", 0.4, "kg"),
+    ("Frites surgelées", "Maison Kerlan", "1 kg", 229, "frite", 1.0, "kg"),
+    ("Glace vanille", "Bella Notte", "500 g", 329, "dessert", 0.5, "kg"),
+    ("Farine de blé", "Moulin Doré", "1 kg", 99, "", 1.0, "kg"),
+    ("Sucre en poudre", "Moulin Doré", "1 kg", 179, "", 1.0, "kg"),
+    ("Sel fin", "Marée Haute", "750 g", 69, "", 0.75, "kg"),
+    ("Huile de tournesol", "Moulin Doré", "1 L", 229, "", 1.0, "L"),
+    ("Huile d'olive vierge extra", "Moulin Doré", "75 cl", 799, "", 0.75, "L"),
+    ("Moutarde de Dijon", "Moulin Doré", "370 g", 149, "", 0.37, "kg"),
+    ("Mayonnaise", "Moulin Doré", "235 g", 199, "sauce", 0.235, "kg"),
+    ("Baguette", "Bonjour Matin", "250 g", 95, "pain", 0.25, "kg"),
+    ("Céréales pétales de maïs", "Bonjour Matin", "500 g", 249, "petit dejeuner", 0.5, "kg"),
+    ("Biscuits petit beurre", "Bonjour Matin", "200 g", 129, "gateau", 0.2, "kg"),
+    ("Compote de pommes x8", "Vergers du Sud", "8 x 100 g", 219, "dessert", 0.8, "kg"),
+    ("Chocolat noir", "Cacao & Cie", "200 g", 199, "tablette", 0.2, "kg"),
+    ("Chips nature", "Bella Notte", "150 g", 159, "aperitif", 0.15, "kg"),
+    ("Eau minérale 6 x 1,5 L", "Source Claire", "6 x 1,5 L", 329, "boisson", 9.0, "L"),
+    ("Jus d'orange", "Vergers du Sud", "1 L", 199, "boisson", 1.0, "L"),
+    ("Thé vert", "Cacao & Cie", "25 sachets", 189, "boisson", None, None),
+    ("Shampooing doux", "Douceur", "300 ml", 289, "shampoing hygiene", 0.3, "L"),
+    ("Gel douche", "Douceur", "250 ml", 199, "savon hygiene", 0.25, "L"),
+    ("Dentifrice menthe", "Douceur", "75 ml", 179, "hygiene", 0.075, "L"),
+    ("Mouchoirs x10 paquets", "Douceur", "10 paquets", 169, "mouchoir", None, None),
+    ("Lessive liquide", "Net & Clair", "1,5 L", 599, "linge entretien", 1.5, "L"),
+    ("Liquide vaisselle", "Net & Clair", "500 ml", 149, "entretien", 0.5, "L"),
+]
+_CATALOGUE_BASE += [
+    ArticleFictif(f"200000000{numero:04d}", *champs)
+    for numero, champs in enumerate(_COURANTS, start=200)
+]
+
 # Marques distributeur fictives : une par enseigne, moins chères (utile pour le mode « équivalent »).
 _MDD = [
     (
@@ -282,21 +338,38 @@ def empreinte(*parties: object) -> int:
 
 def normaliser(texte: str) -> str:
     """Minuscules sans accents, pour comparer des recherches."""
+    texte = texte.replace("œ", "oe").replace("Œ", "oe")
     sans_accents = unicodedata.normalize("NFKD", texte).encode("ascii", "ignore").decode("ascii")
     return " ".join(sans_accents.lower().replace("'", " ").split())
 
 
+_UNITES = {"kg", "gr", "ml", "cl"}
+
+
 def rechercher_catalogue(recherche: str) -> list[ArticleFictif]:
-    """Articles du catalogue dont le texte contient tous les mots de la recherche."""
-    mots = [m for m in normaliser(recherche).split() if len(m) >= 2]
+    """Articles dont le texte a un mot commençant par chacun des mots de la recherche. Les quantités
+    (« 400 g », « 20 cl », « x12 ») sont ignorées ; un EAN reste un EAN."""
+    mots = [
+        m
+        for m in normaliser(recherche).split()
+        if len(m) >= 2
+        and m not in _UNITES
+        and (not re.search(r"\d", m) or re.fullmatch(r"\d{8,14}", m))
+    ]
     if not mots:
         return []
     resultats = []
     for article in CATALOGUE:
         texte = normaliser(f"{article.libelle} {article.marque} {article.mots_cles} {article.ean}")
-        if all(mot in texte for mot in mots):
+        if all(any(t.startswith(mot) for t in texte.split()) for mot in mots):
             resultats.append(article)
     return resultats
+
+
+def _article_generique(libelle: str, ean: str = "") -> ArticleFictif:
+    """Article hors catalogue : même prix de base d'un lancement à l'autre, sans marque ni format."""
+    ean = ean or f"2{empreinte(normaliser(libelle)) % 10**12:012d}"
+    return ArticleFictif(ean, libelle, "", "", 150 + empreinte(ean) % 500)
 
 
 class SourceFictive(SourcePrix):
@@ -306,9 +379,11 @@ class SourceFictive(SourcePrix):
     def __init__(self, enseigne: Enseigne, delai_max_s: float = 0.0) -> None:
         self.enseigne = enseigne
         self.delai_max_s = delai_max_s
+        self._requetes = 0
 
     async def _patienter(self) -> None:
-        if self.delai_max_s > 0:
+        self._requetes += 1
+        if self.delai_max_s > 0 and self._requetes <= REQUETES_RETARDEES:
             await asyncio.sleep(random.uniform(0, self.delai_max_s))
 
     async def trouver_magasins(
@@ -342,31 +417,28 @@ class SourceFictive(SourcePrix):
         self, magasin: Magasin, recherche: str, limite: int = 20
     ) -> list[Prix]:
         await self._patienter()
-        offres = [
-            prix
-            for article in rechercher_catalogue(recherche)
-            if (prix := self._prix_article(magasin, article)) is not None
+        articles = [
+            a for a in rechercher_catalogue(recherche) if a.exclusif in (None, self.enseigne)
         ]
+        if not articles:
+            texte = " ".join(recherche.split())
+            if not texte:
+                return []
+            articles = [_article_generique(texte[:1].upper() + texte[1:])]
+        offres = [self._prix_article(magasin, article) for article in articles]
         return sorted(offres, key=lambda p: p.prix_centimes)[:limite]
 
     async def obtenir_prix(self, magasin: Magasin, ean: str) -> Prix | None:
         await self._patienter()
-        article = CATALOGUE_PAR_EAN.get(ean)
-        if article is None:
-            # EAN hors catalogue (ex. produit venu d'Open Food Facts) : prix fictif générique.
-            article = ArticleFictif(
-                ean, f"Article {ean}", "Marque inconnue", "", 150 + empreinte(ean) % 500
-            )
+        # EAN hors catalogue (ex. produit venu d'Open Food Facts) : le nom est inconnu ici, l'orchestrateur
+        # reprend celui de la ligne de la liste.
+        article = CATALOGUE_PAR_EAN.get(ean) or _article_generique("", ean)
         return self._prix_article(magasin, article)
 
-    def _prix_article(self, magasin: Magasin, article: ArticleFictif) -> Prix | None:
-        if article.exclusif is not None and article.exclusif != self.enseigne:
-            return None
+    def _prix_article(self, magasin: Magasin, article: ArticleFictif) -> Prix:
         h = empreinte(magasin.id, article.ean)
-        if h % 11 == 0:  # environ 9 % des produits manquent dans un magasin donné
-            return None
-
-        facteur = 1.0 if article.exclusif else _FACTEURS_ENSEIGNE[self.enseigne]
+        propre = article.exclusif == self.enseigne
+        facteur = 1.0 if propre else _FACTEURS_ENSEIGNE[self.enseigne]
         variation = ((h // 11) % 13 - 6) / 100  # de -6 % à +6 %
         prix = max(10, round(article.prix_base * facteur * (1 + variation)))
         prix_barre = None

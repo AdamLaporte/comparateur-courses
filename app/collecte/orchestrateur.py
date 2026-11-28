@@ -37,7 +37,8 @@ async def resoudre(
     source: SourcePrix, ligne: LigneListe, magasin: Magasin, reglages: Reglages
 ) -> ResultatLigne:
     """Prix d'une ligne dans un magasin. Ne lève jamais d'exception."""
-    if ligne.mode == ModeLigne.INEXISTANT:
+    # En démo (source fictive), même un article absent de notre catalogue reçoit un prix.
+    if ligne.mode == ModeLigne.INEXISTANT and source.type_source != TypeSource.FICTIVE:
         return ResultatLigne(
             ligne_id=ligne.id,
             magasin_id=magasin.id,
@@ -71,6 +72,9 @@ async def resoudre(
             statut=StatutPrix.INTROUVABLE,
             remarque="Absent de ce magasin",
         )
+    if not prix.produit.libelle:  # la source ne connaît pas le nom : celui de la liste
+        produit = prix.produit.model_copy(update={"libelle": ligne.libelle})
+        prix = prix.model_copy(update={"produit": produit})
     if avec_cache:
         cache.ecrire(reglages, magasin.enseigne, magasin.id, cle, prix)
     return ResultatLigne(
