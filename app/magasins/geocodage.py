@@ -78,18 +78,6 @@ async def localisation_proche(position: Position, reglages: Reglages) -> tuple[s
     return ville, rue
 
 
-async def geocoder_retrait(
-    adresse: str, code_postal: str, reglages: Reglages
-) -> tuple[str, Position]:
-    trouves = await _api_adresse(
-        "search", {"q": adresse, "postcode": code_postal, "limit": 1}, reglages
-    )
-    if not trouves or trouves[0]["properties"].get("postcode") != code_postal:
-        raise CodePostalInconnu(code_postal)
-    lon, lat = trouves[0]["geometry"]["coordinates"]
-    return trouves[0]["properties"]["city"], Position(lat=lat, lon=lon)
-
-
 async def geocoder(lieu: str, reglages: Reglages, *, adresse: bool = False) -> tuple[str, Position]:
     lieu = " ".join(lieu.split())
     if not lieu or len(lieu) > 160:

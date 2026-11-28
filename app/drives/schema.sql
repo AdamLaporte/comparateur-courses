@@ -1,8 +1,3 @@
-CREATE TABLE IF NOT EXISTS drive_point_retrait (
-    drive_id TEXT PRIMARY KEY,
-    donnees TEXT NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS drive_reference (
     drive_id TEXT NOT NULL,
     cle TEXT NOT NULL,

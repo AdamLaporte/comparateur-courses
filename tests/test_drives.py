@@ -8,11 +8,10 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app import db
-from app.contrats import Position
 from app.drives import comparaison as panier_drive
 from app.drives import service
 from app.drives.importer import importer
-from app.drives.modeles import ProduitObserve
+from app.drives.modeles import ProduitObserve, Recherche
 from app.main import creer_app
 
 U = "coursesu-33315"
@@ -277,100 +276,25 @@ def test_magasins_point_de_retrait_hors_bruz():
     )
 
 
-@pytest.mark.parametrize(
-    ("enseigne", "reference", "accueil", "nom"),
-    [
-        (
-            "intermarche",
-            "10348",
-            "https://www.intermarche.com/magasins/10348/grigny-sur-rhone-69520/infos-pratiques",
-            "Super Grigny",
-        ),
-        (
-            "coursesu",
-            "72554",
-            "https://www.coursesu.com/drive-superu-grigny",
-            "Super U Grigny",
-        ),
-        (
-            "carrefour",
-            "136",
-            "https://www.carrefour.fr/set-store/136",
-            "Carrefour Drive",
-        ),
-        (
-            "leclerc",
-            "095705",
-            "https://fd2-courses.leclercdrive.fr/magasin-095705-stiring-wendel.aspx",
-            "E.Leclerc Drive",
-        ),
-    ],
-)
-def test_un_nouveau_retrait_est_utilisable_depuis_la_comparaison(
-    edge, reglages, monkeypatch, enseigne, reference, accueil, nom
-):
+def test_aucun_ajout_de_point_de_retrait(edge):
     client, _ = edge
-    reglages.drives_attente_s = 0
-    localisation = ("Grigny-sur-Rhône", Position(lat=45.61, lon=4.79))
+    route = f"{URL}/enseignes/intermarche/inscrire-point-retrait"
+    assert client.post(route, headers=JETON, json={}).status_code == 404
+    recherche = {"q": "lait", "drives": ["intermarche-retrait-10348"]}
+    assert client.post(URL + "/recherches", json=recherche).status_code == 422
 
-    async def geocoder_point(adresse, code_postal, _reglages):
-        assert (adresse, code_postal) == ("17 rue de la République", "69520")
-        return localisation
 
-    async def geocoder_recherche(code_postal, _reglages):
-        assert code_postal == "69520"
-        return localisation
-
-    monkeypatch.setattr("app.drives.routes.geocoder_retrait", geocoder_point)
-    monkeypatch.setattr("app.magasins.service.geocoder", geocoder_recherche)
-
-    identifiant = f"{enseigne}-retrait-{reference}"
-    base = f"{URL}/enseignes/{enseigne}"
-    route = base + "/inscrire-point-retrait"
-    inscription = {
-        "reference": reference,
-        "libelle": nom,
-        "accueil": accueil,
-        "adresse": "17 rue de la République",
-        "code_postal": "69520",
-    }
-    assert client.post(route, json=inscription).status_code == 401
-    assert (
-        client.post(
-            route, headers=JETON, json={**inscription, "accueil": "https://example.com/"}
-        ).status_code
-        == 422
-    )
-    if enseigne in {"carrefour", "leclerc"}:
-        fiche_autre_drive = accueil.replace(reference, "1" * len(reference))
-        assert (
-            client.post(
-                route, headers=JETON, json={**inscription, "accueil": fiche_autre_drive}
-            ).status_code
-            == 422
+def test_ancienne_tache_d_un_retrait_retire_ne_bloque_pas_la_file(edge, reglages):
+    client, _ = edge
+    with db.connexion(reglages.db_path) as cnx:  # reste d'un retrait ajouté depuis une extension
+        cnx.execute(
+            "INSERT INTO drive_tache (drive_id, cle, requete, etat, expire_le) "
+            "VALUES ('intermarche-retrait-10348', 'lait', 'lait', 'attente', "
+            "'2026-11-28T19:00:00.000000+00:00')"
         )
-    assert (
-        client.post(URL + "/recherches", json={"q": "lait", "drives": [identifiant]}).status_code
-        == 422
-    )
-    for _ in range(2):
-        reponse = client.post(route, headers=JETON, json=inscription)
-        assert reponse.status_code == 200, reponse.text
-    point = reponse.json()
-    assert point["reference"] == reference
-    points = client.post(base + "/points-retrait", headers=JETON).json()
-    assert points.count(point) == 1
-
-    page = client.get("/magasins?code_postal=69520&rayon_km=2")
-    assert nom in page.text
-    client.post("/panier/lignes", data={"mode": "equivalent", "recherche": "lait"})
-    assert identifiant in client.get("/panier/resultats").text
-    flux = client.get("/panier/prix/flux")
-    assert flux.status_code == 200
-    tache = client.post(base + "/prendre", headers=JETON).json()
-    assert tache["drive_id"] == identifiant and tache["point"] == point
-    assert succes(client, tache, produit(identifiant)).status_code == 204
-    assert 'data-centimes="125"' in client.get("/panier/prix/flux").text
+    lancer(client, drives=(INTER,))
+    tache = client.post(f"{URL}/enseignes/intermarche/prendre", headers=JETON).json()
+    assert tache["drive_id"] == INTER
 
 
 def test_drives_rejette_un_lot_partiellement_invalide(edge, reglages):
@@ -497,3 +421,26 @@ def test_panier_verifie_ean_apres_recherche_par_libelle(edge, reglages, monkeypa
     assert "Aucun produit correspondant parmi les résultats relevés." in flux
     assert "Le point de retrait actif dans Edge est incorrect." in flux
     assert 'data-centimes="250"' not in flux
+
+
+def test_un_releve_qui_cite_seulement_le_mot_ne_bloque_pas_la_recherche(edge, reglages):
+    client, _ = edge
+    lancer(client, "tartiner", drives=(U,))
+    tartiner = produit(produit="Pâte à tartiner sans lait", format="250 g", ean="")
+    assert succes(client, prendre(client, U), tartiner).status_code == 204
+
+    def chercher(q):
+        recherche = Recherche(q=q, drives=[U])
+        return service.rechercher_pour_panier(
+            reglages, U, recherche, creer=True, terme_marchand=None
+        )
+
+    assert chercher("tartiner")["etat"] == "recent"
+    # « lait » n'est pas le sujet de ce produit : il faut interroger le drive.
+    vue = chercher("lait")
+    assert vue["etat"] == "attente" and vue["tache_id"]
+    assert chercher("lait")["tache_id"] == vue["tache_id"]  # le suivi attend cette même tâche
+    tache = prendre(client, U)
+    assert tache["requete"] == "lait"
+    assert succes(client, tache, produit(id_produit_source="lait")).status_code == 204
+    assert chercher("lait")["etat"] == "recent"

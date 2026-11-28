@@ -2,7 +2,7 @@
 
 - « demo » : tous les magasins, prix fictifs (marqués en interne : est_fictif, source FICTIVE ;
   rien ne l'indique à l'écran), aucune requête aux extensions Edge.
-- « reel » : seulement les points de retrait connus (catalogue initial et ajouts Edge), prix relevés par les
+- « reel » : seulement les points de retrait connus (app/drives/points_retrait.json), prix relevés par les
   extensions Edge, aucune donnée fictive.
 Valeur par défaut : MODE_DONNEES_DEFAUT dans `.env` (« demo » si absent).
 """

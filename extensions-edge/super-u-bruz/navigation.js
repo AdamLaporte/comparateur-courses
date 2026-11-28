@@ -74,27 +74,6 @@ export function lirePage(adaptateur, requete, soumettre, points) {
   }
 
   const url = new URL(location.href);
-  if (!points.length && !requete && !soumettre) {
-    if (refs.size !== 1) return { retrait };
-    const [reference] = refs;
-    const estAccueil = (adresse) => adresse.origin === url.origin && (intermarche
-      ? new RegExp("^/magasins/" + reference + "/[^/]+/infos-pratiques/?$", "i").test(adresse.pathname)
-      : /^\/drive-(?:hyperu|superu|uexpress|utile)-[a-z0-9-]+\/?$/i.test(adresse.pathname));
-    const liensAccueil = new Set(entete.flatMap((element) => [...element.querySelectorAll("a[href]")])
-      .map((lien) => new URL(lien.href)).filter(estAccueil).map((lien) => lien.origin + lien.pathname));
-    const accueil = estAccueil(url) ? url.origin + url.pathname
-      : (liensAccueil.size === 1 ? [...liensAccueil][0] : "");
-    const titreDrive = [...(principal?.querySelectorAll("h1") || [])]
-      .map((element) => compacte(element.innerText).match(/^Bienvenue au drive (.+)$/i)?.[1])
-      .find(Boolean);
-    const libelleActif = intermarche ? libelle : (lignes.map(compacte).find((ligne) =>
-      /^(?:Hyper U|Super U|U Express|Utile)\s+\S/i.test(ligne)) || (estAccueil(url) ? titreDrive : ""));
-    if (!libelleActif || /^(choisir|choisissez|selectionner|selectionnez|mon magasin)\b/.test(normalise(libelleActif))) {
-      return { retrait };
-    }
-    const codePostal = accueil.match(/-(\d{5})\/infos-pratiques\/?$/i)?.[1] || "";
-    return { reference, libelle: libelleActif, accueil, codePostal };
-  }
   const cle = normalise(requete);
   const chemin = cle ? decodeURIComponent(url.pathname).replace(/\/$/, "") : "";
   const recherche = Boolean(cle) && (intermarche

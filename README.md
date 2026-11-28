@@ -32,9 +32,9 @@ uv run --locked uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-proxy-hea
 
 Une extension suffit par enseigne. **Comparer** envoie le point de retrait à l’extension, qui
 change de magasin dans son onglet puis vérifie le point actif avant d’enregistrer les prix.
-Le catalogue initial inclut Super U Bruz, Hyper U Guichen, Intermarché Bruz Cap Vert et Intermarché
-Rennes Gayeulles. Les extensions permettent d’ajouter des points de retrait des quatre enseignes
-depuis leur catalogue en ligne.
+Les points de retrait pris en charge sont ceux d’`app/drives/points_retrait.json` : Super U Bruz,
+Hyper U Guichen, Intermarché Bruz Cap Vert, Intermarché Rennes Gayeulles, Carrefour Drive
+Chartres-de-Bretagne et E.Leclerc Drive Bruz – Ker Lann.
 
 Pour utiliser une seule base depuis plusieurs PC, voir le
 [hébergement du site partagé sur un PC avec Tailscale](docs/deploiement-partage.md).
@@ -63,24 +63,6 @@ comparateur configuré dans l’extension. Le relevé de Bruz reste disponible h
 Si Edge est fermé, le comparateur affiche l’historique et indique l’attente du collecteur. La fraîcheur se règle avec
 `DRIVES_FRAICHEUR_MIN` dans `.env` (1 440 minutes par défaut). La collecte s’arrête en cas de défi ou
 de réponse 403 ou 429 et reprend après la pause de quinze minutes, lors d’une nouvelle recherche.
-
-## Ajouter un point de retrait
-
-1. Choisissez le magasin et le **retrait** sur le site de l’enseigne, puis ouvrez son catalogue
-   dans Edge. Pour Carrefour et E.Leclerc Drive, ouvrez un rayon ou cherchez un produit de façon à
-   afficher ses prix pour le drive choisi.
-   [Courses U](https://www.coursesu.com/drive-france) · [Intermarché](https://www.intermarche.com/enseigne/magazine/tous-les-magasins) · [Carrefour](https://www.carrefour.fr/magasin) · [E.Leclerc Drive](https://www.leclercdrive.fr/)
-2. Dans l’extension configurée, ouvrez **Ajouter un magasin au comparateur** puis cliquez sur
-   **Détecter le retrait actif**. Vérifiez le nom et complétez l’adresse et le code postal.
-   Si l’extension U ou Intermarché demande un lien, collez la page d’accueil Drive ou la page
-   **Infos pratiques**, respectivement. Les extensions Carrefour et E.Leclerc déduisent le lien du
-   catalogue marchand ouvert.
-3. Cliquez sur **Ajouter ce point de retrait**. Le serveur le géolocalise et l’enregistre dans sa
-   base. Actualisez le comparateur, cherchez le lieu en mode **Données réelles**, puis lancez
-   une comparaison. Le même point de retrait est disponible pour tous les visiteurs du serveur.
-
-Chaque point s’ajoute une fois. L’extension vérifie la référence marchande active avant de relever
-les prix. Le point doit proposer le retrait et la recherche de produits en ligne.
 
 ## Importer les relevés existants
 

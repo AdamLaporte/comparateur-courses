@@ -13,7 +13,7 @@ from app.config import Reglages
 ROUTES_COLLECTE = re.compile(
     r"/api/drives/(?:(?:coursesu|intermarche|carrefour|leclerc)-[a-z0-9_-]+/(?:connexion|prendre)"
     r"|enseignes/(?:coursesu|intermarche|carrefour|leclerc)"
-    r"/(?:connexion|prendre|points-retrait|inscrire-point-retrait)"
+    r"/(?:connexion|prendre|points-retrait)"
     r"|taches/[0-9]+/depot)"
 )
 

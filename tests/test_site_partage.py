@@ -138,18 +138,6 @@ def test_site_partage_protege_le_site_et_revoque_jeton(reglages):
         assert visiteur.post(catalogue, headers=EDGE_RAPHAEL).status_code == 401
         points = visiteur.post(catalogue, headers=EDGE_ADAM).json()
         assert any(point["id"] == "hyperu-guichen" for point in points)
-        inscription = {
-            "reference": "36163",
-            "libelle": "Hyper U Guichen",
-            "accueil": "https://www.coursesu.com/drive-hyperu-guichen",
-            "code_postal": "35580",
-            "adresse": "11 rue Louis Ampère",
-        }
-        inscrire = f"{API}/enseignes/coursesu/inscrire-point-retrait"
-        assert visiteur.post(inscrire, headers=EDGE_RAPHAEL, json=inscription).status_code == 401
-        assert visiteur.post(inscrire, headers=EDGE_ADAM, json=inscription).json()["id"] == (
-            "hyperu-guichen"
-        )
         assert (
             visiteur.post(f"{API}/enseignes/coursesu/prendre", headers=EDGE_RAPHAEL).status_code
             == 401

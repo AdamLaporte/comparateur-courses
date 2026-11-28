@@ -9,7 +9,6 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app import db
-from app.drives.catalogue import inscrire
 from app.drives.modeles import DRIVES
 from app.main import creer_app
 
@@ -88,23 +87,14 @@ def test_page_des_magasins_en_mode_reel(site):
     assert "osm" not in " ".join(re.findall(r'data-magasin="([^"]+)"', page))
 
 
-def test_drives_geolocalises_sans_osm_et_sans_doublon(site, reglages, monkeypatch, tmp_path):
+def test_drives_geolocalises_sans_osm(site, monkeypatch, tmp_path):
     monkeypatch.setattr("app.magasins.service.FICHIER_OSM", tmp_path / "osm-absent.json")
-    drive = "leclerc-retrait-113511"
-    point = DRIVES[drive].model_copy(update={"nom": "Drive de Ker Lann enregistré dans Edge"})
-    inscrire(reglages.db_path, drive, point)
-
     site.post("/mode-donnees", data={"mode": "reel"})
     reponse = site.get("/magasins", params={"code_postal": "35170", "rayon_km": 5})
     assert reponse.status_code == 200
     assert "Carrefour Drive Chartres-de-Bretagne" in reponse.text
-    assert point.nom in reponse.text
-    assert "E.Leclerc Drive Bruz – Ker Lann" not in reponse.text
-    points = site.post(
-        "/api/drives/enseignes/leclerc/points-retrait",
-        headers={"X-Drives-Jeton": reglages.drives_jeton},
-    ).json()
-    assert [p["nom"] for p in points if p["reference"] == "113511"] == [point.nom]
+    assert "E.Leclerc Drive Bruz – Ker Lann" in reponse.text
+    assert "Un magasin manque" not in reponse.text
 
 
 def test_retour_en_demo(site, reglages):

@@ -4,7 +4,6 @@ from pathlib import Path
 
 from app import db
 from app.config import Reglages
-from app.drives.catalogue import points_inscrits
 from app.drives.modeles import DRIVES, ProduitObserve, normaliser
 from app.drives.service import observer
 
@@ -19,13 +18,12 @@ def importer(chemin_db: Path, chemin_csv: Path) -> tuple[int, int]:
         if not requis.issubset(lecteur.fieldnames or []):
             raise ValueError("L'en-tête du CSV est incomplet.")
         avant = cnx.execute("SELECT count(*) FROM drive_observation").fetchone()[0]
-        points = {**points_inscrits(cnx), **DRIVES}
         total = 0
         for ligne in lecteur:
             try:
                 drive = next(
                     d
-                    for d, point in points.items()
+                    for d, point in DRIVES.items()
                     if d.split("-", 1)[1] == ligne["service_drive"].strip()
                     and normaliser(point.nom) == normaliser(ligne["drive"])
                 )

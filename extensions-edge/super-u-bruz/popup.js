@@ -7,9 +7,6 @@ import { lirePage } from "./navigation.js";
 const byId = (id) => document.getElementById(id);
 const form = byId("form");
 const fields = form.elements;
-const formMagasin = byId("form-magasin");
-const ajoutStatut = byId("ajout-statut");
-let magasinDetecte = null;
 let rows = [];
 let listing = [];
 let busy = false;
@@ -115,8 +112,7 @@ byId("read").addEventListener("click", async () => {
     });
     const point = points.find((candidat) => candidat.id === lecture.result.retrait);
     if (!point) {
-      byId("ajout-magasin").open = true;
-      return status("Point de retrait non reconnu. Ajoute le magasin actif ou vérifie la connexion au comparateur.", true);
+      return status("Point de retrait non reconnu. Vérifie le magasin choisi ou la connexion au comparateur.", true);
     }
     const target = { tabId: tab.id, documentIds: [lecture.documentId] };
     const [{ result }] = await chrome.scripting.executeScript({
@@ -141,86 +137,6 @@ byId("read").addEventListener("click", async () => {
   } finally {
     busy = false;
     update();
-  }
-});
-async function lireMagasinActif() {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!matchesSite(tab?.url)) return null;
-  const [{ result }] = await chrome.scripting.executeScript({
-    target: { tabId: tab.id }, func: lirePage, args: [drive.adapter, "", false, []],
-  });
-  return result;
-}
-byId("detecter-magasin").addEventListener("click", async (event) => {
-  const bouton = event.currentTarget;
-  bouton.disabled = true;
-  formMagasin.hidden = true;
-  formMagasin.reset();
-  magasinDetecte = null;
-  ajoutStatut.textContent = "Détection du magasin actif…";
-  try {
-    const resultat = await lireMagasinActif();
-    if (!resultat?.reference) {
-      ajoutStatut.textContent = "Retrait introuvable. Choisis un magasin sur le site marchand et ouvre son catalogue.";
-      return;
-    }
-    magasinDetecte = resultat;
-    formMagasin.elements.accueil.value = resultat.accueil;
-    formMagasin.elements.codePostal.value = resultat.codePostal;
-    ajoutStatut.textContent = `Retrait détecté — ${resultat.libelle}. Renseigne son adresse.`;
-    formMagasin.hidden = false;
-  } catch {
-    ajoutStatut.textContent = "Lecture impossible. Réessaie depuis le site marchand.";
-  } finally {
-    bouton.disabled = false;
-  }
-});
-formMagasin.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  if (!magasinDetecte) return;
-  const bouton = event.submitter;
-  bouton.disabled = true;
-  byId("detecter-magasin").disabled = true;
-  ajoutStatut.textContent = "Enregistrement du retrait…";
-  try {
-    const { jeton, adresseServeur } = await chrome.storage.local.get(["jeton", "adresseServeur"]);
-    if (!jeton) {
-      ajoutStatut.textContent = "Configure d’abord la connexion au comparateur.";
-      return;
-    }
-    const actuel = await lireMagasinActif();
-    if (actuel?.reference !== magasinDetecte.reference) {
-      ajoutStatut.textContent = "Le retrait actif a changé. Relance la détection.";
-      formMagasin.hidden = true;
-      magasinDetecte = null;
-      return;
-    }
-    const champs = formMagasin.elements;
-    const reponse = await appelerApi(
-      adresseServeur, `/enseignes/${drive.enseigneId}/inscrire-point-retrait`, jeton,
-      {
-        reference: actuel.reference,
-        libelle: actuel.libelle,
-        accueil: champs.accueil.value.trim(),
-        adresse: champs.adresse.value.trim(),
-        code_postal: champs.codePostal.value.trim(),
-      },
-    );
-    if (!reponse.ok) {
-      const erreur = await reponse.json().catch(() => ({}));
-      ajoutStatut.textContent = typeof erreur.detail === "string"
-        ? erreur.detail : "Vérifie le lien et l’adresse du magasin, puis réessaie.";
-      return;
-    }
-    const point = await reponse.json();
-    ajoutStatut.textContent = `${point.nom} est disponible en mode Données réelles.`;
-    formMagasin.hidden = true;
-    magasinDetecte = null;
-  } catch {
-    ajoutStatut.textContent = "Impossible de joindre le comparateur.";
-  } finally {
-    bouton.disabled = false;
-    byId("detecter-magasin").disabled = false;
   }
 });
 byId("items").addEventListener("change", (event) => fillItem(listing[Number(event.target.value)]));

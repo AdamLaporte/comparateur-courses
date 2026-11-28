@@ -26,12 +26,6 @@ DOMAINES = {
     "carrefour": ("carrefour.fr",),
     "leclerc": ("leclercdrive.fr",),
 }
-REFERENCES = {
-    "coursesu": r"[0-9]{1,12}",
-    "intermarche": r"[0-9]{5}(?:_[0-9]{1,8})?",
-    "carrefour": r"[0-9]{1,12}",
-    "leclerc": r"[0-9]{6}",
-}
 
 
 class PointRetrait(BaseModel):
@@ -47,15 +41,9 @@ class PointRetrait(BaseModel):
 
 
 def valider_drive(drive: str) -> str:
-    if not identifiant_drive_valide(drive):
+    if drive not in DRIVES:
         raise PydanticCustomError("drive_inconnu", "Point de retrait non répertorié.")
     return drive
-
-
-def identifiant_drive_valide(drive: str) -> bool:
-    enseigne, _, reference = drive.partition("-retrait-")
-    format_reference = REFERENCES.get(enseigne)
-    return drive in DRIVES or bool(format_reference and re.fullmatch(format_reference, reference))
 
 
 DriveId = Annotated[str, AfterValidator(valider_drive)]
@@ -143,32 +131,6 @@ def point_collecteur(drive: DriveId, point: PointRetrait) -> dict:
         "nom": point.nom,
         "adresse": f"{point.adresse}, {point.code_postal} {point.ville}",
     }
-
-
-class InscriptionRetrait(BaseModel):
-    reference: Annotated[str, StringConstraints(pattern=r"^[0-9]{1,12}(?:_[0-9]{1,8})?$")]
-    libelle: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
-    accueil: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=400)]
-    adresse: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
-    code_postal: Annotated[str, StringConstraints(pattern=r"^[0-9]{5}$")]
-
-    def identifiant(self, enseigne: EnseigneDrive) -> str:
-        if not re.fullmatch(REFERENCES[enseigne], self.reference):
-            raise ValueError("Référence marchande invalide.")
-        return f"{enseigne}-retrait-{self.reference}"
-
-    def accueil_canonique(self, enseigne: EnseigneDrive) -> str:
-        accueil = url_marchande(self.identifiant(enseigne), self.accueil)
-        chemin = urlsplit(accueil).path.rstrip("/")
-        attendus = {
-            "intermarche": rf"/magasins/{self.reference}/[^/\s]+-{self.code_postal}/infos-pratiques",
-            "coursesu": r"/drive-(?:hyperu|superu|uexpress|utile)-[a-z0-9-]+",
-            "carrefour": rf"/set-store/{self.reference}",
-            "leclerc": rf"/magasin-{self.reference}-[^/\s]+\.aspx",
-        }
-        if not re.fullmatch(attendus[enseigne], chemin, flags=re.I):
-            raise ValueError("Adresse de la page du magasin invalide.")
-        return accueil
 
 
 def date_tri(releve_le: str) -> str:

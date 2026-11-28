@@ -18,7 +18,7 @@ from itertools import chain
 
 from app.config import Reglages
 from app.contrats import Enseigne, Magasin, MagasinsReponse, Position
-from app.drives.catalogue import magasin_retrait, magasins_inscrits
+from app.drives.catalogue import magasin_retrait
 from app.drives.modeles import DRIVES, DRIVES_OSM
 from app.magasins.geocodage import geocoder
 from app.magasins.import_osm import FICHIER as FICHIER_OSM
@@ -136,12 +136,11 @@ async def magasins_proches(
             if FICHIER_OSM.exists()
             else _magasins_initiaux()
         )
-        drives: dict[Enseigne, dict[str, Magasin]] = {e: {} for e in sources}
-        inscrits = await asyncio.to_thread(magasins_inscrits, reglages.db_path)
-        for magasin in chain(initiaux, inscrits):
-            if magasin.enseigne in drives:
-                drives[magasin.enseigne][magasin.id] = magasin
-        listes = [_garder_proches(ms.values(), position, rayon, maximum) for ms in drives.values()]
+        drives = list(initiaux)
+        listes = [
+            _garder_proches((m for m in drives if m.enseigne == e), position, rayon, maximum)
+            for e in sources
+        ]
     elif reglages.magasins_osm and FICHIER_OSM.exists():
         tous = magasins_osm()
         listes = [_garder_proches(tous[e], position, rayon, maximum) for e in sources]

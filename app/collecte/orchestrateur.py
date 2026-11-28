@@ -27,7 +27,7 @@ from app.contrats import (
     TypeSource,
 )
 from app.drives.comparaison import relever_ligne
-from app.drives.modeles import DriveId, identifiant_drive_valide
+from app.drives.modeles import DRIVES, DriveId
 from app.sources.base import SourceIndisponible, SourcePrix
 
 logger = logging.getLogger(__name__)
@@ -98,7 +98,7 @@ async def collecter(
     magasins_par_enseigne: dict[Enseigne, list[Magasin]] = defaultdict(list)
     drives: list[DriveId] = []
     for magasin in magasins:
-        if drives_par_edge and identifiant_drive_valide(magasin.id):
+        if drives_par_edge and magasin.id in DRIVES:
             drives.append(magasin.id)
         else:
             magasins_par_enseigne[magasin.enseigne].append(magasin)

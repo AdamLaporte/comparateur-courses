@@ -61,15 +61,19 @@ def _singulier(mot: str) -> str:
 
 
 def a_pour_sujet(offre: Prix, recherche: str) -> bool:
+    return est_le_sujet(offre.produit.libelle, offre.produit.marque, recherche)
+
+
+def est_le_sujet(libelle: str, marque: str | None, recherche: str) -> bool:
     """Le premier mot important du nom (sans la marque) commence comme le premier mot cherché."""
     cherches = [m for m in normaliser(recherche).split() if m not in _PAS_SUJET and not m.isdigit()]
     if not cherches:
         return True
-    marque = set(normaliser(offre.produit.marque).split())
+    mots_marque = set(normaliser(marque).split())
     mots = [
         m
-        for m in normaliser(offre.produit.libelle).split()
-        if m not in _PAS_SUJET and m not in marque and not any(c.isdigit() for c in m)
+        for m in normaliser(libelle).split()
+        if m not in _PAS_SUJET and m not in mots_marque and not any(c.isdigit() for c in m)
     ]
     return bool(mots) and _singulier(mots[0]).startswith(_singulier(cherches[0]))
 

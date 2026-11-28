@@ -145,14 +145,6 @@
     etat.textContent += "; " + affecterMagasin("33315");
     verifier(!lireU("u", "", false, [bruzU, guichen]).retrait, "Sélection ambiguë refusée");
 
-    history.replaceState(null, "", "/drive-uexpress-parisoberkampf");
-    etat.textContent = affecterMagasin("72554");
-    resultats.innerHTML = "<h1>Bienvenue au drive U Express PARIS Oberkampf</h1>";
-    const nouveauU = lireU("u", "", false, []);
-    verifier(nouveauU.reference === "72554" && nouveauU.libelle === "U Express PARIS Oberkampf"
-      && new URL(nouveauU.accueil).pathname === "/drive-uexpress-parisoberkampf",
-      "Identification d’un magasin U absent du catalogue");
-
     history.replaceState(null, "", "/recherche/lait");
     entete.innerHTML = '<button id="headerStoreName">Bruz</button>';
     const hydrater = (ref) => {
@@ -186,14 +178,6 @@
       "Le relevé manuel retrouve Rennes Gayeulles dans le catalogue");
     hydrater("06994_2");
     verifier(lireRetraitInter(gayeulles).retrait !== "06994", "Autre point de retrait à Rennes");
-    history.replaceState(null, "", "/magasins/10348/grigny-sur-rhone-69520/infos-pratiques");
-    entete.querySelector("#headerStoreName").textContent = "Super Grigny";
-    hydrater("10348");
-    const nouveauInter = lireInter("intermarche", "", false, []);
-    verifier(nouveauInter.reference === "10348" && nouveauInter.libelle === "Super Grigny"
-      && nouveauInter.codePostal === "69520", "Identification d’un Intermarché absent du catalogue");
-    entete.querySelector("#headerStoreName").textContent = "Livraison";
-    verifier(!lireInter("intermarche", "", false, []).reference, "Inscription en livraison refusée");
     history.replaceState(null, "", "/recherche/lait");
     entete.querySelector("#headerStoreName").textContent = "Bruz";
     hydrater("05052");
