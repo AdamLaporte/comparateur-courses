@@ -34,7 +34,8 @@ def _taches(reglages) -> int:
 
 def test_demo_par_defaut_tous_les_magasins_prix_fictifs_sans_edge(site, reglages):
     page = site.get("/").text
-    assert "Passer aux données réelles" in page and "Données fictives" in page
+    assert "Passer aux données réelles" in page and "mode-pastille mode-demo" in page
+    assert "bandeau-fictif" not in page  # plus de bandeau : le bouton est dans le menu
 
     _preparer(site)
     magasins = _magasins_affiches(site)

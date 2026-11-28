@@ -474,7 +474,7 @@ et déposent leurs observations dans cette base. Un bail est lié au jeton qui a
 
 ## 17. Mode des données : démo ou réelles
 
-Chaque visiteur choisit le mode dans le bandeau du site (`app/mode_donnees.py`, clé de session `mode_donnees` ;
+Chaque visiteur choisit le mode dans le menu du site (`app/mode_donnees.py`, clé de session `mode_donnees` ;
 défaut : `MODE_DONNEES_DEFAUT`, « demo »).
 
 | | Démo | Données réelles |

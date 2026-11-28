@@ -49,7 +49,7 @@ Pour utiliser une seule base depuis plusieurs PC, voir le
 3. Sur Windows, ajoutez `DRIVES_DEMARRER_EDGE=true` dans `.env` et redémarrez le serveur si vous
    souhaitez qu’il ouvre Edge quand le collecteur ne répond pas. Chaque extension ouvre son propre
    onglet marchand quand une demande arrive.
-4. Sélectionnez **Données réelles** dans le bandeau. Depuis l’accueil, saisissez **35170** pour Bruz,
+4. Sélectionnez **Données réelles** dans le menu. Depuis l’accueil, saisissez **35170** pour Bruz,
    **35580** pour Guichen ou **35700** pour Rennes Gayeulles. Cliquez sur **Composer ma liste**,
    ajoutez par exemple **lait Lactel**, puis cliquez sur **Comparer**.
    Un nouveau relevé peut attendre jusqu’à 30 secondes avant le prochain réveil de l’extension,
