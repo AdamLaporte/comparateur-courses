@@ -2,6 +2,8 @@
 (drives répertoriés seulement, relevés Edge, rien de fictif)."""
 
 import re
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import pytest
 from fastapi.testclient import TestClient
@@ -48,7 +50,8 @@ def test_demo_par_defaut_tous_les_magasins_prix_fictifs_sans_edge(site, reglages
     assert any(m not in DRIVES for m in magasins)  # … avec les autres magasins
 
     flux = site.get("/panier/prix/flux").text
-    assert "Relevé en magasin" in flux  # drives compris : prix fictifs…
+    aujourdhui = datetime.now(ZoneInfo("Europe/Paris")).strftime("%d/%m/%Y")
+    assert f'<span class="source">{aujourdhui}</span>' in flux  # drives compris : prix fictifs…
     assert "fictif" not in flux.lower()  # … mais rien ne l'indique à l'écran
     assert "Recherche sur le drive" not in flux
     assert _taches(reglages) == 0  # aucune requête aux extensions Edge
@@ -67,8 +70,7 @@ def test_reel_seulement_les_drives_releves_edge_rien_de_fictif(site, reglages):
     assert magasins and magasins <= set(DRIVES)  # seulement des drives répertoriés
     assert {"carrefour-retrait-267", "leclerc-retrait-113511"} <= magasins
 
-    flux = site.get("/panier/prix/flux").text
-    assert "Relevé en magasin" not in flux  # aucun prix de la source fictive
+    site.get("/panier/prix/flux")  # lance la comparaison
     assert _taches(reglages) > 0  # une recherche a été demandée aux extensions
     for enseigne, reference in (("carrefour", "267"), ("leclerc", "113511")):
         tache = site.post(

@@ -214,9 +214,8 @@ def test_parcours_html_et_flux_sse(client):
     assert texte.count("event: total-") == 2 * 8
     assert "event: resume" in texte
     assert texte.rstrip().endswith("data: fin")
-    assert "Relevé en magasin" in texte
     aujourdhui = datetime.now(ZoneInfo("Europe/Paris")).strftime("%d/%m/%Y")
-    assert f"Relevé en magasin · {aujourdhui}" in " ".join(texte.split())  # la date, pas l'heure
+    assert f'<span class="source">{aujourdhui}</span>' in texte  # sous le prix : la date seule
     assert "fictif" not in texte.lower()  # mode démo : rien n'indique des prix fictifs
 
 

@@ -445,7 +445,7 @@ def test_panier_collecte_uniquement_le_drive_manquant(edge, reglages, monkeypatc
         assert succes(client, tache, produit(prix_eur="1.50")).status_code == 204
         flux = comparaison.result(timeout=5).text
     assert "En attente" in flux or "Relevé en attente" in flux
-    assert "CSV · 27/11/2026" in flux
+    assert '<span class="source">27/11/2026</span>' in flux  # la date seule
     assert "2e à −50 % avec la carte" in flux
     assert f"event: total-{U}" in flux and 'data-centimes="300" data-complet="1"' in flux
     assert "event: fin" in flux
@@ -470,7 +470,7 @@ def test_panier_prix_ancien_et_extension_absente(edge, reglages, monkeypatch):
     _panier(client, reglages)
     flux = client.get("/panier/prix/flux").text
     assert "L’extension de collecte Edge ne répond pas" in flux
-    assert "Dernier prix connu · CSV · 24/11/2026" in flux
+    assert '<span class="source">24/11/2026</span>' in flux  # date du relevé d'origine
     assert demarrages
     assert prendre(client, U)
     assert prendre(client, INTER)

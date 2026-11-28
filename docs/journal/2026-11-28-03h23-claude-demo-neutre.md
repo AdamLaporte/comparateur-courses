@@ -9,7 +9,9 @@
 - En mode démo, l'écran ne montre plus que les prix sont fictifs : libellé « Relevé en magasin », marques et
   magasins sans « (fictif) », adresses plausibles, identifiants `m12345` au lieu de `fictif-12345`, plus de note
   « contient des prix fictifs » dans le résumé, plus de couleur spéciale sur la source.
-- Les prix de démo affichent la date du jour (« 28/11/2026 »), comme un relevé importé, au lieu de l'heure.
+- Les prix de démo portent la date du jour (« 28/11/2026 »), comme un relevé importé.
+- Sous chaque prix (tous modes), seulement le jour du relevé : plus de source ni d'heure (filtre `jour` ajouté
+  dans `app/gabarits.py`, `app/templates/panier/_case.html`). Remarques comme « Dernier prix connu » retirées de la case.
 - Page Compte, « Options de démonstration » : un seul bouton, « Passer en démo » / « Quitter la démo ».
 - Le marquage interne reste : `est_fictif=True` et `source=FICTIVE` (pas de cache, pas de mélange, pas d'Open Prices).
 - Tests adaptés : en démo, ni le flux SSE ni la page Compte ne contiennent « fictif ».

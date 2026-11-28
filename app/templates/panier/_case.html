@@ -15,9 +15,7 @@
   {% if ligne.mode.value != "produit" %}
   <span class="produit">{{ p.produit.libelle }}{% if p.produit.marque %} · {{ p.produit.marque }}{% endif %}{% if p.produit.quantite %} · {{ p.produit.quantite }}{% endif %}</span>
   {% endif %}
-  <span class="source">
-    {{ p.source_detail }} · {% if p.date_releve_source %}{{ p.date_releve_source.strftime("%d/%m/%Y") }}{% else %}{{ p.releve_le | releve }}{% endif %}{% if resultat.remarque %} · {{ resultat.remarque }}{% endif %}
-  </span>
+  <span class="source">{{ jour(p) }}</span>
 </div>
 {% elif resultat.statut.value == "en_attente" %}
 <span class="recherche-drive"><span class="tourne" aria-hidden="true"></span>Recherche sur le drive {{ magasin.nom }}… {{ resultat.remarque }}</span>

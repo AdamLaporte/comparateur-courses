@@ -37,6 +37,16 @@ def releve(moment: datetime | None) -> str:
     return local.strftime("%d/%m %H:%M")
 
 
+def jour(prix) -> str:
+    """Jour du relevé d'un prix, à Paris : « 28/11/2026 » (jamais l'heure)."""
+    if prix.date_releve_source:
+        return prix.date_releve_source.strftime("%d/%m/%Y")
+    moment = prix.releve_le
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=UTC)
+    return moment.astimezone(PARIS).strftime("%d/%m/%Y")
+
+
 def etiquette(centimes: int | None) -> Markup:
     """Grand prix façon étiquette de rayon : 1234 → 12 en gros, « ,34 € » en petit."""
     if centimes is None:
@@ -52,6 +62,7 @@ def etiquette(centimes: int | None) -> Markup:
 templates.env.filters["euros"] = euros
 templates.env.filters["releve"] = releve
 templates.env.filters["etiquette"] = etiquette
+templates.env.globals["jour"] = jour
 
 
 DOSSIER_STATIQUE = Path(__file__).resolve().parent / "static"

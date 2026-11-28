@@ -34,7 +34,7 @@ from app.contrats import (
 from app.sources.base import SourcePrix
 
 LIBELLE_SOURCE = "Données fictives"  # nom interne de la source (journaux), jamais affiché
-LIBELLE_AFFICHE = "Relevé en magasin"  # ce que voit le visiteur en mode démo
+LIBELLE_AFFICHE = "Relevé en magasin"  # source_detail (API) ; l'écran n'affiche que la date
 
 
 @dataclass(frozen=True)

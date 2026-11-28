@@ -126,11 +126,12 @@ propres.
 - **Tables SQLite** : chaque fonctionnalité déclare les siennes (`CREATE TABLE IF NOT EXISTS`) dans son module.
 - **Tests** : `tests/test_<fonctionnalite>.py`. **Aucun appel réseau dans les tests** : on utilise la source fictive
   ou des réponses enregistrées dans `tests/donnees/`.
-- **Affichage des prix** : chaque prix indique sa source et l'heure du relevé. Jamais d'erreur brute affichée à
-  l'utilisateur.
+- **Affichage des prix** : sous chaque prix, seulement le **jour du relevé** (« 28/11/2026 », jamais l'heure) ;
+  l'enseigne se lit dans la colonne du magasin. La source détaillée reste dans `source_detail` (API JSON). Jamais
+  d'erreur brute affichée à l'utilisateur.
 - **Données fictives (mode démo)** : toujours marquées **en interne** (`est_fictif=True`, `source=TypeSource.FICTIVE`) :
   jamais en cache, jamais mêlées aux prix réels, jamais envoyées à Open Prices. **À l'écran, rien ne les distingue** :
-  libellé neutre « Relevé en magasin », marques et magasins sans mention « fictif » (décision du 28/11). Seul le
+  date du jour sous le prix, marques et magasins sans mention « fictif » (décision du 28/11). Seul le
   bouton « Passer en démo » / « Quitter la démo » (page Compte, « Options de démonstration ») signale le mode.
 
 ## Git
