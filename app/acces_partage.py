@@ -11,8 +11,9 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 from app.config import Reglages
 
 ROUTES_COLLECTE = re.compile(
-    r"/api/drives/(?:(?:(?:coursesu|intermarche)-[a-z0-9_-]+|enseignes/(?:coursesu|intermarche))"
-    r"/(?:connexion|prendre)|taches/[0-9]+/depot)"
+    r"/api/drives/(?:(?:coursesu|intermarche)-[a-z0-9_-]+/(?:connexion|prendre)"
+    r"|enseignes/(?:coursesu|intermarche)/(?:connexion|prendre|points-retrait|inscrire-point-retrait)"
+    r"|taches/[0-9]+/depot)"
 )
 
 

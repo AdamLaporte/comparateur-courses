@@ -10,5 +10,5 @@ export const drive = {
     "intermarche.com",
     "intermarche.fr"
   ],
-  "store": "^(Bruz|Super Bruz(?: Cap Vert)?)$"
+  "libelles": ["Bruz", "Super Bruz", "Super Bruz Cap Vert"]
 };

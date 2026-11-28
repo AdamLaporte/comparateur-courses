@@ -21,12 +21,12 @@
   const etat = document.querySelector("#etat-marchand");
   const rapport = document.querySelector("#rapport");
   const bruzU = { id: "33315", libelles: ["Super U Bruz"] };
-  const guichen = { id: "hyperu-guichen", libelles: ["Hyper U Guichen"] };
+  const guichen = { id: "hyperu-guichen", reference: "36163", libelles: ["Hyper U Guichen"] };
   const bruzInter = { id: "05052", libelles: ["Bruz"] };
   const gayeulles = { id: "06994", libelles: ["Rennes", "Super Rennes"] };
   const lireRetraitU = (requete, soumettre = false, point = bruzU) =>
-    lireU("u", requete, soumettre, point);
-  const lireRetraitInter = (point = bruzInter) => lireInter("intermarche", "lait", false, point);
+    lireU("u", requete, soumettre, [point]);
+  const lireRetraitInter = (point = bruzInter) => lireInter("intermarche", "lait", false, [point]);
 
   window.addEventListener("load", tester, { once: true });
 
@@ -54,6 +54,24 @@
     entete.firstElementChild.textContent = "Hyper U Guichen";
     verifier(lireRetraitU("lait").retrait === "", "Guichen ne doit pas être pris pour Bruz");
     verifier(lireRetraitU("lait", false, guichen).retrait === "hyperu-guichen", "Retrait Hyper U Guichen");
+    const affecterMagasin = (id) => ["window.COOPU", "storeID"].join(".") + ' = "' + id + '"';
+    etat.textContent = affecterMagasin("33315");
+    verifier(lireRetraitU("lait", false, guichen).retrait === "", "Le numéro prime sur le libellé");
+    entete.firstElementChild.hidden = true;
+    etat.textContent = affecterMagasin("36163");
+    verifier(lireRetraitU("lait", true, guichen).retrait === "hyperu-guichen", "Guichen en arrière-plan");
+    verifier(lireU("u", "", false, [bruzU, guichen]).retrait === "hyperu-guichen",
+      "Le relevé manuel retrouve Guichen dans le catalogue");
+    etat.textContent += "; " + affecterMagasin("33315");
+    verifier(!lireU("u", "", false, [bruzU, guichen]).retrait, "Sélection ambiguë refusée");
+
+    history.replaceState(null, "", "/drive-uexpress-parisoberkampf");
+    etat.textContent = affecterMagasin("72554");
+    resultats.innerHTML = "<h1>Bienvenue au drive U Express PARIS Oberkampf</h1>";
+    const nouveauU = lireU("u", "", false, []);
+    verifier(nouveauU.reference === "72554" && nouveauU.libelle === "U Express PARIS Oberkampf"
+      && new URL(nouveauU.accueil).pathname === "/drive-uexpress-parisoberkampf",
+      "Identification d’un magasin U absent du catalogue");
 
     history.replaceState(null, "", "/recherche/lait");
     entete.innerHTML = '<button id="headerStoreName">Bruz</button>';
@@ -84,8 +102,19 @@
     entete.querySelector("#headerStoreName").textContent = "Super Rennes";
     hydrater("06994");
     verifier(lireRetraitInter(gayeulles).retrait === "06994", "Retrait Rennes Gayeulles");
+    verifier(lireInter("intermarche", "", false, [bruzInter, gayeulles]).retrait === "06994",
+      "Le relevé manuel retrouve Rennes Gayeulles dans le catalogue");
     hydrater("06994_2");
     verifier(lireRetraitInter(gayeulles).retrait !== "06994", "Autre point de retrait à Rennes");
+    history.replaceState(null, "", "/magasins/10348/grigny-sur-rhone-69520/infos-pratiques");
+    entete.querySelector("#headerStoreName").textContent = "Super Grigny";
+    hydrater("10348");
+    const nouveauInter = lireInter("intermarche", "", false, []);
+    verifier(nouveauInter.reference === "10348" && nouveauInter.libelle === "Super Grigny"
+      && nouveauInter.codePostal === "69520", "Identification d’un Intermarché absent du catalogue");
+    entete.querySelector("#headerStoreName").textContent = "Livraison";
+    verifier(!lireInter("intermarche", "", false, []).reference, "Inscription en livraison refusée");
+    history.replaceState(null, "", "/recherche/lait");
     entete.querySelector("#headerStoreName").textContent = "Bruz";
     hydrater("05052");
     resultats.innerHTML = "<p>Chargement en cours</p>";

@@ -2,14 +2,18 @@ import { extractProductPage } from "./extract.js";
 import { csv, price, validEan } from "./csv.js";
 import { drive } from "./drive.js";
 import { appelerApi, normaliserOrigine, origineLocale } from "./connexion.js";
+import { lirePage } from "./navigation.js";
 
 const byId = (id) => document.getElementById(id);
 const form = byId("form");
 const fields = form.elements;
+const formMagasin = byId("form-magasin");
+const ajoutStatut = byId("ajout-statut");
+let magasinDetecte = null;
 let rows = [];
 let listing = [];
 let busy = false;
-let verified = false;
+let pointLu = null;
 let rayon = "";
 
 function status(message, error = false) {
@@ -20,14 +24,26 @@ function update() {
   byId("count").textContent = rows.length + " relevé" + (rows.length > 1 ? "s" : "");
   byId("export").disabled = busy || !rows.length;
   byId("read").disabled = busy;
-  byId("save-list").disabled = busy || !verified;
-  byId("single").disabled = busy || !verified;
+  byId("save-list").disabled = busy || !pointLu;
+  byId("single").disabled = busy || !pointLu;
 }
 function matchesSite(url) {
   try {
     const { hostname, protocol } = new URL(url);
     return protocol === "https:" && drive.domains.some((domain) => hostname === domain || hostname.endsWith("." + domain));
   } catch { return false; }
+}
+async function pointsRepertories() {
+  const { jeton, adresseServeur } = await chrome.storage.local.get(["jeton", "adresseServeur"]);
+  if (jeton) {
+    try {
+      const reponse = await appelerApi(adresseServeur, `/enseignes/${drive.enseigneId}/points-retrait`, jeton);
+      if (reponse.ok) return await reponse.json();
+    } catch {
+      // Le relevé Bruz et son export restent utilisables hors connexion.
+    }
+  }
+  return [{ id: drive.id, nom: drive.name, adresse: drive.address, libelles: drive.libelles }];
 }
 function fillItem(item) {
   for (const key of ["produit", "prix_eur", "ean", "marque", "format", "promos", "url"]) {
@@ -46,10 +62,11 @@ function showListing(items) {
   fillItem(items[0] || {});
 }
 function rowKey(row) {
-  return row.id_produit_source || row.ean || row.url + "|" + row.produit + "|" + row.format;
+  const produit = row.id_produit_source || row.ean || row.url + "|" + row.produit + "|" + row.format;
+  return row.service_drive + "|" + produit;
 }
 async function save(items) {
-  if (busy || !verified) return;
+  if (busy || !pointLu) return;
   if (!fields.confirme.checked) return status("Confirme le drive et les prix avant d’enregistrer.", true);
   busy = true;
   update();
@@ -64,8 +81,8 @@ async function save(items) {
       }
       const row = {
         ...item, prix_eur: amount, ean: validEan(item.ean) ? item.ean : "",
-        enseigne: drive.enseigne, drive: drive.name, adresse: drive.address,
-        service_drive: drive.id, rayon, releve_le: date, source: "releve_drive",
+        enseigne: drive.enseigne, drive: pointLu.nom, adresse: pointLu.adresse,
+        service_drive: pointLu.id, rayon, releve_le: date, source: "releve_drive",
       };
       next.set(rowKey(row), row);
     }
@@ -84,29 +101,126 @@ async function save(items) {
 }
 byId("read").addEventListener("click", async () => {
   if (busy) return;
-  verified = false;
+  pointLu = null;
+  byId("drive-lu").hidden = true;
   showListing([]);
   busy = true;
   update();
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!matchesSite(tab?.url)) return status("Ouvre le site marchand du drive indiqué.", true);
-    const [{ result }] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id }, func: extractProductPage, args: [drive.adapter],
+    if (!matchesSite(tab?.url)) return status("Ouvre le site marchand d’un point de retrait de l’enseigne.", true);
+    const points = await pointsRepertories();
+    const [lecture] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id }, func: lirePage, args: [drive.adapter, "", false, points],
     });
-    if (!result.store || !new RegExp(drive.store, "i").test(result.store)) {
-      return status("Drive attendu : " + drive.name + ". Drive affiché : " + (result.store || "non détecté") + ".", true);
+    const point = points.find((candidat) => candidat.id === lecture.result.retrait);
+    if (!point) {
+      byId("ajout-magasin").open = true;
+      return status("Point de retrait non reconnu. Ajoute le magasin actif ou vérifie la connexion au comparateur.", true);
+    }
+    const target = { tabId: tab.id, documentIds: [lecture.documentId] };
+    const [{ result }] = await chrome.scripting.executeScript({
+      target, func: extractProductPage, args: [drive.adapter],
+    });
+    const [{ result: verification }] = await chrome.scripting.executeScript({
+      target, func: lirePage, args: [drive.adapter, "", false, points],
+    });
+    if (verification.retrait !== point.id) {
+      return status("Le point de retrait a changé. Relance la lecture.", true);
     }
     if (!result.items.length) return status("Aucune carte avec prix. Ouvre un rayon ou des résultats de recherche.", true);
-    verified = true;
+    pointLu = point;
+    byId("drive-name").textContent = point.nom;
+    byId("drive-address").textContent = point.adresse;
+    byId("drive-lu").hidden = false;
     rayon = result.rayon;
     showListing(result.items);
-    status(result.items.length + " produits détectés. Drive affiché : " + result.store + ".");
+    status(result.items.length + " produits détectés.");
   } catch {
     status("Lecture impossible. Réessaie depuis un rayon du drive.", true);
   } finally {
     busy = false;
     update();
+  }
+});
+async function lireMagasinActif() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!matchesSite(tab?.url)) return null;
+  const [{ result }] = await chrome.scripting.executeScript({
+    target: { tabId: tab.id }, func: lirePage, args: [drive.adapter, "", false, []],
+  });
+  return result;
+}
+byId("detecter-magasin").addEventListener("click", async (event) => {
+  const bouton = event.currentTarget;
+  bouton.disabled = true;
+  formMagasin.hidden = true;
+  formMagasin.reset();
+  magasinDetecte = null;
+  ajoutStatut.textContent = "Détection du magasin actif…";
+  try {
+    const resultat = await lireMagasinActif();
+    if (!resultat?.reference) {
+      ajoutStatut.textContent = "Retrait introuvable. Choisis un magasin sur le site marchand et ouvre son catalogue.";
+      return;
+    }
+    magasinDetecte = resultat;
+    formMagasin.elements.accueil.value = resultat.accueil;
+    formMagasin.elements.codePostal.value = resultat.codePostal;
+    ajoutStatut.textContent = `Retrait détecté — ${resultat.libelle}. Renseigne son adresse.`;
+    formMagasin.hidden = false;
+  } catch {
+    ajoutStatut.textContent = "Lecture impossible. Réessaie depuis le site marchand.";
+  } finally {
+    bouton.disabled = false;
+  }
+});
+formMagasin.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!magasinDetecte) return;
+  const bouton = event.submitter;
+  bouton.disabled = true;
+  byId("detecter-magasin").disabled = true;
+  ajoutStatut.textContent = "Enregistrement du retrait…";
+  try {
+    const { jeton, adresseServeur } = await chrome.storage.local.get(["jeton", "adresseServeur"]);
+    if (!jeton) {
+      ajoutStatut.textContent = "Configure d’abord la connexion au comparateur.";
+      return;
+    }
+    const actuel = await lireMagasinActif();
+    if (actuel?.reference !== magasinDetecte.reference) {
+      ajoutStatut.textContent = "Le retrait actif a changé. Relance la détection.";
+      formMagasin.hidden = true;
+      magasinDetecte = null;
+      return;
+    }
+    const champs = formMagasin.elements;
+    const reponse = await appelerApi(
+      adresseServeur, `/enseignes/${drive.enseigneId}/inscrire-point-retrait`, jeton,
+      {
+        reference: actuel.reference,
+        libelle: actuel.libelle,
+        accueil: champs.accueil.value.trim(),
+        adresse: champs.adresse.value.trim(),
+        code_postal: champs.codePostal.value.trim(),
+      },
+    );
+    if (!reponse.ok) {
+      const erreur = await reponse.json().catch(() => ({}));
+      ajoutStatut.textContent = typeof erreur.detail === "string"
+        ? erreur.detail : "Vérifie le lien et l’adresse du magasin, puis réessaie.";
+      return;
+    }
+    const point = await reponse.json();
+    ajoutStatut.textContent = `${point.nom} est disponible en mode Données réelles.`;
+    formMagasin.hidden = true;
+    magasinDetecte = null;
+  } catch {
+    ajoutStatut.textContent = "Impossible de joindre le comparateur.";
+  } finally {
+    bouton.disabled = false;
+    byId("detecter-magasin").disabled = false;
   }
 });
 byId("items").addEventListener("change", (event) => fillItem(listing[Number(event.target.value)]));
@@ -123,12 +237,11 @@ byId("save-list").addEventListener("click", () => save(listing));
 byId("export").addEventListener("click", () => {
   const link = document.createElement("a");
   link.href = URL.createObjectURL(new Blob([csv(rows)], { type: "text/csv;charset=utf-8" }));
-  link.download = drive.slug + "_" + new Date().toISOString().slice(0, 10) + ".csv";
+  const prefixe = rows.every((row) => row.service_drive === drive.id) ? drive.slug : drive.enseigneId;
+  link.download = prefixe + "_" + new Date().toISOString().slice(0, 10) + ".csv";
   link.click();
   setTimeout(() => URL.revokeObjectURL(link.href), 1500);
 });
-byId("drive-name").textContent = drive.name;
-byId("drive-address").textContent = drive.address;
 const collecteStatut = byId("collecte-statut");
 chrome.storage.local.get(["jeton", "suspendu", "adresseServeur"]).then(({ jeton, suspendu, adresseServeur }) => {
   byId("adresse-serveur").value = adresseServeur || origineLocale;

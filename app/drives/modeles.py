@@ -21,23 +21,31 @@ from app.gabarits import PARIS
 
 EnseigneDrive = Literal["coursesu", "intermarche"]
 DOMAINES = {"coursesu": ("coursesu.com",), "intermarche": ("intermarche.com", "intermarche.fr")}
+REFERENCES = {"coursesu": r"[0-9]{1,12}", "intermarche": r"[0-9]{5}(?:_[0-9]{1,8})?"}
 
 
 class PointRetrait(BaseModel):
     nom: str
-    osm: str
+    osm: str = ""
     adresse: str
     ville: str
     code_postal: str
     accueil: str
     libelles: list[str]
     coordonnees: tuple[float, float] | None = None
+    reference: Annotated[str, StringConstraints(pattern=r"^\d+(?:_\d+)?$")] | None = None
 
 
 def valider_drive(drive: str) -> str:
-    if drive not in DRIVES:
+    if not identifiant_drive_valide(drive):
         raise PydanticCustomError("drive_inconnu", "Point de retrait non répertorié.")
     return drive
+
+
+def identifiant_drive_valide(drive: str) -> bool:
+    enseigne, _, reference = drive.partition("-retrait-")
+    format_reference = REFERENCES.get(enseigne)
+    return drive in DRIVES or bool(format_reference and re.fullmatch(format_reference, reference))
 
 
 DriveId = Annotated[str, AfterValidator(valider_drive)]
@@ -111,6 +119,42 @@ for identifiant, point in DRIVES.items():
         raise ValueError(f"Adresse de retrait non canonique : {identifiant}")
 
 DRIVES_OSM = {point.osm: drive for drive, point in DRIVES.items()}
+
+
+def point_collecteur(drive: DriveId, point: PointRetrait) -> dict:
+    identifiant = drive.split("-", 1)[1]
+    return {
+        "id": identifiant,
+        "reference": point.reference or identifiant,
+        "accueil": point.accueil,
+        "libelles": point.libelles,
+        "nom": point.nom,
+        "adresse": f"{point.adresse}, {point.code_postal} {point.ville}",
+    }
+
+
+class InscriptionRetrait(BaseModel):
+    reference: Annotated[str, StringConstraints(pattern=r"^[0-9]{1,12}(?:_[0-9]{1,8})?$")]
+    libelle: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
+    accueil: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=400)]
+    adresse: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
+    code_postal: Annotated[str, StringConstraints(pattern=r"^[0-9]{5}$")]
+
+    def identifiant(self, enseigne: EnseigneDrive) -> str:
+        if not re.fullmatch(REFERENCES[enseigne], self.reference):
+            raise ValueError("Référence marchande invalide.")
+        return f"{enseigne}-retrait-{self.reference}"
+
+    def accueil_canonique(self, enseigne: EnseigneDrive) -> str:
+        accueil = url_marchande(self.identifiant(enseigne), self.accueil)
+        chemin = urlsplit(accueil).path.rstrip("/")
+        if enseigne == "intermarche":
+            attendu = rf"/magasins/{self.reference}/[^/\s]+-{self.code_postal}/infos-pratiques"
+        else:
+            attendu = r"/drive-(?:hyperu|superu|uexpress|utile)-[a-z0-9-]+"
+        if not re.fullmatch(attendu, chemin, flags=re.I):
+            raise ValueError("Adresse de la page du magasin invalide.")
+        return accueil
 
 
 def date_tri(releve_le: str) -> str:

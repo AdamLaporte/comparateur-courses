@@ -18,6 +18,7 @@ from itertools import chain
 
 from app.config import Reglages
 from app.contrats import Enseigne, Magasin, MagasinsReponse, Position
+from app.drives.catalogue import magasins_inscrits
 from app.drives.modeles import DRIVES, DRIVES_OSM
 from app.magasins.geocodage import geocoder
 from app.magasins.import_osm import FICHIER as FICHIER_OSM
@@ -124,17 +125,17 @@ async def magasins_proches(
 ) -> MagasinsReponse:
     """Lève CodePostalInvalide ou CodePostalInconnu si le lieu ne convient pas.
 
-    `seulement_drives` (mode « données réelles ») : seulement les drives répertoriés, dont les prix sont
-    relevés par les extensions Edge (app/drives/points_retrait.json)."""
+    `seulement_drives` (mode « données réelles ») : seulement les points de retrait pris en charge par Edge."""
     ville, position = lieu_enregistre or await geocoder(lieu, reglages)
     rayon, maximum = _limites(rayon_km, reglages)
     sources = sources_actives(reglages)
     if seulement_drives:
         tous = magasins_osm() if FICHIER_OSM.exists() else {e: [] for e in Enseigne}
-        listes = [
-            _garder_proches([m for m in tous[e] if m.id in DRIVES], position, rayon, maximum)
-            for e in sources
-        ]
+        drives = {e: [m for m in tous[e] if m.id in DRIVES] for e in sources}
+        for magasin in await asyncio.to_thread(magasins_inscrits, reglages.db_path):
+            if magasin.enseigne in drives:
+                drives[magasin.enseigne].append(magasin)
+        listes = [_garder_proches(ms, position, rayon, maximum) for ms in drives.values()]
     elif reglages.magasins_osm and FICHIER_OSM.exists():
         tous = magasins_osm()
         listes = [_garder_proches(tous[e], position, rayon, maximum) for e in sources]

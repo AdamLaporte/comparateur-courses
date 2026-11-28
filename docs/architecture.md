@@ -75,7 +75,7 @@ aux mêmes fichiers. L'arborescence exacte et les commandes sont dans [`AGENTS.m
 | `app/produits/` | Recherche d'un article pour composer la liste (Open Food Facts) | lot données et fiabilité |
 | `app/panier/` | Liste de courses (listes nommées, quantités, vider et annuler, « produit précis » / « le moins cher »), flux SSE des prix, `calcul.py` (totaux, fonctions pures), `ticket.py` (photo d'un ticket lue par OCR local) | interface + cœur |
 | `app/comptes/` | Inscription, connexion, mot de passe perdu, favoris, « maison », `cagnotte.py` (tirelire : écart entre le magasin choisi et la moyenne) | comptes |
-| `app/drives/` | Prix réels du Super U et de l'Intermarché de Bruz relevés par les extensions Edge (`extensions-edge/`) : file de recherches, observations, `comparaison.py` (prix manquants pendant la comparaison), `navigateur.py` (démarrage d'Edge sous Windows), `importer.py` (CSV) | voir §15 |
+| `app/drives/` | Prix réels des points de retrait U et Intermarché répertoriés, relevés par les extensions Edge (`extensions-edge/`) : file de recherches, observations, `comparaison.py` (prix manquants pendant la comparaison), `navigateur.py` (démarrage d'Edge sous Windows), `importer.py` (CSV) | voir §15 |
 | `app/templates/` | `base.html`, `erreur.html` + un sous-dossier par fonctionnalité (`magasins/`, `produits/`, `panier/`, `comptes/`) | lot interface |
 | `app/static/` | `style.css` : charte GrignotePrix (variables CSS en tête de fichier, animations en fin). `site.js` : « Me localiser », carte, messages avec « Annuler », clavier dans la recherche, progression et mise en avant de la comparaison (le site reste utilisable sans). `vendor/` : htmx, Leaflet, polices copiés (démo sans Internet). CSS et JS appelés avec `?v=<date>` (`version_statique`) | interface |
 | `app/<fonctionnalite>/schema.sql` | Tables SQLite de la fonctionnalité, créées au démarrage | la fonctionnalité concernée |
@@ -423,7 +423,7 @@ Modèle dans `.env.example`.
 
 - La page des résultats et le flux SSE appellent chacun `magasins_proches` : avec la liste OpenStreetMap en local,
   les deux voient les mêmes magasins.
-- Prix réels : cache, Open Prices et les deux drives de Bruz (§15). Les autres magasins restent en données fictives
+- Prix réels : cache, Open Prices et relevés Edge des points de retrait répertoriés (§15). Les autres magasins restent en données fictives
   (marquées) ; la collecte serveur de Carrefour, Leclerc et Courses U est abandonnée (403 Cloudflare / DataDome).
 - Les relevés Edge dépendent d'un navigateur ouvert, du bon magasin en retrait et de `DRIVES_JETON` ; sans réponse
   dans `DRIVES_ATTENTE_S`, la case retombe sur « prix indisponible ».
@@ -435,9 +435,19 @@ Modèle dans `.env.example`.
 - **Comparer** ouvre le flux `/panier/prix/flux`. Pour les points de retrait répertoriés, il affiche
   les prix déjà connus et suit les tâches Edge démarrées pour les prix manquants ou périmés.
   Le total est recalculé à partir du dernier état de chaque couple article et magasin.
-- Le catalogue associe les fiches OSM aux points de retrait et aux adresses officielles du site
-  marchand. Chaque extension prend les tâches par enseigne et reçoit le point précis à ouvrir.
-  Les relevés, leur cache et leurs pauses sont associés au point de retrait.
+- Le catalogue initial associe quatre fiches OSM à des points de retrait. Pour ajouter un autre
+  point, l’extension lit la référence et le libellé du magasin actif, puis transmet la fiche
+  officielle et l’adresse confirmées par l’opérateur à
+  `POST /api/drives/enseignes/{enseigne}/inscrire-point-retrait`. Le serveur exige le jeton de
+  collecte, vérifie la fiche et géolocalise l’adresse dans le code postal fourni.
+- La table `drive_point_retrait` conserve les points ajoutés. Leur identifiant associe l’enseigne
+  et la référence marchande. Ils apparaissent en mode réel dès l’enregistrement. Chaque extension
+  prend les tâches par enseigne et reçoit le point précis à ouvrir. Les relevés, leur cache et
+  leurs pauses sont associés au point de retrait.
+- La référence marchande peut différer de l’identifiant utilisé dans SQLite. Courses U vérifie
+  le numéro fourni par le site quand il est présent dans la page et utilise le libellé de l’en-tête
+  en son absence. Le relevé manuel lit le même catalogue via
+  `POST /api/drives/enseignes/{enseigne}/points-retrait`, avec le jeton de collecte.
 - `app/drives/schema.sql` déclare les références marchandes, les observations et la file des recherches.
   Les tâches actives sont uniques par drive et requête normalisée. La prise de tâche et le dépôt utilisent
   des transactions SQLite. Chaque dépôt doit correspondre au bail actif et au point de retrait.
@@ -464,7 +474,7 @@ défaut : `MODE_DONNEES_DEFAUT`, « demo »).
 
 | | Démo | Données réelles |
 |---|---|---|
-| Magasins (`magasins_proches(..., seulement_drives=...)`) | tous (OpenStreetMap), drives compris | seulement les drives répertoriés (`points_retrait.json`) |
+| Magasins (`magasins_proches(..., seulement_drives=...)`) | tous (OpenStreetMap), drives compris | points de retrait du catalogue initial et points ajoutés depuis Edge |
 | Prix (`collecter(..., drives_par_edge=...)`) | source de l'enseigne (fictive, marquée), drives compris | relevés des extensions Edge, rien de fictif |
 | Requêtes aux extensions Edge | aucune | oui (`suivre_edge=True`) |
 

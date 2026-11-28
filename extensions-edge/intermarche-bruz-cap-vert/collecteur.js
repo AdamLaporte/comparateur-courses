@@ -33,19 +33,26 @@ async function ouvrirOnglet(identifiant) {
 
 async function verifierRetrait(cible, limite, point) {
   let boutonUtilise = false;
+  const points = [point];
+  const accueil = new URL(point.accueil);
   while (Date.now() < limite) {
     if (erreursNavigation.has(cible.tabId)) return { erreur: erreursNavigation.get(cible.tabId) };
     const onglet = await chrome.tabs.get(cible.tabId);
     if (onglet.status === "complete" && siteDuDrive(onglet.url)) {
-      const page = await injecter(cible, lirePage, drive.adapter, "", false, point);
+      const page = await injecter(cible, lirePage, drive.adapter, "", false, points);
       if (page.result.erreur || page.result.retrait === point.id) return page.result;
-      if (!boutonUtilise && drive.adapter === "intermarche" && onglet.url === point.accueil) {
-        boutonUtilise = true;
-        await injecter(cible, () => {
+      const url = new URL(onglet.url);
+      if (!boutonUtilise && drive.adapter === "intermarche" && url.origin === accueil.origin
+          && url.pathname.replace(/\/$/, "").toLowerCase() === accueil.pathname.toLowerCase()) {
+        const clic = await injecter(cible, () => {
           const boutons = [...document.querySelectorAll("button, a[href]")].filter((bouton) =>
-            bouton.getClientRects().length && bouton.innerText.trim() === "Faire mes courses");
-          if (boutons.length === 1) boutons[0].click();
+            bouton.getClientRects().length && !bouton.matches(':disabled, [aria-disabled="true"]')
+            && bouton.innerText.trim() === "Faire mes courses");
+          if (boutons.length !== 1) return false;
+          boutons[0].click();
+          return true;
         });
+        boutonUtilise = clic.result;
       }
     }
     await new Promise((resolve) => setTimeout(resolve, 700));
@@ -55,6 +62,7 @@ async function verifierRetrait(cible, limite, point) {
 
 async function relever(tabId, requete, point, changer) {
   const cible = { tabId };
+  const points = [point];
   tabEnCours = tabId;
   erreursNavigation.delete(tabId);
   try {
@@ -73,7 +81,7 @@ async function relever(tabId, requete, point, changer) {
       if (tab.url === destination.href) await chrome.tabs.reload(tabId);
       else await chrome.tabs.update(tabId, { url: destination.href });
     } else {
-      const { result } = await injecter(cible, lirePage, drive.adapter, requete, true, point);
+      const { result } = await injecter(cible, lirePage, drive.adapter, requete, true, points);
       if (result.erreur) return { erreur: result.erreur };
     }
 
@@ -87,7 +95,7 @@ async function relever(tabId, requete, point, changer) {
       if (onglet.status !== "complete") continue;
       let page;
       try {
-        page = await injecter(cible, lirePage, drive.adapter, requete, false, point);
+        page = await injecter(cible, lirePage, drive.adapter, requete, false, points);
       } catch {
         continue;
       }
@@ -95,19 +103,19 @@ async function relever(tabId, requete, point, changer) {
       if (etat.erreur) return { erreur: etat.erreur };
       if (etat.document === depart.document) continue;
       if (!etat.recherche || !etat.charge) continue;
-      if (etat.retrait !== point.id) return { erreur: "mauvais_drive" };
       // Attendre deux lectures stables dans le document de résultats.
-      const signature = [page.documentId, etat.cartes, etat.vide].join("|");
+      const signature = [page.documentId, etat.retrait, etat.cartes, etat.vide].join("|");
       if (signature !== precedent) {
         precedent = signature;
         continue;
       }
+      if (!etat.vide && etat.cartes === 0) continue;
+      if (etat.retrait !== point.id) return { erreur: "mauvais_drive" };
       if (etat.vide) return { etat: "vide", service_observe: etat.retrait };
-      if (etat.cartes === 0) continue;
       const documentResultats = { tabId, documentIds: [page.documentId] };
       const { result } = await injecter(documentResultats, extractProductPage, drive.adapter, 60);
       const { result: verification } = await injecter(
-        documentResultats, lirePage, drive.adapter, requete, false, point,
+        documentResultats, lirePage, drive.adapter, requete, false, points,
       );
       if (verification.erreur) return { erreur: verification.erreur };
       if (verification.retrait !== point.id) return { erreur: "mauvais_drive" };

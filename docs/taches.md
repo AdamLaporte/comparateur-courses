@@ -4,7 +4,7 @@
 > démo, qui s'en occupe. Mettez-la à jour à la fin de votre session (statut + une ligne au plus par tâche).
 > L'ancien découpage en 4 lots (cadrage du 27/11 après-midi) est dans l'historique Git : `git show f669550:docs/taches.md`.
 
-**Démo : samedi 28 novembre 2026, 13h.** Gel des fonctionnalités à 11h. Mis à jour le 27/11 à 22h40.
+**Démo : samedi 28 novembre 2026, 13h.** Gel des fonctionnalités à 11h. Mis à jour le 28/11.
 
 ## Comment travailler
 
@@ -24,8 +24,8 @@
 | Ma liste | Recherche Open Food Facts, produit précis ou « le moins cher », quantités, vider et annuler, listes nommées, favoris | Adam, Ilona, Jade |
 | Ticket de caisse | Photo lue par OCR local, articles rapprochés du catalogue, « inexistant » sinon | Adam |
 | Comparaison | Prix en direct (SSE), verdict (même sans panier complet), classement, prix périmés signalés | Adam |
-| Prix réels | Cache, Open Prices et relevés Edge par point de retrait répertorié, dont Bruz, Guichen et Rennes Gayeulles | Jade, Raph |
-| Mode des données | Bouton dans le bandeau : « démo » (tous les magasins, prix fictifs, aucune requête Edge) ou « données réelles » (drives répertoriés seulement, relevés Edge). Défaut : `MODE_DONNEES_DEFAUT` | Jade |
+| Prix réels | Cache, Open Prices et relevés Edge U et Intermarché. L’extension accepte l’ajout de points en France depuis le magasin actif | Jade, Raph |
+| Mode des données | Bouton dans le bandeau pour passer de prix fictifs sans Edge aux relevés réels des points connus ou ajoutés. Défaut `MODE_DONNEES_DEFAUT` | Jade |
 | Site partagé | Base commune sur le PC de Raph via Tailscale, avec accès privé et jetons de collecte. Réutilisation réelle sur le second PC à valider | Raph, Adam |
 | Comptes | Inscription, connexion, mot de passe perdu, maison, favoris, tirelire (écart avec la moyenne) | Jade, Ilona |
 | Interface | GrignotePrix (nom, logo, couleurs), animations, mobile, fonctionne sans Internet (sauf fonds de carte) | Adam, Ilona |
@@ -37,7 +37,7 @@ d'Open Prices : la collecte directe de ces sites est abandonnée (403 Cloudflare
 
 | Tâche | Qui | Statut |
 |---|---|---|
-| Extension Super U : relevé en échec « mauvais drive » (le nom du magasin n'apparaît que dans un onglet visible ; piste : ouvrir l'onglet au premier plan) | Raph | à faire |
+| Vérifier les relevés Edge 1.7.0 à Guichen, Rennes Gayeulles et dans un nouveau point de retrait par enseigne | Raph | inscription et comparaison vérifiées en simulation |
 | Valider un relevé réel avec les deux extensions sur l'ordinateur de démo (`DRIVES_JETON` identique dans `.env` et les popups) | Raph | Intermarché réussi le 27/11 à 22h12 |
 | Scénario de démo : lieu (Bruz), 6 à 8 articles bien couverts, ordre de ce qu'on montre | Adam, Jade | à faire |
 | Préchauffage du cache sur ces articles (`uv run python -m app.collecte.prechauffer data/demo/recherches.txt --code-postal 35170`) samedi matin | Jade | à faire |

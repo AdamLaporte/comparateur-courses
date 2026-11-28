@@ -6,8 +6,8 @@ from datetime import UTC, datetime, timedelta
 
 from app import db
 from app.config import Reglages
+from app.drives.catalogue import point_retrait
 from app.drives.modeles import (
-    DRIVES,
     Depot,
     DriveId,
     EnseigneDrive,
@@ -16,6 +16,7 @@ from app.drives.modeles import (
     date_tri,
     ean_valide,
     normaliser,
+    point_collecteur,
     terme_simplifie,
     url_marchande,
 )
@@ -147,6 +148,7 @@ def _vue_drive(
     alternatives: bool = True,
     terme_marchand: str | None = None,
 ) -> dict:
+    point = point_retrait(cnx, drive)
     horodatage = horodater(instant)
     seuil = horodater(instant - timedelta(minutes=reglages.drives_fraicheur_min))
     tache = cnx.execute(
@@ -230,7 +232,7 @@ def _vue_drive(
         produit.pop("date_tri")
     return {
         "drive_id": drive,
-        "nom": DRIVES[drive].nom,
+        "nom": point.nom,
         "etat": etat,
         "erreur": erreur,
         "tache_id": tache_id,
@@ -311,19 +313,18 @@ def prendre(
     drive: DriveId,
     collecteur: str | None = None,
 ) -> dict | None:
-    return _prendre(reglages, (drive,), collecteur)
+    return _prendre(reglages, drive, collecteur)
 
 
 def prendre_enseigne(
     reglages: Reglages, enseigne: EnseigneDrive, collecteur: str | None
 ) -> dict | None:
-    drives = tuple(d for d in DRIVES if d.startswith(enseigne + "-"))
-    return _prendre(reglages, drives, collecteur, enseigne=enseigne)
+    return _prendre(reglages, enseigne + "-*", collecteur, enseigne=enseigne)
 
 
 def _prendre(
     reglages: Reglages,
-    drives: tuple[DriveId, ...],
+    selection: str,
     collecteur: str | None,
     *,
     enseigne: EnseigneDrive | None = None,
@@ -335,17 +336,24 @@ def _prendre(
         _expiration(cnx, horodatage)
         if enseigne:
             _signaler_enseigne(cnx, enseigne, horodatage)
+            filtre = "t.drive_id GLOB ?"
         else:
-            _signaler(cnx, drives[0], horodatage)
-        parametres = ", ".join("?" for _ in drives)
+            point_retrait(cnx, selection)
+            _signaler(cnx, selection, horodatage)
+            filtre = "t.drive_id=?"
         ligne = cnx.execute(
             "UPDATE drive_tache SET etat='cours', bail=?, expire_le=? WHERE id=( "
-            f"SELECT t.id FROM drive_tache t WHERE t.drive_id IN ({parametres}) AND t.etat='attente' "
+            f"SELECT t.id FROM drive_tache t WHERE {filtre} AND t.etat='attente' "
             "AND NOT EXISTS (SELECT 1 FROM drive_tache b WHERE b.drive_id=t.drive_id AND b.etat='cours') "
             "AND NOT EXISTS (SELECT 1 FROM drive_collecteur c WHERE c.drive_id=t.drive_id "
             "AND c.pause_jusqua > ?) ORDER BY t.id LIMIT 1"
             ") RETURNING id, drive_id, requete, bail",
-            (secrets.token_hex(24), horodater(instant + timedelta(minutes=2)), *drives, horodatage),
+            (
+                secrets.token_hex(24),
+                horodater(instant + timedelta(minutes=2)),
+                selection,
+                horodatage,
+            ),
         ).fetchone()
         if ligne is None:
             return None
@@ -354,12 +362,8 @@ def _prendre(
         reponse = dict(ligne)
         if enseigne:
             _signaler(cnx, ligne["drive_id"], horodatage)
-            point = DRIVES[ligne["drive_id"]]
-            reponse["point"] = {
-                "id": ligne["drive_id"].split("-", 1)[1],
-                "accueil": point.accueil,
-                "libelles": point.libelles,
-            }
+            drive = ligne["drive_id"]
+            reponse["point"] = point_collecteur(drive, point_retrait(cnx, drive))
         return reponse
 
 
@@ -386,6 +390,7 @@ def _signaler(cnx: sqlite3.Connection, drive: DriveId, horodatage: str) -> str |
 
 def signaler(reglages: Reglages, drive: DriveId) -> None:
     with db.connexion(reglages.db_path) as cnx:
+        point_retrait(cnx, drive)
         _signaler(cnx, drive, horodater(maintenant()))
 
 

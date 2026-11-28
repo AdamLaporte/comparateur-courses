@@ -1,8 +1,8 @@
 # Comparateur de courses
 
-Le site compare les prix d’un panier dans les magasins proches. Pour les points de retrait Super U
-Bruz et Intermarché Bruz Cap Vert, il affiche les prix enregistrés et demande à Edge de relever
-les prix manquants ou anciens au clic sur **Comparer**. Il peut partir d’une base vide.
+Le site compare les prix d’un panier dans les magasins proches. En mode **Données réelles**, il
+affiche les prix enregistrés pour les points de retrait répertoriés et demande à Edge de relever les
+prix manquants ou anciens au clic sur **Comparer**. Il peut partir d’une base vide.
 
 ## Lancer sous Windows
 
@@ -32,8 +32,9 @@ uv run --locked uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-proxy-hea
 
 Une extension suffit par enseigne. **Comparer** envoie le point de retrait à l’extension, qui
 change de magasin dans son onglet puis vérifie le point actif avant d’enregistrer les prix.
-Le catalogue inclut Super U Bruz, Hyper U Guichen, Intermarché Bruz Cap Vert et Intermarché
-Rennes Gayeulles.
+Le catalogue initial inclut Super U Bruz, Hyper U Guichen, Intermarché Bruz Cap Vert et Intermarché
+Rennes Gayeulles. Les mêmes extensions permettent d’ajouter d’autres points de retrait U et
+Intermarché partout en France depuis leur catalogue en ligne.
 
 Pour utiliser une seule base depuis plusieurs PC, voir le
 [hébergement du site partagé sur un PC avec Tailscale](docs/deploiement-partage.md).
@@ -41,31 +42,43 @@ Pour utiliser une seule base depuis plusieurs PC, voir le
 1. Ouvrez `edge://extensions`, activez **Mode développeur**, puis cliquez sur **Charger l’extension non
    empaquetée** pour chacun des dossiers `extensions-edge\super-u-bruz` et
    `extensions-edge\intermarche-bruz-cap-vert`. Après une mise à jour, utilisez **Recharger** sur
-   chaque carte d’extension.
+   chaque carte d’extension. Pour les modifications du catalogue, redémarrez aussi le serveur.
 2. Configurez chaque extension une seule fois depuis son popup **Collecte du comparateur**.
    Saisissez le jeton et cliquez sur **Activer la collecte automatique**. Le popup confirme
    **Serveur connecté**. La configuration reste enregistrée au redémarrage d’Edge.
 3. Sur Windows, ajoutez `DRIVES_DEMARRER_EDGE=true` dans `.env` et redémarrez le serveur si vous
    souhaitez qu’il ouvre Edge quand le collecteur ne répond pas. Chaque extension ouvre son propre
    onglet marchand quand une demande arrive.
-4. Depuis l’accueil, saisissez **35170**, cliquez sur **Composer ma liste**, ajoutez par exemple
-   **lait Lactel**, puis cliquez sur **Comparer**. Consultez les deux colonnes du tableau.
+4. Sélectionnez **Données réelles** dans le bandeau. Depuis l’accueil, saisissez **35170** pour Bruz,
+   **35580** pour Guichen ou **35700** pour Rennes Gayeulles. Cliquez sur **Composer ma liste**,
+   ajoutez par exemple **lait Lactel**, puis cliquez sur **Comparer**.
    Un nouveau relevé peut attendre jusqu’à 30 secondes avant le prochain réveil de l’extension,
    puis jusqu’à 30 secondes de lecture par article.
 
-Le relevé manuel et l’export CSV restent accessibles dans les deux extensions. Si Edge est fermé, le
-comparateur affiche l’historique et indique l’attente du collecteur. La fraîcheur se règle avec
+Pour un relevé manuel, ouvrez un rayon ou une recherche sur le site marchand, puis cliquez sur
+**Relever cette page** dans l’extension. Le panneau indique le point de retrait reconnu et
+enregistre les produits avec ce magasin dans le CSV. Le catalogue des magasins est fourni par le
+comparateur configuré dans l’extension. Le relevé de Bruz reste disponible hors connexion.
+
+Si Edge est fermé, le comparateur affiche l’historique et indique l’attente du collecteur. La fraîcheur se règle avec
 `DRIVES_FRAICHEUR_MIN` dans `.env` (1 440 minutes par défaut). La collecte s’arrête en cas de défi ou
 de réponse 403 ou 429 et reprend après la pause de quinze minutes, lors d’une nouvelle recherche.
 
 ## Ajouter un point de retrait
 
-Pour ajouter un point collectable, renseignez sa fiche dans
-[`app/drives/points_retrait.json`](app/drives/points_retrait.json) avec la référence OSM du magasin,
-l’adresse officielle du drive et le libellé attendu dans l’en-tête. Chez Intermarché, utilisez la
-référence marchande du point de retrait, celle de son adresse officielle. Chez Courses U, utilisez
-un identifiant stable pour le point associé au libellé et à l’adresse officiels. Redémarrez le
-serveur et vérifiez que le retrait peut être confirmé pendant une recherche.
+1. Choisissez le magasin et le **retrait** sur le site de l’enseigne, puis ouvrez son catalogue
+   dans Edge. Les annuaires officiels permettent de retrouver la fiche du magasin.
+   [Courses U](https://www.coursesu.com/drive-france) · [Intermarché](https://www.intermarche.com/enseigne/magazine/tous-les-magasins)
+2. Dans l’extension configurée, ouvrez **Ajouter un magasin au comparateur** puis cliquez sur
+   **Détecter le retrait actif**. Vérifiez le nom et complétez l’adresse et le code postal.
+   Si le lien est vide, collez la fiche officielle du magasin. Chez Intermarché, c’est la
+   page **Infos pratiques** du magasin. Chez Courses U, c’est sa page d’accueil Drive.
+3. Cliquez sur **Ajouter ce point de retrait**. Le serveur le géolocalise et l’enregistre dans sa
+   base. Actualisez le comparateur, cherchez le lieu en mode **Données réelles**, puis lancez
+   une comparaison. Le même point de retrait est disponible pour tous les visiteurs du serveur.
+
+Chaque point s’ajoute une fois. L’extension vérifie la référence marchande active avant de relever
+les prix. Le point doit proposer le retrait et la recherche de produits en ligne.
 
 ## Importer les relevés existants
 

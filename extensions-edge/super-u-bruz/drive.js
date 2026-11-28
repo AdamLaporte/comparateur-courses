@@ -9,5 +9,5 @@ export const drive = {
   "domains": [
     "coursesu.com"
   ],
-  "store": "^Super U Bruz$"
+  "libelles": ["Super U Bruz"]
 };

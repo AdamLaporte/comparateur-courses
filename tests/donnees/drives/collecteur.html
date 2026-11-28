@@ -12,6 +12,7 @@
     const session = {};
     const onglet = { id: 1, status: "complete", url: "about:blank" };
     const ouvertures = [];
+    let clicsGayeulles = 0;
     let commande;
     let depot;
     let terminer;
@@ -42,18 +43,22 @@
           get: async () => onglet,
           update: async (_id, { url }) => {
             ouvertures.push(url);
-            onglet.url = url;
+            onglet.url = url === catalogue["intermarche-06994"].accueil
+              ? url.replace("/rennes-", "/Rennes-") + "?pdvref=06994"
+              : url;
           },
           onRemoved: evenement(),
         },
         scripting: {
           executeScript: async ({ func, args = [] }) => {
-            const [adaptateur, requete, soumettre, point] = args;
+            if (!args.length) return [{ result: ++clicsGayeulles > 1 }];
+            const [adaptateur, requete, soumettre, [point] = []] = args;
             if (soumettre) onglet.url = new URL("?q=lait", onglet.url).href;
             const produit = { produit: "Lait fictif", prix_eur: "1.20" };
             const resultat = func.name === "extractProductPage" ? { items: [produit] }
               : erreurAttendue ? { erreur: erreurAttendue }
-              : { retrait: point?.id, document: requete && !soumettre ? 2 : 1,
+              : { retrait: point?.id === "06994" && clicsGayeulles < 2 ? "" : point?.id,
+                document: requete && !soumettre ? 2 : 1,
                 recherche: requete === "lait", charge: true, cartes: 1 };
             if (!adaptateur) throw new Error("Un adaptateur est requis");
             return [{ documentId: "test", result: resultat }];
@@ -76,7 +81,7 @@
         return { ok: true, json: async () => ({
           id: 1, drive_id: commande, bail: "test", requete: "lait",
           point: { id: commande.slice(enseigne.length + 1), accueil: point.accueil,
-            libelles: point.libelles },
+            libelles: point.libelles, reference: point.reference },
         }) };
       }
       depot = JSON.parse(options.body);

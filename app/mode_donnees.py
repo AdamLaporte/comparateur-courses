@@ -1,7 +1,7 @@
 """Mode des données, choisi par chaque visiteur (gardé dans sa session).
 
 - « demo » : tous les magasins, prix fictifs (toujours marqués), aucune requête aux extensions Edge.
-- « reel » : seulement les drives répertoriés (app/drives/points_retrait.json), prix relevés par les
+- « reel » : seulement les points de retrait connus (catalogue initial et ajouts Edge), prix relevés par les
   extensions Edge, aucune donnée fictive.
 Valeur par défaut : MODE_DONNEES_DEFAUT dans `.env` (« demo » si absent).
 """

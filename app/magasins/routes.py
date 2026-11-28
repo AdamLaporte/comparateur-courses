@@ -96,6 +96,7 @@ async def page_magasins(
     enseigne: Enseigne | None = None,
 ):
     contexte = contexte_trajet(request, reglages)
+    contexte["mode_reel"] = est_reel(request)
     favori = contexte["lieux_trajet"].get(lieu_trajet)
     lieu_enregistre = None
     if favori:
@@ -121,7 +122,7 @@ async def page_magasins(
             reglages,
             rayon,
             lieu_enregistre=lieu_enregistre,
-            seulement_drives=est_reel(request),
+            seulement_drives=contexte["mode_reel"],
         )
     except (CodePostalInvalide, CodePostalInconnu) as erreur:
         message = MESSAGE_INVALIDE if isinstance(erreur, CodePostalInvalide) else MESSAGE_INCONNU

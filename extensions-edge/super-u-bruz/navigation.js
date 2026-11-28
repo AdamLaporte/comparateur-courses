@@ -1,5 +1,5 @@
 // Cette fonction s'exécute dans l'onglet marchand. Seuls les signaux nécessaires en sortent.
-export function lirePage(adaptateur, requete, soumettre, point) {
+export function lirePage(adaptateur, requete, soumettre, points) {
   const compacte = (texte) => (texte || "").replace(/\s+/g, " ").trim();
   const normalise = (texte) => compacte(texte).normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
   const visible = (element) => Boolean(element?.getClientRects().length)
@@ -23,35 +23,38 @@ export function lirePage(adaptateur, requete, soumettre, point) {
   const livraison = /\blivraison\b/i.test(libelle) || entete.some((element) =>
     [...element.querySelectorAll('[aria-selected="true"], [aria-checked="true"], input:checked')]
       .some((mode) => visible(mode) && /livraison/i.test(mode.innerText || mode.value || "")));
-  let retrait = "";
-  const libellesAttendus = point.libelles.map(normalise);
-  if (intermarche && libellesAttendus.includes(normalise(libelle)) && !livraison) {
+  const correspondance = (point, texte) => point.libelles.some((nom) => normalise(nom) === normalise(texte));
+  const refs = new Set();
+  const lignes = entete.flatMap((element) => element.innerText.split("\n"));
+  let candidats = [];
+  if (intermarche && !livraison) {
     // Ce champ du document hydraté alimente le panier du magasin actif.
-    const refs = new Set();
     for (const script of document.scripts) {
       if (!script.textContent.trimStart().startsWith("self.__next_f.push([1,")) continue;
       for (const ref of script.textContent.matchAll(/\\?"pdvRefFicheMagasin\\?"\s*:\s*\\?"(\d{5}(?:_\d+)?)\\?"/g)) {
         refs.add(ref[1]);
       }
     }
-    if (refs.size === 1) retrait = [...refs][0];
+    if (refs.size === 1) {
+      candidats = points.filter((point) => refs.has(point.reference ?? point.id) && correspondance(point, libelle));
+    }
   } else if (!intermarche && !livraison) {
-    // Courses U ne dessine le nom du magasin dans l'en-tête qu'une fois l'onglet affiché : dans l'onglet
-    // de collecte, ouvert en arrière-plan, il manque. Le numéro du magasin choisi est, lui, déjà dans la
-    // page envoyée par le serveur (window.COOPU.storeID = 33315), lisible même en arrière-plan.
-    const parEntete = entete.some((element) =>
-      element.innerText.split("\n").some((ligne) => libellesAttendus.includes(normalise(ligne))));
-    const choisis = new Set();
+    // Le numéro du magasin actif est présent même si Courses U n'a pas dessiné l'en-tête.
     for (const script of document.scripts) {
       for (const choix of script.textContent.matchAll(/COOPU\.storeID\s*=\s*["']?(\d+)/g)) {
-        choisis.add(choix[1]);
+        refs.add(choix[1]);
       }
     }
-    if (parEntete || (choisis.size === 1 && choisis.has(point.id))) retrait = point.id;
+    if (refs.size === 1) {
+      candidats = points.filter((point) => refs.has(point.reference ?? point.id));
+    } else if (refs.size === 0) {
+      candidats = points.filter((point) => lignes.some((ligne) => correspondance(point, ligne)));
+    }
   }
+  const retrait = candidats.length === 1 ? candidats[0].id : "";
 
   if (soumettre) {
-    if (retrait !== point.id) return { erreur: "mauvais_drive" };
+    if (!retrait || retrait !== points[0].id) return { erreur: "mauvais_drive" };
     const champs = [...document.querySelectorAll('input[type="search"], [role="search"] input, input[role="searchbox"]')]
       .filter((champ) => visible(champ) && !champ.disabled && !champ.readOnly);
     if (champs.length !== 1) return { erreur: "page_inattendue" };
@@ -71,8 +74,29 @@ export function lirePage(adaptateur, requete, soumettre, point) {
   }
 
   const url = new URL(location.href);
+  if (!points.length && !requete && !soumettre) {
+    if (refs.size !== 1) return { retrait };
+    const [reference] = refs;
+    const estAccueil = (adresse) => adresse.origin === url.origin && (intermarche
+      ? new RegExp("^/magasins/" + reference + "/[^/]+/infos-pratiques/?$", "i").test(adresse.pathname)
+      : /^\/drive-(?:hyperu|superu|uexpress|utile)-[a-z0-9-]+\/?$/i.test(adresse.pathname));
+    const liensAccueil = new Set(entete.flatMap((element) => [...element.querySelectorAll("a[href]")])
+      .map((lien) => new URL(lien.href)).filter(estAccueil).map((lien) => lien.origin + lien.pathname));
+    const accueil = estAccueil(url) ? url.origin + url.pathname
+      : (liensAccueil.size === 1 ? [...liensAccueil][0] : "");
+    const titreDrive = [...(principal?.querySelectorAll("h1") || [])]
+      .map((element) => compacte(element.innerText).match(/^Bienvenue au drive (.+)$/i)?.[1])
+      .find(Boolean);
+    const libelleActif = intermarche ? libelle : (lignes.map(compacte).find((ligne) =>
+      /^(?:Hyper U|Super U|U Express|Utile)\s+\S/i.test(ligne)) || (estAccueil(url) ? titreDrive : ""));
+    if (!libelleActif || /^(choisir|choisissez|selectionner|selectionnez|mon magasin)\b/.test(normalise(libelleActif))) {
+      return { retrait };
+    }
+    const codePostal = accueil.match(/-(\d{5})\/infos-pratiques\/?$/i)?.[1] || "";
+    return { reference, libelle: libelleActif, accueil, codePostal };
+  }
   const cle = normalise(requete);
-  const chemin = decodeURIComponent(url.pathname).replace(/\/$/, "");
+  const chemin = cle ? decodeURIComponent(url.pathname).replace(/\/$/, "") : "";
   const recherche = Boolean(cle) && (intermarche
     ? normalise(chemin) === "/recherche/" + cle
     : ([...url.searchParams.values()].some((valeur) => normalise(valeur) === cle)

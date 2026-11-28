@@ -8,6 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app import db
+from app.contrats import Position
 from app.drives import comparaison as panier_drive
 from app.drives import service
 from app.drives.importer import importer
@@ -31,7 +32,7 @@ def edge(reglages, monkeypatch):
 
 
 def produit(drive=U, **champs):
-    hote = "www.coursesu.com" if drive == U else "www.intermarche.com"
+    hote = "www.coursesu.com" if drive.startswith("coursesu-") else "www.intermarche.com"
     return {
         "produit": "Lait Lactel demi-écrémé",
         "marque": "Lactel",
@@ -79,7 +80,7 @@ def succes(client, tache, *produits, service_observe=None):
         client,
         tache,
         etat="succes",
-        service_observe=service_observe or tache["drive_id"].split("-")[1],
+        service_observe=service_observe or tache["drive_id"].split("-", 1)[1],
         produits=produits,
     )
 
@@ -242,7 +243,16 @@ def test_extension_par_enseigne_collecte_deux_retraits_sans_melanger(edge):
     assert rennes["point"]["id"] == "06994"
     assert succes(client, rennes, produit(INTER, prix_eur="2.00")).status_code == 204
     assert client.post(route + "/prendre", headers=JETON).json() is None
-    assert prendre(client, guichen)["drive_id"] == guichen
+    route_u = f"{URL}/enseignes/coursesu"
+    assert client.post(route_u + "/points-retrait").status_code == 401
+    points_u = client.post(route_u + "/points-retrait", headers=JETON).json()
+    assert {point["id"] for point in points_u} >= {"33315", "hyperu-guichen"}
+    tache_guichen = client.post(route_u + "/prendre", headers=JETON).json()
+    assert tache_guichen["drive_id"] == guichen
+    assert tache_guichen["point"] in points_u
+    assert tache_guichen["point"]["reference"] == "36163"
+    assert succes(client, tache_guichen, produit(guichen, prix_eur="2.25")).status_code == 204
+    assert suivre(client, drives=(guichen,))[0]["produits"][0]["prix_centimes"] == 225
     assert [
         v["produits"][0]["prix_centimes"] for v in suivre(client, drives=(INTER, gayeulles))
     ] == [125, 200]
@@ -260,6 +270,82 @@ def test_magasins_point_de_retrait_hors_bruz():
     assert any(
         m.id == "intermarche-06994" and m.ville == "Rennes" for m in magasins[Enseigne.INTERMARCHE]
     )
+
+
+@pytest.mark.parametrize(
+    ("enseigne", "reference", "accueil", "nom"),
+    [
+        (
+            "intermarche",
+            "10348",
+            "https://www.intermarche.com/magasins/10348/grigny-sur-rhone-69520/infos-pratiques",
+            "Super Grigny",
+        ),
+        (
+            "coursesu",
+            "72554",
+            "https://www.coursesu.com/drive-superu-grigny",
+            "Super U Grigny",
+        ),
+    ],
+)
+def test_un_nouveau_retrait_est_utilisable_depuis_la_comparaison(
+    edge, reglages, monkeypatch, enseigne, reference, accueil, nom
+):
+    client, _ = edge
+    reglages.drives_attente_s = 0
+    localisation = ("Grigny-sur-Rhône", Position(lat=45.61, lon=4.79))
+
+    async def geocoder_point(adresse, code_postal, _reglages):
+        assert (adresse, code_postal) == ("17 rue de la République", "69520")
+        return localisation
+
+    async def geocoder_recherche(code_postal, _reglages):
+        assert code_postal == "69520"
+        return localisation
+
+    monkeypatch.setattr("app.drives.routes.geocoder_retrait", geocoder_point)
+    monkeypatch.setattr("app.magasins.service.geocoder", geocoder_recherche)
+
+    identifiant = f"{enseigne}-retrait-{reference}"
+    base = f"{URL}/enseignes/{enseigne}"
+    route = base + "/inscrire-point-retrait"
+    inscription = {
+        "reference": reference,
+        "libelle": nom,
+        "accueil": accueil,
+        "adresse": "17 rue de la République",
+        "code_postal": "69520",
+    }
+    assert client.post(route, json=inscription).status_code == 401
+    assert (
+        client.post(
+            route, headers=JETON, json={**inscription, "accueil": "https://example.com/"}
+        ).status_code
+        == 422
+    )
+    assert (
+        client.post(URL + "/recherches", json={"q": "lait", "drives": [identifiant]}).status_code
+        == 422
+    )
+    for _ in range(2):
+        reponse = client.post(route, headers=JETON, json=inscription)
+        assert reponse.status_code == 200, reponse.text
+    point = reponse.json()
+    assert point["reference"] == reference
+    points = client.post(base + "/points-retrait", headers=JETON).json()
+    assert points.count(point) == 1
+
+    page = client.get("/magasins?code_postal=69520&rayon_km=2")
+    assert nom in page.text
+    client.post("/panier/lignes", data={"mode": "equivalent", "recherche": "lait"})
+    assert identifiant in client.get("/panier/resultats").text
+    flux = client.get("/panier/prix/flux")
+    assert flux.status_code == 200
+    tache = client.post(base + "/prendre", headers=JETON).json()
+    assert tache["drive_id"] == identifiant and tache["point"] == point
+    assert succes(client, tache, produit(identifiant)).status_code == 204
+    assert 'data-centimes="125"' in client.get("/panier/prix/flux").text
 
 
 def test_drives_rejette_un_lot_partiellement_invalide(edge, reglages):
