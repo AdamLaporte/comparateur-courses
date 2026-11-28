@@ -19,6 +19,7 @@ import random
 import unicodedata
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
 
 from app.contrats import (
     Enseigne,
@@ -411,5 +412,7 @@ class SourceFictive(SourcePrix):
             source=TypeSource.FICTIVE,
             source_detail=LIBELLE_AFFICHE,
             releve_le=datetime.now(UTC),
+            # Affiché comme un relevé importé : « 28/11/2026 », sans l'heure.
+            date_releve_source=datetime.now(ZoneInfo("Europe/Paris")).date(),
             est_fictif=True,
         )

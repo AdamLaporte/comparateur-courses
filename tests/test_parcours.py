@@ -2,6 +2,8 @@
 code postal → magasins → liste de courses → prix et total par magasin."""
 
 import re
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from app.contrats import Enseigne, Magasin, MagasinsReponse, Position, StatutPrix, TotauxReponse
 from app.panier import routes
@@ -213,6 +215,8 @@ def test_parcours_html_et_flux_sse(client):
     assert "event: resume" in texte
     assert texte.rstrip().endswith("data: fin")
     assert "Relevé en magasin" in texte
+    aujourdhui = datetime.now(ZoneInfo("Europe/Paris")).strftime("%d/%m/%Y")
+    assert f"Relevé en magasin · {aujourdhui}" in " ".join(texte.split())  # la date, pas l'heure
     assert "fictif" not in texte.lower()  # mode démo : rien n'indique des prix fictifs
 
 
