@@ -37,9 +37,9 @@ def _taches(reglages) -> int:
 
 
 def test_demo_par_defaut_tous_les_magasins_prix_fictifs_sans_edge(site, reglages):
-    page = site.get("/").text
-    assert "Passer aux données réelles" in page and "mode-pastille mode-demo" in page
-    assert "bandeau-fictif" not in page  # plus de bandeau : le bouton est dans le menu
+    assert "Passer aux données réelles" not in site.get("/").text  # plus dans le menu ni en bandeau
+    page = site.get("/comptes").text  # replié en bas de la page Compte
+    assert "Options de démonstration" in page and "Passer aux données réelles" in page
 
     _preparer(site)
     magasins = _magasins_affiches(site)
@@ -57,7 +57,7 @@ def test_reel_seulement_les_drives_releves_edge_rien_de_fictif(site, reglages):
         "/mode-donnees", data={"mode": "reel", "suivant": "/panier"}, follow_redirects=False
     )
     assert reponse.status_code == 303 and reponse.headers["location"] == "/panier"
-    assert "Passer en démo" in site.get("/").text
+    assert "Passer en démo" in site.get("/comptes").text
 
     _preparer(site, rayon="5")
     magasins = _magasins_affiches(site)
@@ -112,9 +112,9 @@ def test_retour_en_demo(site, reglages):
 
 def test_mode_par_defaut_reglable_et_choix_invalide_ignore(site, reglages):
     reglages.mode_donnees_defaut = "reel"
-    assert "Passer en démo" in site.get("/").text
+    assert "Passer en démo" in site.get("/comptes").text
     site.post("/mode-donnees", data={"mode": "n-importe-quoi"})
-    assert "Passer en démo" in site.get("/").text
+    assert "Passer en démo" in site.get("/comptes").text
 
 
 def test_pas_de_redirection_hors_du_site(site):

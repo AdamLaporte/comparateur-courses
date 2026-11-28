@@ -25,7 +25,7 @@
 | Ticket de caisse | Photo lue par OCR local, articles rapprochés du catalogue, « inexistant » sinon | Adam |
 | Comparaison | Prix en direct (SSE), verdict (même sans panier complet), classement, prix périmés signalés | Adam |
 | Prix réels | Cache, Open Prices et relevés Edge. Carrefour Drive Chartres-de-Bretagne et E.Leclerc Drive Bruz – Ker Lann sont proposés par le catalogue autour de Bruz | Jade, Raph |
-| Mode des données | Bouton dans le menu pour passer de prix fictifs sans Edge aux relevés réels des points connus ou ajoutés. Défaut `MODE_DONNEES_DEFAUT` | Jade |
+| Mode des données | Réglage dans « Options de démonstration », en bas de la page Compte, accessible sans connexion. Permet de passer des prix fictifs aux relevés réels. Défaut `MODE_DONNEES_DEFAUT` | Jade |
 | Site partagé | Base commune sur le PC de Raph via Tailscale, avec accès privé et jetons de collecte. Réutilisation réelle sur le second PC à valider | Raph, Adam |
 | Comptes | Inscription, connexion, mot de passe perdu, maison, favoris, tirelire (écart avec la moyenne) | Jade, Ilona |
 | Interface | GrignotePrix (nom, logo, couleurs), animations, mobile, fonctionne sans Internet (sauf fonds de carte) | Adam, Ilona |

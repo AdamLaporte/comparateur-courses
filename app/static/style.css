@@ -1286,24 +1286,14 @@ body.avec-barre { padding-bottom: 76px; }
 .carte-choix-ecart.gain { color: var(--vert); font-weight: 650; }
 .carte-choix-ecart.perte { color: var(--rouge); }
 
-/* Interrupteur du mode des données (démo / réelles) : 4e case du menu, à côté du compte */
-.menu { grid-template-columns: repeat(4, minmax(0, 1fr)); width: clamp(30rem, 48vw, 42rem); }
-.menu-mode { display: flex; margin: 0; }
-.menu-mode-bouton {
-  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  min-height: 48px; padding: 0 8px; border: none; border-radius: 12px; background: transparent; cursor: pointer;
-  color: var(--encre-2); font: inherit; font-weight: 600; font-size: 1.05rem;
-  transition: background-color var(--duree), color var(--duree), box-shadow var(--duree);
-}
-.menu-mode-bouton:hover { background: var(--blanc); color: var(--encre); box-shadow: var(--ombre-papier); }
-.menu-mode-bouton:focus-visible { outline: 2px solid var(--encre); outline-offset: -3px; }
+/* Mode des données (démo / réelles) : replié en bas de la page Compte */
+.options-demo { margin-top: 40px; padding-top: 16px; border-top: 1px dashed var(--trait); }
+.options-demo summary { cursor: pointer; color: var(--encre-3); font-size: .9rem; }
+.options-demo[open] summary { margin-bottom: 12px; }
+.options-demo form { margin-top: 12px; }
 .mode-pastille {
   font-family: var(--police-mono); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
   padding: 2px 6px; border-radius: 3px; color: var(--encre);
 }
 .mode-pastille.mode-demo { background: var(--corail); }
 .mode-pastille.mode-reel { background: var(--principal); }
-@media (max-width: 640px) {
-  .menu { width: 100%; }
-  .menu-mode-bouton { flex-direction: column; gap: 3px; min-height: 49px; padding: 4px; font-size: .86rem; line-height: 1.15; }
-}
