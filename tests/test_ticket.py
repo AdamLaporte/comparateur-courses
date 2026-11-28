@@ -142,3 +142,13 @@ def test_sans_releve_une_recherche_est_demandee_a_l_extension(client, reglages):
         ("intermarche-05052", "xyzqwertyu", "attente"),
         ("leclerc-retrait-113511", "xyzqwertyu", "attente"),
     }
+
+
+def test_en_demo_pas_de_mention_hors_catalogue(client):
+    client.get("/magasins", params={"code_postal": "35170"})
+    client.post(
+        "/panier/ticket/ajouter",
+        data={"recherche": ["xyzqwertyu"], "quantite": ["1"], "choix": ["inexistant"]},
+    )
+    tableau = client.get("/panier/resultats").text
+    assert "xyzqwertyu" in tableau and "hors catalogue" not in tableau

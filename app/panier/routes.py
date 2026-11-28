@@ -473,6 +473,7 @@ async def tableau_resultats(request: Request, reglages: ReglagesDep):
         "lignes": lignes,
         "magasins": [],
         "message": None,
+        "reel": est_reel(request),
         "liste_flux": request.headers.get("X-Liste-Courses") or request.query_params.get("liste"),
     }
     if not lignes:

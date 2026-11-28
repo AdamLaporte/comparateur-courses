@@ -35,7 +35,7 @@
         <tr>
           <th scope="row">
             <span class="quantite">{{ l.quantite }}×</span>{{ l.libelle }}
-            {% if l.mode.value == "inexistant" %}<span class="hors-catalogue">hors catalogue : cherché sur les drives</span>{% endif %}
+            {% if reel and l.mode.value == "inexistant" %}<span class="hors-catalogue">hors catalogue : cherché sur les drives</span>{% endif %}
           </th>
           {% for m in magasins %}
           <td class="case" data-magasin="{{ m.id }}" sse-swap="prix-{{ l.id }}-{{ m.id }}">
