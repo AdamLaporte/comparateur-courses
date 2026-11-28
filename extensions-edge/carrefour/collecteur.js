@@ -30,25 +30,6 @@ async function ouvrirOnglet(identifiant) {
   return onglet.id;
 }
 
-async function attendreDepart(cible, limite, point, documentPrecedent) {
-  while (Date.now() < limite) {
-    if (erreursNavigation.has(cible.tabId)) return { erreur: erreursNavigation.get(cible.tabId) };
-    const onglet = await chrome.tabs.get(cible.tabId);
-    if (onglet.status === "complete" && !onglet.pendingUrl && siteDuDrive(onglet.url)) {
-      const page = await injecter(cible, lirePage).catch(() => null);
-      if (page && page.documentId !== documentPrecedent) {
-        const etat = page.result;
-        // Carrefour confirme le retrait par les tarifs de la page de résultats.
-        if (etat.erreur || drive.enseigneId === "carrefour" || etat.reference === point.reference) {
-          return page.result;
-        }
-      }
-    }
-    await new Promise((resolve) => setTimeout(resolve, 700));
-  }
-  return { erreur: "mauvais_drive" };
-}
-
 async function relever(tabId, requete, point, changer) {
   const cible = { tabId };
   tabEnCours = tabId;
@@ -56,50 +37,53 @@ async function relever(tabId, requete, point, changer) {
   try {
     const initial = await chrome.tabs.get(tabId);
     const dejaOuvert = siteDuDrive(initial.url);
-    let documentPrecedent;
-    if (changer || !dejaOuvert) {
-      if (dejaOuvert) documentPrecedent = (await injecter(cible, lirePage).catch(() => null))?.documentId;
-      await chrome.tabs.update(tabId, { url: point.accueil });
-    }
-    const depart = await attendreDepart(cible, Date.now() + 18_000, point, documentPrecedent);
-    if (depart.erreur) return { erreur: depart.erreur };
-    const tab = await chrome.tabs.get(tabId);
-    if (!siteDuDrive(tab.url)) return { erreur: "page_inattendue" };
-
-    const destination = urlRecherche(point.accueil, requete);
-    if (tab.url === destination) await chrome.tabs.reload(tabId);
+    let documentAvant = dejaOuvert ? (await injecter(cible, lirePage).catch(() => null))?.documentId : undefined;
+    let selectionEnCours = changer || !dejaOuvert;
+    const destination = urlRecherche(point.accueil, requete, selectionEnCours);
+    if (initial.url === destination) await chrome.tabs.reload(tabId);
     else await chrome.tabs.update(tabId, { url: destination });
 
-    const limite = Date.now() + 30_000;
+    const limite = Date.now() + 45_000;
     let precedent = "";
+    let confirme = false;
     while (Date.now() < limite) {
       await new Promise((resolve) => setTimeout(resolve, 700));
       if (erreursNavigation.has(tabId)) return { erreur: erreursNavigation.get(tabId) };
       const onglet = await chrome.tabs.get(tabId);
+      if (onglet.status !== "complete" || onglet.pendingUrl) continue;
       if (!siteDuDrive(onglet.url)) return { erreur: "page_inattendue" };
-      if (onglet.status !== "complete") continue;
       let page;
       try {
-        page = await injecter(cible, lirePage, requete);
+        page = await injecter(cible, lirePage, requete, point.reference);
       } catch {
         continue;
       }
+      if (page.documentId === documentAvant) continue;
       const etat = page.result;
       if (etat.erreur) return { erreur: etat.erreur };
-      if (etat.document === depart.document) continue;
-      if (!etat.recherche || !etat.charge) continue;
+      if (!etat.charge) continue;
+      if (!etat.recherche) {
+        const chemin = new URL(onglet.url).pathname.replace(/\/$/, "");
+        if (selectionEnCours && (chemin === "" || chemin === "/courses")) {
+          selectionEnCours = false;
+          documentAvant = page.documentId;
+          await chrome.tabs.update(tabId, { url: urlRecherche(point.accueil, requete) });
+        }
+        continue;
+      }
       // L'identité et les prix proviennent de la même lecture du document marchand.
-      const signature = JSON.stringify([page.documentId, etat.reference, etat.vide, etat.items]);
+      confirme = true;
+      const signature = JSON.stringify([page.documentId, etat.reference, etat.references, etat.items]);
       if (signature !== precedent) {
         precedent = signature;
         continue;
       }
-      if (!etat.vide && !etat.items.length) continue;
-      if (etat.reference !== point.reference) return { erreur: "mauvais_drive" };
-      if (etat.vide) return { etat: "vide", service_observe: point.id };
-      return { etat: "succes", service_observe: point.id, produits: etat.items };
+      if (etat.reference && etat.reference !== point.reference) return { erreur: "mauvais_drive" };
+      if (etat.reference === point.reference && etat.items.length) {
+        return { etat: "succes", service_observe: point.id, produits: etat.items };
+      }
     }
-    return { erreur: "delai" };
+    return { erreur: confirme ? "page_inattendue" : "delai" };
   } catch {
     return { erreur: erreursNavigation.get(tabId) || "page_inattendue" };
   } finally {

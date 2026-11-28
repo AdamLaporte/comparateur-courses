@@ -30,7 +30,22 @@ async function ouvrirOnglet(identifiant) {
   return onglet.id;
 }
 
+async function accueilConnu(point) {
+  const onglets = await chrome.tabs.query({
+    url: `https://*.leclercdrive.fr/magasin-${point.reference}-*`,
+  });
+  for (const onglet of onglets) {
+    if (onglet.status !== "complete" || onglet.pendingUrl || !siteDuDrive(onglet.url)) continue;
+    const page = await injecter({ tabId: onglet.id }, lirePage).catch(() => null);
+    if (page?.result?.reference === point.reference && siteDuDrive(page.result.accueil)) {
+      return page.result.accueil;
+    }
+  }
+  return point.accueil;
+}
+
 async function attendreDepart(cible, limite, point, documentPrecedent) {
+  let erreur = "delai";
   while (Date.now() < limite) {
     if (erreursNavigation.has(cible.tabId)) return { erreur: erreursNavigation.get(cible.tabId) };
     const onglet = await chrome.tabs.get(cible.tabId);
@@ -38,15 +53,13 @@ async function attendreDepart(cible, limite, point, documentPrecedent) {
       const page = await injecter(cible, lirePage).catch(() => null);
       if (page && page.documentId !== documentPrecedent) {
         const etat = page.result;
-        // Carrefour confirme le retrait par les tarifs de la page de résultats.
-        if (etat.erreur || drive.enseigneId === "carrefour" || etat.reference === point.reference) {
-          return page.result;
-        }
+        if (etat.erreur || etat.reference === point.reference) return etat;
+        erreur = etat.reference ? "mauvais_drive" : "page_inattendue";
       }
     }
     await new Promise((resolve) => setTimeout(resolve, 700));
   }
-  return { erreur: "mauvais_drive" };
+  return { erreur };
 }
 
 async function relever(tabId, requete, point, changer) {
@@ -59,14 +72,14 @@ async function relever(tabId, requete, point, changer) {
     let documentPrecedent;
     if (changer || !dejaOuvert) {
       if (dejaOuvert) documentPrecedent = (await injecter(cible, lirePage).catch(() => null))?.documentId;
-      await chrome.tabs.update(tabId, { url: point.accueil });
+      await chrome.tabs.update(tabId, { url: await accueilConnu(point) });
     }
     const depart = await attendreDepart(cible, Date.now() + 18_000, point, documentPrecedent);
     if (depart.erreur) return { erreur: depart.erreur };
     const tab = await chrome.tabs.get(tabId);
     if (!siteDuDrive(tab.url)) return { erreur: "page_inattendue" };
 
-    const destination = urlRecherche(point.accueil, requete);
+    const destination = urlRecherche(depart.accueil, requete);
     if (tab.url === destination) await chrome.tabs.reload(tabId);
     else await chrome.tabs.update(tabId, { url: destination });
 
@@ -76,8 +89,8 @@ async function relever(tabId, requete, point, changer) {
       await new Promise((resolve) => setTimeout(resolve, 700));
       if (erreursNavigation.has(tabId)) return { erreur: erreursNavigation.get(tabId) };
       const onglet = await chrome.tabs.get(tabId);
+      if (onglet.status !== "complete" || onglet.pendingUrl) continue;
       if (!siteDuDrive(onglet.url)) return { erreur: "page_inattendue" };
-      if (onglet.status !== "complete") continue;
       let page;
       try {
         page = await injecter(cible, lirePage, requete);

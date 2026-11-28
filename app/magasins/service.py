@@ -18,7 +18,7 @@ from itertools import chain
 
 from app.config import Reglages
 from app.contrats import Enseigne, Magasin, MagasinsReponse, Position
-from app.drives.catalogue import magasins_inscrits
+from app.drives.catalogue import magasin_retrait, magasins_inscrits
 from app.drives.modeles import DRIVES, DRIVES_OSM
 from app.magasins.geocodage import geocoder
 from app.magasins.import_osm import FICHIER as FICHIER_OSM
@@ -58,26 +58,24 @@ def _garder_proches(
     return proches[:maximum]
 
 
+def _magasins_initiaux() -> Iterable[Magasin]:
+    for drive, point in DRIVES.items():
+        if point.coordonnees is not None:
+            yield magasin_retrait(drive, point, point.coordonnees)
+
+
 @cache
 def magasins_osm() -> dict[Enseigne, list[Magasin]]:
-    """Tous les magasins du fichier OpenStreetMap, par enseigne (chargés une seule fois)."""
+    """Magasins OpenStreetMap et points de retrait du catalogue initial, par enseigne."""
     par_enseigne: dict[Enseigne, list[Magasin]] = {e: [] for e in Enseigne}
+    drives_associes = set()
     for m in json.loads(FICHIER_OSM.read_text(encoding="utf-8")):
         enseigne = Enseigne(m["enseigne"])
         if drive_id := DRIVES_OSM.get(m["id"]):
             point = DRIVES[drive_id]
-            lat, lon = point.coordonnees or (m["lat"], m["lon"])
+            drives_associes.add(drive_id)
             par_enseigne[enseigne].append(
-                Magasin(
-                    id=drive_id,
-                    enseigne=enseigne,
-                    id_enseigne=drive_id.split("-", 1)[1],
-                    nom=point.nom,
-                    adresse=f"{point.adresse}, {point.code_postal} {point.ville}",
-                    code_postal=point.code_postal,
-                    ville=point.ville,
-                    position=Position(lat=lat, lon=lon),
-                )
+                magasin_retrait(drive_id, point, point.coordonnees or (m["lat"], m["lon"]))
             )
             continue
         par_enseigne[enseigne].append(
@@ -92,6 +90,9 @@ def magasins_osm() -> dict[Enseigne, list[Magasin]]:
                 position=Position(lat=m["lat"], lon=m["lon"]),
             )
         )
+    for magasin in _magasins_initiaux():
+        if magasin.id not in drives_associes:
+            par_enseigne[magasin.enseigne].append(magasin)
     return par_enseigne
 
 
@@ -130,12 +131,17 @@ async def magasins_proches(
     rayon, maximum = _limites(rayon_km, reglages)
     sources = sources_actives(reglages)
     if seulement_drives:
-        tous = magasins_osm() if FICHIER_OSM.exists() else {e: [] for e in Enseigne}
-        drives = {e: [m for m in tous[e] if m.id in DRIVES] for e in sources}
-        for magasin in await asyncio.to_thread(magasins_inscrits, reglages.db_path):
+        initiaux = (
+            (m for ms in magasins_osm().values() for m in ms if m.id in DRIVES)
+            if FICHIER_OSM.exists()
+            else _magasins_initiaux()
+        )
+        drives: dict[Enseigne, dict[str, Magasin]] = {e: {} for e in sources}
+        inscrits = await asyncio.to_thread(magasins_inscrits, reglages.db_path)
+        for magasin in chain(initiaux, inscrits):
             if magasin.enseigne in drives:
-                drives[magasin.enseigne].append(magasin)
-        listes = [_garder_proches(ms, position, rayon, maximum) for ms in drives.values()]
+                drives[magasin.enseigne][magasin.id] = magasin
+        listes = [_garder_proches(ms.values(), position, rayon, maximum) for ms in drives.values()]
     elif reglages.magasins_osm and FICHIER_OSM.exists():
         tous = magasins_osm()
         listes = [_garder_proches(tous[e], position, rayon, maximum) for e in sources]

@@ -130,7 +130,7 @@ for identifiant, point in DRIVES.items():
     if url_marchande(identifiant, point.accueil) != point.accueil:
         raise ValueError(f"Adresse de retrait non canonique : {identifiant}")
 
-DRIVES_OSM = {point.osm: drive for drive, point in DRIVES.items()}
+DRIVES_OSM = {point.osm: drive for drive, point in DRIVES.items() if point.osm}
 
 
 def point_collecteur(drive: DriveId, point: PointRetrait) -> dict:

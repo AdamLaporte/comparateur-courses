@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<title>Vérification du relevé manuel Edge</title>
+<output id="rapport">Tests en cours</output>
+<script type="module">
+  const rapport = document.querySelector("#rapport");
+
+  function verifier(condition, description) {
+    if (!condition) throw new Error(description);
+  }
+
+  async function attendre(condition) {
+    for (let essai = 0; essai < 20; essai++) {
+      if (condition()) return;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    throw new Error("Action du relevé manuel inachevée");
+  }
+
+  async function tester(enseigne, adresse, reference) {
+    const racine = `/extensions-edge/${enseigne}/`;
+    const html = await (await fetch(racine + "popup.html")).text();
+    const memoire = { jeton: "test-local", rows: [] };
+    let appels = 0;
+    let catalogue = null;
+    let page = { reference: "", items: [] };
+    window.simulerEdge = (fenetre) => {
+      Object.defineProperty(fenetre, "chrome", { configurable: true, value: {
+        storage: { local: {
+          get: async (cles) => Array.isArray(cles) || typeof cles === "string"
+            ? Object.fromEntries([cles].flat().map((cle) => [cle, memoire[cle]]))
+            : { ...cles, ...memoire },
+          set: async (valeurs) => Object.assign(memoire, valeurs),
+        } },
+        tabs: { query: async () => [{ id: 1, url: adresse }] },
+        scripting: { executeScript: async () => [{ result: page }] },
+      } });
+      fenetre.fetch = async () => {
+        appels++;
+        if (!catalogue) throw new Error("Comparateur hors ligne");
+        return { ok: true, json: async () => catalogue };
+      };
+    };
+
+    const cadre = document.createElement("iframe");
+    const charge = new Promise((resolve) => cadre.addEventListener("load", resolve, { once: true }));
+    cadre.srcdoc = html
+      .replace('href="popup.css"', `href="${racine}popup.css"`)
+      .replace('<script type="module" src="popup.js"><\/script>',
+        `<script>parent.simulerEdge(window)<\/script><script type="module" src="${racine}popup.js"><\/script>`);
+    document.body.append(cadre);
+    await charge;
+    const element = (id) => cadre.contentDocument.getElementById(id);
+    const lire = async () => {
+      element("read").click();
+      await attendre(() => !element("read").disabled);
+    };
+
+    await lire();
+    verifier(element("status").textContent.includes("n’a pas pu être identifié") && appels === 0,
+      "Une page sans référence doit être refusée indépendamment du comparateur");
+
+    page = { reference, libelle: "Drive de test", rayon: "Produits frais",
+      items: [{ produit: "Œufs", prix_eur: "2.20", url: adresse }] };
+    await lire();
+    verifier(element("status").textContent.includes("exporter en CSV") && appels === 1,
+      "Un retrait identifié sur la page reste exportable hors ligne");
+    verifier(element("drive-address").textContent === `Référence du retrait ${reference}`,
+      "La référence marchande doit être visible avant confirmation");
+    element("form").elements.confirme.checked = true;
+    element("save-list").click();
+    await attendre(() => !element("export").disabled);
+    verifier(memoire.rows[0]?.service_drive === `retrait-${reference}` && memoire.rows[0].prix_eur === "2.20",
+      "L’export local doit conserver le retrait et le prix");
+
+    catalogue = [{ id: `retrait-${reference}`, reference, nom: "Drive répertorié", adresse: "Adresse de test" }];
+    await lire();
+    verifier(element("drive-name").textContent === "Drive répertorié" && !element("status").textContent.includes("exporter"),
+      "La fiche du comparateur doit rester prioritaire");
+    cadre.remove();
+  }
+
+  try {
+    await tester("carrefour", "https://www.carrefour.fr/s?q=oeufs", "267");
+    await tester("leclerc", "https://fd2-courses.leclercdrive.fr/magasin-113511-ker-lann.aspx", "113511");
+    rapport.textContent = "DRIVES_MANUEL_OK";
+  } catch (erreur) {
+    rapport.textContent = "DRIVES_MANUEL_ECHEC " + erreur.message;
+  }
+</script>
+</html>

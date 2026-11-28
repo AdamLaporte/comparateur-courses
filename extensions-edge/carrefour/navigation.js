@@ -1,5 +1,5 @@
 // Cette fonction est injectée dans l'onglet. Elle ne fait aucun appel réseau.
-export function lirePage(requete = "") {
+export function lirePage(requete = "", referenceAttendue = "") {
   const compacte = (texte) => typeof texte === "string" ? texte.replace(/\s+/g, " ").trim() : "";
   const normalise = (texte) => compacte(texte).normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
   const visible = (element) => Boolean(element?.getClientRects().length)
@@ -25,6 +25,7 @@ export function lirePage(requete = "") {
     libelle,
     codePostal: "",
     items: [],
+    references: [],
     cartes: 0,
     recherche,
     charge: document.readyState === "complete" && Boolean(principal),
@@ -83,6 +84,7 @@ export function lirePage(requete = "") {
       const reference = cle.match(/^0039-150-(\d{1,12})$/)?.[1];
       if (!reference) continue;
       refs.add(reference);
+      if (referenceAttendue && reference !== referenceAttendue) continue;
       if (items.size >= 60) continue;
       const offre = lire(lire(donnee)?.attributes);
       const prix = lire(offre?.price);
@@ -105,11 +107,14 @@ export function lirePage(requete = "") {
       });
     }
   }
-  if (refs.size !== 1) return depart;
-  const [reference] = refs;
+  const references = [...refs];
+  const reference = refs.has(referenceAttendue) ? referenceAttendue
+    : references.length === 1 ? references[0] : "";
+  if (!reference) return { ...depart, references };
   return {
     ...depart,
     reference,
+    references,
     accueil: url.origin + "/set-store/" + reference,
     items: [...items.values()],
     cartes: donnees.length,

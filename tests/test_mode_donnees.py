@@ -4,17 +4,21 @@
 import re
 
 import pytest
+from fastapi.testclient import TestClient
 
 from app import db
+from app.drives.catalogue import inscrire
 from app.drives.modeles import DRIVES
+from app.main import creer_app
 
 
 @pytest.fixture
-def site(client, reglages):
+def site(reglages):
     reglages.magasins_osm = True  # vrais magasins, dont les drives répertoriés
     reglages.drives_jeton = "j" * 32  # collecte Edge configurée : seul le mode doit l'empêcher
     reglages.drives_attente_s = 0  # l'extension ne répond pas : le flux se termine tout de suite
-    return client
+    with TestClient(creer_app(reglages), client=("127.0.0.1", 9999)) as client:
+        yield client
 
 
 def _magasins_affiches(client) -> set[str]:
@@ -55,13 +59,21 @@ def test_reel_seulement_les_drives_releves_edge_rien_de_fictif(site, reglages):
     assert reponse.status_code == 303 and reponse.headers["location"] == "/panier"
     assert "Passer en démo" in site.get("/").text
 
-    _preparer(site)
+    _preparer(site, rayon="5")
     magasins = _magasins_affiches(site)
     assert magasins and magasins <= set(DRIVES)  # seulement des drives répertoriés
+    assert {"carrefour-retrait-267", "leclerc-retrait-113511"} <= magasins
 
     flux = site.get("/panier/prix/flux").text
     assert "Données fictives" not in flux
     assert _taches(reglages) > 0  # une recherche a été demandée aux extensions
+    for enseigne, reference in (("carrefour", "267"), ("leclerc", "113511")):
+        tache = site.post(
+            f"/api/drives/enseignes/{enseigne}/prendre",
+            headers={"X-Drives-Jeton": reglages.drives_jeton},
+        ).json()
+        assert tache["drive_id"] == f"{enseigne}-retrait-{reference}"
+        assert tache["point"]["reference"] == reference
 
 
 def test_page_des_magasins_en_mode_reel(site):
@@ -69,6 +81,25 @@ def test_page_des_magasins_en_mode_reel(site):
     page = site.get("/magasins", params={"code_postal": "35170"}).text
     assert "Super U Bruz" in page
     assert "osm" not in " ".join(re.findall(r'data-magasin="([^"]+)"', page))
+
+
+def test_drives_geolocalises_sans_osm_et_sans_doublon(site, reglages, monkeypatch, tmp_path):
+    monkeypatch.setattr("app.magasins.service.FICHIER_OSM", tmp_path / "osm-absent.json")
+    drive = "leclerc-retrait-113511"
+    point = DRIVES[drive].model_copy(update={"nom": "Drive de Ker Lann enregistré dans Edge"})
+    inscrire(reglages.db_path, drive, point)
+
+    site.post("/mode-donnees", data={"mode": "reel"})
+    reponse = site.get("/magasins", params={"code_postal": "35170", "rayon_km": 5})
+    assert reponse.status_code == 200
+    assert "Carrefour Drive Chartres-de-Bretagne" in reponse.text
+    assert point.nom in reponse.text
+    assert "E.Leclerc Drive Bruz – Ker Lann" not in reponse.text
+    points = site.post(
+        "/api/drives/enseignes/leclerc/points-retrait",
+        headers={"X-Drives-Jeton": reglages.drives_jeton},
+    ).json()
+    assert [p["nom"] for p in points if p["reference"] == "113511"] == [point.nom]
 
 
 def test_retour_en_demo(site, reglages):

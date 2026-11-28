@@ -36,5 +36,26 @@
     "code_postal": "35700",
     "accueil": "https://www.intermarche.com/magasins/06994/rennes-35700/infos-pratiques",
     "libelles": ["Rennes", "Super Rennes", "Super Rennes Gayeulles", "Rennes Gayeulles"]
+  },
+  "carrefour-retrait-267": {
+    "nom": "Carrefour Drive Chartres-de-Bretagne",
+    "reference": "267",
+    "osm": "n320620918",
+    "adresse": "Rue de la Croix aux Potiers",
+    "ville": "Chartres-de-Bretagne",
+    "code_postal": "35131",
+    "coordonnees": [48.046334, -1.711695],
+    "accueil": "https://www.carrefour.fr/set-store/267",
+    "libelles": ["Market Chartres-de-Bretagne", "Drive Chartres-de-Bretagne"]
+  },
+  "leclerc-retrait-113511": {
+    "nom": "E.Leclerc Drive Bruz – Ker Lann",
+    "reference": "113511",
+    "adresse": "Rue Charles Coudé",
+    "ville": "Bruz",
+    "code_postal": "35170",
+    "coordonnees": [48.05611, -1.74167],
+    "accueil": "https://fd6-courses.leclercdrive.fr/magasin-113511-113511-bruz---ker-lann.aspx",
+    "libelles": ["Bruz - Ker Lann"]
   }
 }

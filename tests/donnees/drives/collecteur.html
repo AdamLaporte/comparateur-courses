@@ -13,7 +13,11 @@
     },
   });
 
-  async function tester(dossier, commandes, erreurAttendue = "", adresseServeur) {
+  const accueilKerLann = catalogue["leclerc-retrait-113511"].accueil;
+  let numeroScenario = 0;
+
+  async function tester(dossier, commandes, erreurAttendue = "", adresseServeur, options = {}) {
+    const { catalogueDejaOuvert, redirigerVersAccueil } = options;
     const evenement = () => ({ addListener() {} });
     const declencheurs = [];
     const session = {};
@@ -50,29 +54,40 @@
             return onglet;
           },
           get: async () => onglet,
+          query: async ({ url }) => catalogueDejaOuvert && url.endsWith("/magasin-113511-*")
+            ? [{ id: 2, status: "complete", url: accueilKerLann }] : [],
           update: async (_id, { url }) => {
             ouvertures.push(url);
             documentOnglet++;
-            onglet.url = url === catalogue["intermarche-06994"].accueil
-              ? url.replace("/rennes-", "/Rennes-") + "?pdvref=06994"
-              : url;
+            const adresse = new URL(url);
+            if (url === catalogue["intermarche-06994"].accueil) {
+              onglet.url = url.replace("/rennes-", "/Rennes-") + "?pdvref=06994";
+            } else if (adresse.searchParams.has("redirect")) {
+              const chemin = redirigerVersAccueil ? "/courses" : adresse.searchParams.get("redirect");
+              onglet.url = new URL(chemin, adresse.origin).href;
+            } else {
+              onglet.url = url;
+            }
           },
           onRemoved: evenement(),
         },
         scripting: {
-          executeScript: async ({ func, args = [] }) => {
+          executeScript: async ({ target, func, args = [] }) => {
             if (prixParPage) {
               const [requete] = args;
               const point = catalogue[commande];
               const prix = { produit: "Lait fictif", prix_eur: "1.20" };
+              const adresse = target.tabId === 2 ? accueilKerLann : onglet.url;
+              const surRecherche = new URL(adresse).searchParams.has(enseigne === "carrefour" ? "q" : "TexteRecherche");
               return [{
                 documentId: String(documentOnglet),
                 result: erreurAttendue === "defi" ? { erreur: "defi" } : {
-                  reference: requete && erreurAttendue === "mauvais_drive" ? "111111" : point.reference,
+                  reference: surRecherche && erreurAttendue === "mauvais_drive" ? "111111" : point.reference,
+                  accueil: commande === "leclerc-retrait-113511" ? accueilKerLann : point.accueil,
                   document: documentOnglet,
-                  recherche: requete === "lait",
+                  recherche: surRecherche && requete === "lait",
                   charge: true,
-                  items: requete ? [prix] : [],
+                  items: surRecherche && requete ? [prix] : [],
                 },
               }];
             }
@@ -105,7 +120,8 @@
         const point = catalogue[commande];
         return { ok: true, json: async () => ({
           id: 1, drive_id: commande, bail: "test", requete: "lait",
-          point: { id: commande.slice(enseigne.length + 1), accueil: point.accueil,
+          point: { id: commande.slice(enseigne.length + 1), accueil: catalogueDejaOuvert
+            ? "https://www.leclercdrive.fr/region-bretagne/bruz/drive-bruz---ker-lann.aspx" : point.accueil,
             libelles: point.libelles, reference: point.reference },
         }) };
       }
@@ -113,13 +129,17 @@
       terminer();
       return { ok: true };
     };
-    await import("/extensions-edge/" + dossier + "/collecteur.js?" + (adresseServeur ? "partage" : "local"));
+    await import("/extensions-edge/" + dossier + "/collecteur.js?scenario=" + ++numeroScenario);
     for (commande of commandes) {
       depot = null;
       const fini = new Promise((resolve) => { terminer = resolve; });
       declencheurs[0]();
       await fini;
-      if (ouvertures[0] !== "onglet" || !ouvertures.includes(catalogue[commande].accueil)) {
+      const accueil = catalogueDejaOuvert ? accueilKerLann : catalogue[commande].accueil;
+      const ouvert = enseigne === "carrefour"
+        ? ouvertures.some((url) => url.startsWith(accueil + "?") && new URL(url).searchParams.get("redirect") === "/s?q=lait")
+        : ouvertures.includes(accueil);
+      if (ouvertures[0] !== "onglet" || !ouvert) {
         throw new Error("Le bon point de retrait n’a pas été ouvert pour " + commande);
       }
       if (!depot || depot.drive_id !== commande || (erreurAttendue
@@ -139,8 +159,11 @@
     await tester("intermarche-bruz-cap-vert", ["intermarche-05052", "intermarche-06994"],
       "", "https://comparateur-test.equipe.ts.net");
     await tester("carrefour", ["carrefour-retrait-136", "carrefour-retrait-777"]);
+    await tester("carrefour", ["carrefour-retrait-267"], "", undefined, { redirigerVersAccueil: true });
     await tester("carrefour", ["carrefour-retrait-136"], "mauvais_drive", "https://comparateur-test.equipe.ts.net");
     await tester("leclerc", ["leclerc-retrait-095705"]);
+    await tester("leclerc", ["leclerc-retrait-113511"]);
+    await tester("leclerc", ["leclerc-retrait-113511"], "", undefined, { catalogueDejaOuvert: true });
     await tester("leclerc", ["leclerc-retrait-095705"], "defi", "https://comparateur-test.equipe.ts.net");
     rapport.textContent = "DRIVES_COLLECTEUR_OK";
   } catch (erreur) {

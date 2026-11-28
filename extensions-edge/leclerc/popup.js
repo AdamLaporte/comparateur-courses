@@ -113,22 +113,25 @@ byId("read").addEventListener("click", async () => {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!matchesSite(tab?.url)) return status("Ouvre le site marchand d’un point de retrait de l’enseigne.", true);
-    const points = await pointsRepertories();
     const resultat = await lireMagasinActif(tab);
     if (resultat.erreur) return status("Le site marchand a bloqué la lecture ou demande une vérification.", true);
-    const point = points.find((candidat) => candidat.reference === resultat.reference);
-    if (!point) {
-      byId("ajout-magasin").open = true;
-      return status("Point de retrait non reconnu. Ajoute le magasin actif ou vérifie la connexion au comparateur.", true);
+    if (!resultat.reference) {
+      return status("Le retrait n’a pas pu être identifié sur cette page. Sélectionne le Drive, puis ouvre un rayon ou une recherche qui affiche des prix.", true);
     }
     if (!resultat.items.length) return status("Aucune carte avec prix. Ouvre un rayon ou des résultats de recherche.", true);
-    pointLu = point;
-    byId("drive-name").textContent = point.nom;
-    byId("drive-address").textContent = point.adresse;
+    const points = await pointsRepertories().catch(() => []);
+    const point = points.find((candidat) => candidat.reference === resultat.reference);
+    pointLu = point || {
+      id: "retrait-" + resultat.reference,
+      nom: resultat.libelle || drive.enseigne + " · Drive " + resultat.reference,
+      adresse: "",
+    };
+    byId("drive-name").textContent = pointLu.nom;
+    byId("drive-address").textContent = point ? point.adresse : "Référence du retrait " + resultat.reference;
     byId("drive-lu").hidden = false;
     rayon = resultat.rayon;
     showListing(resultat.items);
-    status(resultat.items.length + " produits détectés.");
+    status(resultat.items.length + " produits détectés." + (point ? "" : " Tu peux les enregistrer et les exporter en CSV depuis Edge."));
   } catch {
     status("Lecture impossible. Réessaie depuis un rayon du drive.", true);
   } finally {

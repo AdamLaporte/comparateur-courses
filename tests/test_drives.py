@@ -406,7 +406,7 @@ def test_drives_conditionnement_precis_et_correspondance_possible(edge):
 
 def _panier(client, reglages, **article):
     reglages.magasins_osm = True
-    magasins = client.get("/magasins?code_postal=35170&rayon_km=5")  # drives de Bruz seulement
+    magasins = client.get("/magasins?code_postal=35170&rayon_km=2")  # Super U et Intermarché
     assert magasins.status_code == 200
     assert 'href="/drives"' not in magasins.text
     assert client.get("/drives").status_code == 404

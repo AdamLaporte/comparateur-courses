@@ -71,12 +71,19 @@
     offres["0039-150-777"] = offre;
     publierPrix();
     verifier(!lireCarrefour("lait").items.length, "Deux références Drive Carrefour sont ambiguës");
+    const carrefourCible = lireCarrefour("lait", "136");
+    verifier(carrefourCible.reference === "136" && carrefourCible.items[0]?.prix_eur === "1.05"
+      && !lireCarrefour("lait", "267").items.length, "Seuls les prix du Drive demandé sont relevés");
     delete offres["0039-150-777"];
     publierPrix();
     entete.innerHTML += '<button aria-selected="true">Livraison</button>';
     verifier(!lireCarrefour("lait").reference, "Livraison Carrefour refusée");
     verifier(new URL(rechercheCarrefour("https://www.carrefour.fr/set-store/136", "pâtes & riz")).searchParams.get("q")
       === "pâtes & riz", "Adresse de recherche Carrefour");
+    const selection = new URL(rechercheCarrefour("https://www.carrefour.fr/set-store/267", "pâtes & riz", true));
+    verifier(selection.pathname === "/set-store/267"
+      && new URL(selection.searchParams.get("redirect"), selection.origin).searchParams.get("q") === "pâtes & riz",
+      "La sélection Carrefour redirige vers la recherche demandée");
 
     const urlLeclerc = rechercheLeclerc("https://fd2-courses.leclercdrive.fr/magasin-095705-095705-stiring-wendel.aspx", "lait");
     const destinationLeclerc = new URL(urlLeclerc);

@@ -435,7 +435,9 @@ Modèle dans `.env.example`.
 - **Comparer** ouvre le flux `/panier/prix/flux`. Pour les points de retrait répertoriés, il affiche
   les prix déjà connus et suit les tâches Edge démarrées pour les prix manquants ou périmés.
   Le total est recalculé à partir du dernier état de chaque couple article et magasin.
-- Le catalogue initial associe quatre fiches OSM à des points de retrait. Pour ajouter un autre
+- Le catalogue initial contient des points géolocalisés et peut les associer à une fiche OSM.
+  Carrefour Drive Chartres-de-Bretagne reprend sa fiche OSM et E.Leclerc Drive Bruz – Ker Lann
+  apparaît grâce à ses coordonnées dans le catalogue. Pour ajouter un autre
   point, l’extension lit la référence et le libellé du magasin actif, puis transmet la fiche
   officielle et l’adresse confirmées par l’opérateur à
   `POST /api/drives/enseignes/{enseigne}/inscrire-point-retrait`. Le serveur exige le jeton de
@@ -447,12 +449,16 @@ Modèle dans `.env.example`.
 - La référence marchande peut différer de l’identifiant utilisé dans SQLite. Courses U vérifie
   le numéro fourni par le site quand il est présent dans la page et utilise le libellé de l’en-tête
   en son absence. Le relevé manuel lit le même catalogue via
-  `POST /api/drives/enseignes/{enseigne}/points-retrait`, avec le jeton de collecte.
-- Carrefour ouvre le drive via `/set-store/<référence>`. Il lit le prix dans les offres
-  du canal Drive en exigeant une référence unique sur le document de résultats. E.Leclerc
-  vérifie la référence à six chiffres dans le chemin de son catalogue et lit les prix dans
-  les cartes de produits. Ces extensions associent l’identité du drive et les prix au même
-  document du navigateur.
+  `POST /api/drives/enseignes/{enseigne}/points-retrait`, avec le jeton de collecte. Carrefour et
+  E.Leclerc permettent également l’export CSV local à partir des prix et de la référence
+  identifiés sur la page si le catalogue du comparateur est indisponible.
+- Carrefour ouvre le drive via `/set-store/<référence>` avec la recherche comme destination.
+  Si le site ouvre son accueil, l’extension charge ensuite la recherche. Le relevé automatique
+  lit exclusivement les offres du canal Drive portant la référence demandée. Le relevé manuel
+  exige une référence unique. E.Leclerc peut retrouver l’adresse du catalogue dans un onglet
+  déjà ouvert pour le retrait demandé. Sinon, il ouvre la fiche configurée et attend un catalogue
+  qui porte la même référence à six chiffres. Ces extensions associent l’identité du drive et
+  les prix au même document du navigateur.
 - `app/drives/schema.sql` déclare les références marchandes, les observations et la file des recherches.
   Les tâches actives sont uniques par drive et requête normalisée. La prise de tâche et le dépôt utilisent
   des transactions SQLite. Chaque dépôt doit correspondre au bail actif et au point de retrait.

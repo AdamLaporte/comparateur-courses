@@ -122,7 +122,7 @@ def points_retrait_api(
 ):
     _autoriser(request, reglages, x_drives_jeton)
     with db.connexion(reglages.db_path) as cnx:
-        points = {**points_inscrits(cnx), **DRIVES}
+        points = {**DRIVES, **points_inscrits(cnx)}
     return [
         point_collecteur(drive, point)
         for drive, point in points.items()
@@ -147,7 +147,7 @@ async def inscrire_point_retrait(
             422, "Le lien du magasin ne correspond pas au retrait détecté."
         ) from exc
     for identifiant, initial in DRIVES.items():
-        if identifiant.startswith(enseigne + "-"):
+        if identifiant != drive and identifiant.startswith(enseigne + "-"):
             point = point_collecteur(identifiant, initial)
             if point["reference"] == inscription.reference:
                 return point

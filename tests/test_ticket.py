@@ -64,7 +64,7 @@ def test_article_inexistant_cherche_sur_le_drive(client, reglages):
     reglages.mode_donnees_defaut = "reel"  # relevés Edge : mode « données réelles »
     reglages.drives_attente_s = 0
     reglages.magasins_osm = True
-    client.get("/magasins", params={"code_postal": "35170", "rayon_km": "5"})  # drives de Bruz
+    client.get("/magasins", params={"code_postal": "35170", "rayon_km": "5"})
     client.post(
         "/panier/ticket/ajouter",
         data={"recherche": ["xyzqwertyu"], "quantite": ["1"], "choix": ["inexistant"]},
@@ -137,6 +137,8 @@ def test_sans_releve_une_recherche_est_demandee_a_l_extension(client, reglages):
     with db.connexion(reglages.db_path) as cnx:
         taches = cnx.execute("SELECT drive_id, requete, etat FROM drive_tache").fetchall()
     assert {tuple(tache) for tache in taches} == {
+        ("carrefour-retrait-267", "xyzqwertyu", "attente"),
         ("coursesu-33315", "xyzqwertyu", "attente"),
         ("intermarche-05052", "xyzqwertyu", "attente"),
+        ("leclerc-retrait-113511", "xyzqwertyu", "attente"),
     }
