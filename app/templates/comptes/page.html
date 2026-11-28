@@ -103,5 +103,28 @@
     <a class="bouton" href="/comptes/inscription">Créer un compte</a>
   </p>
   {% endif %}
+
+  {# Mode des données (app/mode_donnees.py), replié en bas de page : utile pour la démonstration. #}
+  {% set reglages_site = request.app.state.reglages %}
+  {% set mode_choisi = request.session.get("mode_donnees") %}
+  {% if mode_choisi not in ("demo", "reel") %}
+    {% set mode_choisi = reglages_site.mode_donnees_defaut if reglages_site.mode_donnees_defaut in ("demo", "reel") else "demo" %}
+  {% endif %}
+  <details class="options-demo">
+    <summary>Options de démonstration</summary>
+    <p class="note">
+      Mode actuel :
+      <span class="mode-pastille mode-{{ mode_choisi }}">{{ "Réel" if mode_choisi == "reel" else "Démo" }}</span>
+      {{ "données réelles : seulement les drives répertoriés, prix relevés par les extensions Edge."
+         if mode_choisi == "reel" else "prix fictifs, marqués « Données fictives », sans requête aux drives." }}
+    </p>
+    <form action="/mode-donnees" method="post">
+      <input type="hidden" name="suivant" value="/comptes">
+      <input type="hidden" name="mode" value="{{ 'demo' if mode_choisi == 'reel' else 'reel' }}">
+      <button type="submit">
+        {{ "Passer en démo (prix fictifs)" if mode_choisi == "reel" else "Passer aux données réelles (drives)" }}
+      </button>
+    </form>
+  </details>
 </section>
 {% endblock %}
